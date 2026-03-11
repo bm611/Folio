@@ -478,10 +478,21 @@ export default function LiveMarkdownEditor({
   const selectionRef = useRef({ index: 0, start: 0, end: 0 })
   const onChangeRef = useRef(onChange)
   const onRegisterEditorApiRef = useRef(onRegisterEditorApi)
+  const lastEmittedRef = useRef(value)
 
   useEffect(() => {
     blocksRef.current = blocks
   }, [blocks])
+
+  useEffect(() => {
+    if (value !== lastEmittedRef.current) {
+      const next = contentToBlocks(value)
+      blocksRef.current = next
+      setBlocks(next)
+      setFocusedIndex(null)
+      lastEmittedRef.current = value
+    }
+  }, [value])
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -541,7 +552,9 @@ export default function LiveMarkdownEditor({
   const commitBlocks = useCallback((nextBlocks, focus = null) => {
     blocksRef.current = nextBlocks
     setBlocks(nextBlocks)
-    onChangeRef.current(blocksToContent(nextBlocks))
+    const content = blocksToContent(nextBlocks)
+    lastEmittedRef.current = content
+    onChangeRef.current(content)
 
     if (focus) {
       pendingFocusRef.current = focus

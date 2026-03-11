@@ -138,7 +138,7 @@ export default function App() {
       },
     ]
   })
-  const [activeNoteId, setActiveNoteId] = useState(() => notes[0]?.id || null)
+  const [activeNoteId, setActiveNoteId] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Start collapsed on mobile
     return window.innerWidth < 768
@@ -391,19 +391,22 @@ export default function App() {
           onSearchChange={setSidebarSearch}
         />
 
-        <NoteEditor
-          key={activeNote?.id || 'empty-note'}
-          note={activeNote}
-          onUpdateNote={handleUpdateNote}
-          onRegisterEditorApi={(api) => {
-            editorApiRef.current = api
-            setEditorReady(Boolean(api))
-          }}
-          theme={theme}
-          onToggleTheme={toggleTheme}
-          sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
-        />
+        <div className="flex flex-1 min-w-0 p-2 pl-0">
+          <NoteEditor
+            note={activeNote}
+            notes={notes}
+            onUpdateNote={handleUpdateNote}
+            onSelectNote={setActiveNoteId}
+            onRegisterEditorApi={(api) => {
+              editorApiRef.current = api
+              setEditorReady(Boolean(api))
+            }}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
+          />
+        </div>
       </div>
 
       <CommandPalette

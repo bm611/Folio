@@ -1,6 +1,7 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
-import { HiMoon, HiSun, HiXMark, HiBars3, HiCalendarDays, HiDocumentText, HiHashtag, HiChevronDown, HiPlus } from 'react-icons/hi2'
-import { countBodyWords, formatCreatedAt } from '../utils/noteMeta'
+import { lazy, Suspense, useState } from 'react'
+import { HiMoon, HiSun, HiXMark, HiCalendarDays, HiDocumentText, HiHashtag } from 'react-icons/hi2'
+import { TbLayoutSidebarLeftExpand } from 'react-icons/tb'
+import { countBodyWords, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
 
@@ -14,7 +15,9 @@ function EditorFallback() {
 
 export default function NoteEditor({
   note,
+  notes,
   onUpdateNote,
+  onSelectNote,
   onRegisterEditorApi,
   theme,
   onToggleTheme,
@@ -22,7 +25,6 @@ export default function NoteEditor({
   onToggleSidebar,
 }) {
   const [tagInput, setTagInput] = useState('')
-  const [metaCollapsed, setMetaCollapsed] = useState(() => window.innerWidth < 768)
 
   const handleAddTag = (event) => {
     if (event.key !== 'Enter' || !tagInput.trim()) {
@@ -45,16 +47,108 @@ export default function NoteEditor({
   }
 
   if (!note) {
+    const today = new Date()
+    const dateStr = today.toLocaleDateString(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    const recentNotes = [...(notes || [])]
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+      .slice(0, 6)
+
     return (
-      <div className="flex flex-1 min-w-0 items-center justify-center bg-[var(--bg-deep)]">
-        <div className="flex flex-col items-center gap-4 px-6 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--bg-surface)]">
-            <HiDocumentText size={28} className="text-[var(--text-muted)]" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[var(--text-secondary)]" style={{ fontFamily: "'Inter', sans-serif" }}>No note selected</p>
-            <p className="mt-1 text-xs text-[var(--text-muted)]" style={{ fontFamily: "'Inter', sans-serif" }}>Choose a note from the sidebar or create a new one</p>
-          </div>
+      <div className="flex flex-1 min-w-0 flex-col rounded-2xl bg-[var(--bg-primary)]">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 py-2 md:px-6">
+          {sidebarCollapsed ? (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+              title="Open sidebar (Cmd+B)"
+            >
+              <TbLayoutSidebarLeftExpand size={18} />
+            </button>
+          ) : (
+            <div className="w-10" />
+          )}
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          >
+            {theme === 'dark' ? <HiSun size={18} /> : <HiMoon size={18} />}
+          </button>
+        </div>
+
+        {/* Welcome content */}
+        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+          <p
+            className="text-sm tracking-wide text-[var(--text-muted)]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            {dateStr}
+          </p>
+          <h1
+            className="mt-2 text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl"
+            style={{ fontFamily: "'Fraunces', serif" }}
+          >
+            Welcome back.
+          </h1>
+
+          {recentNotes.length > 0 && (
+            <div className="mt-10 w-full max-w-2xl">
+              <p
+                className="mb-4 text-[11px] uppercase tracking-widest text-[var(--text-muted)]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                Recent notes
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {recentNotes.map((n) => {
+                  const title = getNoteDisplayTitle(n)
+                  const preview = (n.content || '').replace(/[#*>`\-\[\]()!_~]/g, '').trim().slice(0, 80)
+                  const time = new Date(n.updatedAt || n.createdAt).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                  })
+
+                  return (
+                    <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => onSelectNote(n.id)}
+                      className="flex flex-col gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 text-left transition-colors hover:border-[var(--border-default)] hover:bg-[var(--bg-hover)]"
+                    >
+                      <span
+                        className="truncate text-[13px] font-medium text-[var(--text-primary)]"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {title}
+                      </span>
+                      {preview && (
+                        <span
+                          className="line-clamp-2 text-[12px] leading-relaxed text-[var(--text-muted)]"
+                          style={{ fontFamily: "'Inter', sans-serif" }}
+                        >
+                          {preview}
+                        </span>
+                      )}
+                      <span
+                        className="mt-auto text-[10px] text-[var(--text-muted)]"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
+                        {time}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -65,17 +159,21 @@ export default function NoteEditor({
   const wordCount = countBodyWords(note.content)
 
   return (
-    <div className="relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-deep)]">
+    <div className="relative flex flex-1 flex-col min-h-0 min-w-0 w-full rounded-2xl bg-[var(--bg-primary)]">
       {/* Top bar */}
       <div className="flex items-center justify-between px-4 py-2 md:px-6">
-        <button
-          type="button"
-          onClick={onToggleSidebar}
-          className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
-          title={sidebarCollapsed ? 'Open sidebar (Cmd+B)' : 'Close sidebar (Cmd+B)'}
-        >
-          <HiBars3 size={20} />
-        </button>
+        {sidebarCollapsed ? (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+            title="Open sidebar (Cmd+B)"
+          >
+            <TbLayoutSidebarLeftExpand size={18} />
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
         <button
           type="button"
           onClick={onToggleTheme}
@@ -99,85 +197,51 @@ export default function NoteEditor({
             placeholder="Untitled"
           />
 
-          {/* Metadata Section — collapsible */}
+          {/* Metadata — compact inline */}
           <div
-            className="mt-4 border-b border-[var(--border-default)] pb-4 text-[13px] text-[var(--text-muted)]"
+            className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12px] text-[var(--text-muted)]"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            <button
-              type="button"
-              onClick={() => setMetaCollapsed((c) => !c)}
-              className="flex w-full items-center gap-2 py-1 text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
-            >
-              <HiChevronDown
-                size={14}
-                className={`shrink-0 transition-transform duration-200 ${metaCollapsed ? '-rotate-90' : ''}`}
-              />
-              <span className="text-[11px] uppercase tracking-widest">Details</span>
-              {metaCollapsed && (
-                <span className="ml-auto text-[11px] text-[var(--text-muted)] font-normal normal-case tracking-normal">
-                  {createdAtLabel} · {new Intl.NumberFormat().format(wordCount)} words{tags.length > 0 ? ` · ${tags.length} tag${tags.length !== 1 ? 's' : ''}` : ''}
-                </span>
-              )}
-            </button>
+            <span className="inline-flex items-center gap-1.5">
+              <HiCalendarDays className="h-3.5 w-3.5" />
+              {createdAtLabel}
+            </span>
 
-            {!metaCollapsed && (
-              <div className="mt-2 flex flex-col gap-2.5">
-                {/* Created */}
-                <div className="flex items-start gap-4">
-                  <div className="flex w-24 shrink-0 items-center gap-2 text-[var(--text-tertiary)]">
-                    <HiCalendarDays className="h-4 w-4" />
-                    <span>Created</span>
-                  </div>
-                  <div className="text-[var(--text-secondary)]">{createdAtLabel}</div>
-                </div>
+            {tags.length > 0 && <span className="text-[var(--border-default)]">·</span>}
 
-                {/* Word Count */}
-                <div className="flex items-start gap-4">
-                  <div className="flex w-24 shrink-0 items-center gap-2 text-[var(--text-tertiary)]">
-                    <HiDocumentText className="h-4 w-4" />
-                    <span>Words</span>
-                  </div>
-                  <div className="text-[var(--text-secondary)]">
-                    {new Intl.NumberFormat().format(wordCount)} word{wordCount !== 1 ? 's' : ''}
-                  </div>
-                </div>
+            {tags.map((tag, i) => {
+              const c = i % 8
+              return (
+              <span
+                key={tag}
+                className="group/tag relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition-all max-md:pr-5 md:hover:pr-5"
+                style={{
+                  backgroundColor: `var(--tag-${c}-bg)`,
+                  color: `var(--tag-${c}-text)`,
+                }}
+              >
+                <HiHashtag className="h-3 w-3 opacity-60" />
+                {tag}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveTag(tag)}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity hover:text-red-400 max-md:opacity-60 md:opacity-0 md:group-hover/tag:opacity-100"
+                  aria-label={`Remove ${tag}`}
+                >
+                  <HiXMark size={10} />
+                </button>
+              </span>
+              )
+            })}
 
-                {/* Tags */}
-                <div className="flex items-start gap-4">
-                  <div className="flex w-24 shrink-0 items-center gap-2 pt-1 text-[var(--text-tertiary)]">
-                    <HiHashtag className="h-4 w-4" />
-                    <span>Tags</span>
-                  </div>
-                  <div className="flex flex-1 flex-wrap items-center gap-2">
-                    {tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="group/tag relative inline-flex items-center gap-1 rounded bg-[var(--bg-surface-hover)] px-2 py-1 text-[var(--text-secondary)] transition-all max-md:pr-6 md:hover:pr-6 hover:bg-[var(--bg-hover)]"
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveTag(tag)}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity hover:text-red-400 max-md:opacity-60 md:opacity-0 md:group-hover/tag:opacity-100"
-                          aria-label={`Remove ${tag}`}
-                        >
-                          <HiXMark size={12} />
-                        </button>
-                      </span>
-                    ))}
-                    <input
-                      type="text"
-                      value={tagInput}
-                      onChange={(event) => setTagInput(event.target.value)}
-                      onKeyDown={handleAddTag}
-                      placeholder={tags.length === 0 ? 'Add a tag...' : 'Add tag...'}
-                      className="min-w-[5rem] flex-1 bg-transparent py-1 text-[var(--text-muted)] outline-none placeholder:text-[var(--text-muted)] focus:text-[var(--text-primary)] transition-colors"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(event) => setTagInput(event.target.value)}
+              onKeyDown={handleAddTag}
+              placeholder={tags.length === 0 ? '+ Add tag' : '+'}
+              className="w-16 bg-transparent py-0.5 text-[12px] text-[var(--text-muted)] outline-none placeholder:text-[var(--text-muted)] focus:text-[var(--text-primary)] transition-colors"
+            />
           </div>
 
           {/* Editor */}
@@ -191,6 +255,14 @@ export default function NoteEditor({
             </Suspense>
           </div>
         </div>
+      </div>
+
+      {/* Word count — bottom right */}
+      <div
+        className="absolute bottom-4 right-4 text-[11px] text-[var(--text-muted)] tabular-nums select-none"
+        style={{ fontFamily: "'Inter', sans-serif" }}
+      >
+        {new Intl.NumberFormat().format(wordCount)} words
       </div>
     </div>
   )

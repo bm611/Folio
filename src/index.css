@@ -36,6 +36,16 @@
   --danger: #c76161;
   --success: #63a873;
 
+  /* Tag colors — muted tones for dark bg */
+  --tag-0-bg: #3b2d2d; --tag-0-text: #d4918f;
+  --tag-1-bg: #3a3225; --tag-1-text: #d4a96a;
+  --tag-2-bg: #2d3328; --tag-2-text: #8fc28a;
+  --tag-3-bg: #2a3038; --tag-3-text: #7fb5d4;
+  --tag-4-bg: #332b38; --tag-4-text: #b89fd4;
+  --tag-5-bg: #38302a; --tag-5-text: #d4b88a;
+  --tag-6-bg: #2d3533; --tag-6-text: #7dc4b5;
+  --tag-7-bg: #38292e; --tag-7-text: #d48fa8;
+
   /* Motion tokens */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --duration-fast: 150ms;
@@ -77,6 +87,16 @@
   /* Semantic */
   --danger: #b34d4d;
   --success: #4d8f5d;
+
+  /* Tag colors — muted tones for light bg */
+  --tag-0-bg: #f2dede; --tag-0-text: #8c4444;
+  --tag-1-bg: #f0e6d2; --tag-1-text: #8a6830;
+  --tag-2-bg: #dcecd8; --tag-2-text: #3e6e38;
+  --tag-3-bg: #d6e6ef; --tag-3-text: #34627e;
+  --tag-4-bg: #e6ddef; --tag-4-text: #614e80;
+  --tag-5-bg: #efe5d4; --tag-5-text: #7a5e30;
+  --tag-6-bg: #d4ebe6; --tag-6-text: #2e6e60;
+  --tag-7-bg: #f0dce2; --tag-7-text: #804058;
 }
 
 /* ──────────────────────────────────────────────
@@ -182,7 +202,7 @@ body {
 .notion-block-edit:hover,
 .notion-block-rendered:hover,
 .notion-block-empty:hover {
-  background: color-mix(in srgb, var(--bg-surface) 18%, transparent);
+  background: transparent;
 }
 
 .notion-block-empty {
