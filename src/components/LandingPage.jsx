@@ -51,12 +51,6 @@ export default function LandingPage({ onStart, onCreateNew }) {
         {/* Left Content */}
         <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24">
           <div className={`transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-            <div className="mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 3C12 8 16 12 21 12C16 12 12 16 12 21C12 16 8 12 3 12C8 12 12 8 12 3Z" stroke="#d4cfc7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M18 6C18 7.5 19.5 9 21 9C19.5 9 18 10.5 18 12C18 10.5 16.5 9 15 9C16.5 9 18 7.5 18 6Z" stroke="#d17b88" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </div>
             
             <h1 className="mb-6 max-w-2xl font-serif text-6xl font-medium leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[9rem]" style={{ fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em' }}>
               Think in<br/>
@@ -78,17 +72,6 @@ export default function LandingPage({ onStart, onCreateNew }) {
                   <IconArrowRight size={16} stroke={1.5} />
                 </div>
                 <div className="absolute inset-0 z-0 scale-y-0 bg-[#d17b88] transition-transform duration-500 origin-bottom group-hover:scale-y-100"></div>
-              </button>
-
-              <button
-                onClick={onCreateNew}
-                className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-transparent border border-white/20 px-8 py-4 font-medium text-[#f2f0ed] transition-all duration-300 hover:border-white/40 hover:bg-white/5 active:scale-[0.98]"
-                style={{ fontFamily: '"DM Sans", sans-serif' }}
-              >
-                <span className="relative z-10 text-base font-semibold tracking-wide transition-colors duration-300">Create New Note</span>
-                <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-all duration-300 group-hover:bg-white/20">
-                  <IconPlus size={16} stroke={1.5} />
-                </div>
               </button>
             </div>
           </div>
