@@ -57,7 +57,7 @@ function saveTree(tree) {
 
 const SAMPLE_NOTE = `# Welcome to Aura
 
-> [!NOTE]
+> [!note] - Local-First
 > Welcome to your local-first markdown workspace. Everything is stored in your browser — no account needed.
 
 This note is a walkthrough of what you can do. Try typing \`/\` on a blank line to open the **slash command menu**, or press \`Cmd+K\` (or \`Ctrl+K\`) to open the **command palette**.
@@ -97,10 +97,10 @@ Stay on top of what you need to do:
 
 Draw attention to important information using callouts. Type \`/callout\` to quickly insert one.
 
-> [!TIP]
-> Did you know you can change the editor font and theme? Open the command palette (\`Cmd+K\`) and search for "theme" or "font".
+> [!tip] - Did you know?
+> You can change the editor font and theme! Open the command palette (\`Cmd+K\`) and search for "theme" or "font".
 
-> [!WARNING]
+> [!warning] - Important
 > Because Aura is local-first, notes are saved to your browser's local storage. Clearing site data will remove them!
 
 ## 💻 Code Blocks
@@ -115,20 +115,7 @@ function greet(name) {
 console.log(greet("Friend"));
 \`\`\`
 
-## 📊 Tables
-
-You can even create tables to organize data:
-
-| Feature | Shortcut | Description |
-| --- | --- | --- |
-| Command Palette | \`Cmd+K\` | Search notes and run actions |
-| New Note | \`Cmd+N\` | Create a new blank note |
-| Toggle Sidebar | \`Cmd+B\` | Show/hide the sidebar |
-| Focus Mode | \`Cmd+Shift+F\` | Distraction-free writing |
-
-## 📅 Quick Actions
-
-Type \`/today\` to instantly insert today's date. 
+## 💬 Quotes
 
 > "The best way to predict the future is to invent it." 
 
