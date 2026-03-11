@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HiArrowRight } from 'react-icons/hi2';
+import { IconArrowRight } from '@tabler/icons-react';
 
 export default function LandingPage({ onStart }) {
   const [mounted, setMounted] = useState(false);
@@ -74,7 +74,7 @@ export default function LandingPage({ onStart }) {
             >
               <span className="relative z-10 text-base font-semibold tracking-wide transition-colors duration-300 group-hover:text-[#f2f0ed]">Get Started</span>
               <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0a0c]/10 transition-all duration-300 group-hover:bg-[#f2f0ed]/20 group-hover:text-[#f2f0ed] group-hover:translate-x-1">
-                <HiArrowRight size={16} />
+                <IconArrowRight size={16} stroke={1.5} />
               </div>
               <div className="absolute inset-0 z-0 scale-y-0 bg-[#d17b88] transition-transform duration-500 origin-bottom group-hover:scale-y-100"></div>
             </button>

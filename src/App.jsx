@@ -1,16 +1,16 @@
 import { useEffect, useCallback, useRef, useState } from 'react'
 import {
-  HiArrowsPointingIn,
-  HiArrowsPointingOut,
-  HiCommandLine,
-  HiMagnifyingGlass,
-  HiMoon,
-  HiOutlineDocumentText,
-  HiPlus,
-  HiSun,
-} from 'react-icons/hi2'
+  IconArrowsMinimize,
+  IconArrowsMaximize,
+  IconTerminal2,
+  IconSearch,
+  IconMoon,
+  IconFileText,
+  IconPlus,
+  IconSun,
+} from '@tabler/icons-react'
 
-import Sidebar from './components/Sidebar'
+import Sidebar, { flattenTree, insertNode, deleteNode, updateFileNode, findNode } from './components/Sidebar'
 import NoteEditor from './components/NoteEditor'
 import CommandPalette from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
@@ -19,6 +19,7 @@ import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
 
 const STORAGE_KEY = 'canvas-notes'
+const TREE_STORAGE_KEY = 'canvas-tree'
 
 const FONT_OPTIONS = [
   { id: 'lora', name: 'Lora', value: '"Lora", "Georgia", serif' },
@@ -43,8 +44,16 @@ function loadNotes() {
   return []
 }
 
-function saveNotes(notes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes))
+function loadTree() {
+  try {
+    const raw = localStorage.getItem(TREE_STORAGE_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return null
+}
+
+function saveTree(tree) {
+  localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree))
 }
 
 const SAMPLE_NOTE = `> [!NOTE]
@@ -122,16 +131,25 @@ function matchesQuery(query, values) {
 
 export default function App() {
   const [hasStarted, setHasStarted] = useState(false)
-  const [notes, setNotes] = useState(() => {
-    const saved = loadNotes()
-    if (saved.length > 0) {
-      return saved.map(normalizeNote)
+  const [tree, setTree] = useState(() => {
+    const savedTree = loadTree()
+    if (savedTree && savedTree.length > 0) return savedTree
+
+    const savedNotes = loadNotes()
+    if (savedNotes.length > 0) {
+      return savedNotes.map(n => ({
+        ...normalizeNote(n),
+        type: 'file',
+        name: n.title || 'Untitled'
+      }))
     }
 
     const now = new Date().toISOString()
     return [
       {
         id: generateId(),
+        type: 'file',
+        name: 'Canvas Knowledge Base',
         title: 'Canvas Knowledge Base',
         content: SAMPLE_NOTE,
         tags: ['canvas', 'knowledge-base'],
@@ -140,6 +158,9 @@ export default function App() {
       },
     ]
   })
+  
+  const notes = flattenTree(tree)
+  
   const [activeNoteId, setActiveNoteId] = useState(null)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     // Start collapsed on mobile
@@ -155,11 +176,13 @@ export default function App() {
   const [focusMode, setFocusMode] = useState(false)
   const deleteTimerRef = useRef(null)
 
+  const [sbWidth, setSbWidth] = useState(240)
+
   const editorApiRef = useRef(null)
 
   useEffect(() => {
-    saveNotes(notes)
-  }, [notes])
+    saveTree(tree)
+  }, [tree])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -189,7 +212,9 @@ export default function App() {
       const now = new Date().toISOString()
       const note = normalizeNote({
         id: generateId(),
-        title: '',
+        type: 'file',
+        name: overrides.title || 'Untitled',
+        title: overrides.title || '',
         content: '',
         tags: [],
         createdAt: now,
@@ -197,7 +222,7 @@ export default function App() {
         ...overrides,
       })
 
-      setNotes((previousNotes) => [note, ...previousNotes])
+      setTree((previousTree) => insertNode(previousTree, null, note))
 
       if (options.activate !== false) {
         setActiveNoteId(note.id)
@@ -218,8 +243,8 @@ export default function App() {
 
   const handleDeleteNote = useCallback(
     (id) => {
-      const noteToDelete = notes.find((note) => note.id === id)
-      if (!noteToDelete) return
+      const nodeToDelete = findNode(tree, id)
+      if (!nodeToDelete) return
 
       // Clear any pending delete
       if (deleteTimerRef.current) {
@@ -227,16 +252,19 @@ export default function App() {
       }
 
       // Remove from list immediately
-      setNotes((previousNotes) => {
-        const updatedNotes = previousNotes.filter((note) => note.id !== id)
-        if (activeNoteId === id) {
-          setActiveNoteId(updatedNotes[0]?.id || null)
+      setTree((previousTree) => deleteNode(previousTree, id))
+      
+      if (activeNoteId === id) {
+        setActiveNoteId(null)
+      } else if (nodeToDelete.type === 'folder') {
+        const deletedFiles = flattenTree([nodeToDelete])
+        if (deletedFiles.find((f) => f.id === activeNoteId)) {
+          setActiveNoteId(null)
         }
-        return updatedNotes
-      })
+      }
 
       // Store for undo
-      setDeletedNote(noteToDelete)
+      setDeletedNote(nodeToDelete)
 
       // Auto-dismiss after 5 seconds
       deleteTimerRef.current = setTimeout(() => {
@@ -244,7 +272,7 @@ export default function App() {
         deleteTimerRef.current = null
       }, 5000)
     },
-    [activeNoteId, notes]
+    [activeNoteId, tree]
   )
 
   const handleUndoDelete = useCallback(() => {
@@ -253,22 +281,18 @@ export default function App() {
       clearTimeout(deleteTimerRef.current)
       deleteTimerRef.current = null
     }
-    setNotes((previousNotes) => [deletedNote, ...previousNotes])
+    setTree((previousTree) => insertNode(previousTree, null, deletedNote))
     setActiveNoteId(deletedNote.id)
     setDeletedNote(null)
   }, [deletedNote])
 
   const handleUpdateNote = useCallback((id, updates, options = {}) => {
-    setNotes((previousNotes) =>
-      previousNotes.map((note) => {
-        if (note.id === id) {
-          const timeUpdate = options.skipTimestamp ? {} : { updatedAt: new Date().toISOString() }
-          return { ...note, ...updates, ...timeUpdate }
-        }
-
-        return note
-      })
-    )
+    setTree((previousTree) => {
+      const updated = { ...updates }
+      if (updates.title !== undefined) updated.name = updates.title
+      if (!options.skipTimestamp) updated.updatedAt = new Date().toISOString()
+      return updateFileNode(previousTree, id, updated)
+    })
   }, [])
 
   const toggleTheme = useCallback(() => {
@@ -282,6 +306,19 @@ export default function App() {
       return next
     })
   }, [])
+
+  const onResizeStart = useCallback((e) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startW = sbWidth
+    const move = (ev) => setSbWidth(Math.max(160, Math.min(500, startW + ev.clientX - startX)))
+    const up = () => {
+      window.removeEventListener("mousemove", move)
+      window.removeEventListener("mouseup", up)
+    }
+    window.addEventListener("mousemove", move)
+    window.addEventListener("mouseup", up)
+  }, [sbWidth])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -319,7 +356,6 @@ export default function App() {
     }
   }, [activeNote, focusMode])
 
-  const sidebarResults = sidebarSearch.trim() ? searchNotes(notes, sidebarSearch) : searchNotes(notes, '')
   const paletteNoteResults = searchNotes(notes, commandPaletteQuery).slice(0, 8)
   const paletteCommandResults = editorReady ? getEditorCommands(commandPaletteQuery).slice(0, 6) : []
 
@@ -329,7 +365,7 @@ export default function App() {
       section: 'Actions',
       title: 'New note',
       subtitle: 'Create a blank note',
-      icon: <HiPlus size={16} />,
+      icon: <IconPlus size={16} stroke={1.5} />,
       keywords: ['create', 'note', 'new'],
       run: () => handleNewNote(),
     },
@@ -338,7 +374,7 @@ export default function App() {
       section: 'Actions',
       title: theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
       subtitle: 'Toggle the editorial theme',
-      icon: theme === 'dark' ? <HiSun size={16} /> : <HiMoon size={16} />,
+      icon: theme === 'dark' ? <IconSun size={16} stroke={1.5} /> : <IconMoon size={16} stroke={1.5} />,
       keywords: ['theme', 'color', 'dark', 'light'],
       run: () => toggleTheme(),
     },
@@ -347,7 +383,7 @@ export default function App() {
       section: 'Actions',
       title: 'Reveal sidebar search',
       subtitle: 'Open the note index and search surface',
-      icon: <HiMagnifyingGlass size={16} />,
+      icon: <IconSearch size={16} stroke={1.5} />,
       keywords: ['search', 'find', 'sidebar'],
       run: () => setSidebarCollapsed(false),
     },
@@ -356,7 +392,7 @@ export default function App() {
       section: 'Actions',
       title: focusMode ? 'Exit focus mode' : 'Focus mode',
       subtitle: focusMode ? 'Restore the full editor UI' : 'Hide all chrome for distraction-free writing',
-      icon: focusMode ? <HiArrowsPointingOut size={16} /> : <HiArrowsPointingIn size={16} />,
+      icon: focusMode ? <IconArrowsMaximize size={16} stroke={1.5} /> : <IconArrowsMinimize size={16} stroke={1.5} />,
       keywords: ['focus', 'zen', 'distraction', 'write', 'story', 'fullscreen'],
       run: () => toggleFocusMode(),
     },
@@ -381,7 +417,7 @@ export default function App() {
     section: 'Notes',
     title: getNoteDisplayTitle(result.note),
     subtitle: result.excerpt,
-    icon: <HiOutlineDocumentText size={16} />,
+    icon: <IconFileText size={16} stroke={1.5} />,
     hint: '',
     keywords: ['note', ...(result.note.tags || [])],
     run: () => setActiveNoteId(result.note.id),
@@ -392,7 +428,7 @@ export default function App() {
     section: 'Insert',
     title: command.title,
     subtitle: `Insert /${command.trigger} into the editor`,
-    icon: <HiCommandLine size={16} />,
+    icon: <IconTerminal2 size={16} stroke={1.5} />,
     keywords: command.keywords || [],
     run: () => {
       editorApiRef.current?.focus()
@@ -414,18 +450,21 @@ export default function App() {
     <>
       <div className="grain flex h-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)]">
         <Sidebar
-          notes={sidebarResults}
+          tree={tree}
+          setTree={setTree}
           activeNoteId={activeNoteId}
           onSelectNote={setActiveNoteId}
-          onNewNote={handleNewNote}
+          onNewNote={createNote}
           onDeleteNote={handleDeleteNote}
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((current) => !current)}
           searchQuery={sidebarSearch}
           onSearchChange={setSidebarSearch}
+          width={sbWidth}
+          onResizeStart={onResizeStart}
         />
 
-        <div className={`flex flex-1 min-w-0 transition-[padding] duration-300 ${focusMode ? 'p-0' : 'p-2 pl-0'}`}>
+        <div className={`flex flex-1 min-w-0 transition-[padding] duration-300 ${focusMode ? 'p-0' : 'p-0 md:p-2 md:pl-0'}`}>
           <NoteEditor
             note={activeNote}
             notes={notes}

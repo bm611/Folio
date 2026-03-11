@@ -1,14 +1,14 @@
 import { lazy, Suspense, useState, useRef, useCallback } from 'react'
 import {
-  HiArrowsPointingIn,
-  HiArrowsPointingOut,
-  HiCalendarDays,
-  HiHashtag,
-  HiMoon,
-  HiSun,
-  HiXMark,
-} from 'react-icons/hi2'
-import { TbLayoutSidebarLeftExpand } from 'react-icons/tb'
+  IconArrowsMinimize,
+  IconArrowsMaximize,
+  IconCalendar,
+  IconHash,
+  IconMoon,
+  IconSun,
+  IconX,
+  IconLayoutSidebarLeftCollapse,
+} from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
@@ -96,7 +96,7 @@ export default function NoteEditor({
       .slice(0, 6)
 
     return (
-      <div className="flex flex-1 min-w-0 flex-col rounded-2xl bg-[var(--bg-primary)]">
+      <div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 md:px-6">
           {sidebarCollapsed ? (
@@ -106,7 +106,7 @@ export default function NoteEditor({
               className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
-              <TbLayoutSidebarLeftExpand size={18} />
+              <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
             <div className="w-10" />
@@ -117,7 +117,7 @@ export default function NoteEditor({
             className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
             title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
           >
-            {theme === 'dark' ? <HiSun size={18} /> : <HiMoon size={18} />}
+            {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
           </button>
         </div>
 
@@ -247,7 +247,7 @@ export default function NoteEditor({
   return (
     <div
       className={`relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-primary)] transition-[border-radius] duration-300 ${
-        focusMode ? 'rounded-none' : 'rounded-2xl'
+        focusMode ? 'rounded-none' : 'max-md:rounded-none rounded-2xl'
       }`}
     >
       {/* Zen mode exit button — floats in the top-right corner */}
@@ -259,7 +259,7 @@ export default function NoteEditor({
           style={{ fontFamily: "'Inter', sans-serif", color: 'var(--text-muted)', fontSize: '11px' }}
           title="Exit focus mode (⌘⇧F)"
         >
-          <HiArrowsPointingOut size={12} />
+          <IconArrowsMaximize size={12} stroke={1.5} />
           <span>Exit</span>
         </button>
       )}
@@ -274,7 +274,7 @@ export default function NoteEditor({
               className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
-              <TbLayoutSidebarLeftExpand size={18} />
+              <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
             <div className="w-10" />
@@ -286,7 +286,7 @@ export default function NoteEditor({
               className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               title="Focus mode (⌘⇧F)"
             >
-              <HiArrowsPointingIn size={18} />
+              <IconArrowsMinimize size={18} stroke={1.5} />
             </button>
             <button
               type="button"
@@ -294,7 +294,7 @@ export default function NoteEditor({
               className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <HiSun size={18} /> : <HiMoon size={18} />}
+              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
           </div>
         </div>
@@ -327,7 +327,7 @@ export default function NoteEditor({
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <span className="inline-flex items-center gap-1.5">
-                <HiCalendarDays className="h-3.5 w-3.5" />
+                <IconCalendar size={14} stroke={1.5} className="opacity-70" />
                 {createdAtLabel}
               </span>
 
@@ -344,7 +344,7 @@ export default function NoteEditor({
                       color: `var(--tag-${c}-text)`,
                     }}
                   >
-                    <HiHashtag className="h-3 w-3 opacity-60" />
+                    <IconHash size={12} stroke={1.5} className="opacity-60" />
                     {tag}
                     <button
                       type="button"
@@ -352,7 +352,7 @@ export default function NoteEditor({
                       className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-0.5 transition-opacity hover:text-red-400 max-md:opacity-60 md:opacity-0 md:group-hover/tag:opacity-100"
                       aria-label={`Remove ${tag}`}
                     >
-                      <HiXMark size={10} />
+                      <IconX size={10} stroke={2} />
                     </button>
                   </span>
                 )

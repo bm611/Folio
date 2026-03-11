@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { HiMagnifyingGlass } from 'react-icons/hi2'
+import { IconSearch } from '@tabler/icons-react'
 
 export default function CommandPalette({
   open,
@@ -97,7 +97,7 @@ export default function CommandPalette({
       <div className="w-full max-w-lg overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-[0_24px_80px_color-mix(in_srgb,var(--bg-deep)_50%,transparent)]">
         {/* Search input */}
         <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
-          <HiMagnifyingGlass size={15} className="shrink-0 text-[var(--text-muted)]" />
+          <IconSearch size={15} stroke={1.5} className="shrink-0 text-[var(--text-muted)]" />
           <input
             ref={inputRef}
             type="text"

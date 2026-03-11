@@ -21,11 +21,11 @@ import swift from 'highlight.js/lib/languages/swift'
 import kotlin from 'highlight.js/lib/languages/kotlin'
 import php from 'highlight.js/lib/languages/php'
 import {
-  LuPencil, LuFlame, LuInfo, LuTriangleAlert, LuOctagonX,
-  LuBug, LuList, LuMessageSquareQuote, LuCircleCheck, LuCircleHelp,
-  LuCircleX, LuFileText, LuCircleAlert, LuClipboardList,
-  LuChevronDown, LuSquare, LuSquareCheck,
-} from 'react-icons/lu'
+  IconPencil, IconFlame, IconInfoCircle, IconAlertTriangle, IconAlertOctagon,
+  IconBug, IconList, IconMessageCircle, IconCircleCheck, IconHelpCircle,
+  IconCircleX, IconFileText, IconAlertCircle, IconClipboardList,
+  IconChevronDown, IconSquare, IconSquareCheck,
+} from '@tabler/icons-react'
 
 hljs.registerLanguage('javascript', javascript)
 hljs.registerLanguage('js', javascript)
@@ -211,21 +211,21 @@ function getOrderedListNumber(blocks, index) {
 }
 
 const calloutIcons = {
-  note: LuPencil,
-  tip: LuFlame,
-  info: LuInfo,
-  warning: LuTriangleAlert,
-  danger: LuOctagonX,
-  bug: LuBug,
-  example: LuList,
-  quote: LuMessageSquareQuote,
-  success: LuCircleCheck,
-  question: LuCircleHelp,
-  failure: LuCircleX,
-  abstract: LuFileText,
-  todo: LuClipboardList,
-  important: LuCircleAlert,
-  caution: LuTriangleAlert,
+  note: IconPencil,
+  tip: IconFlame,
+  info: IconInfoCircle,
+  warning: IconAlertTriangle,
+  danger: IconAlertOctagon,
+  bug: IconBug,
+  example: IconList,
+  quote: IconMessageCircle,
+  success: IconCircleCheck,
+  question: IconHelpCircle,
+  failure: IconCircleX,
+  abstract: IconFileText,
+  todo: IconClipboardList,
+  important: IconAlertCircle,
+  caution: IconAlertTriangle,
 }
 
 function Block({
@@ -304,7 +304,7 @@ function Block({
                 <span className="obsidian-callout-title">{calloutTitle}</span>
                 {foldable ? (
                   <span className={`obsidian-callout-fold ${collapsed ? 'is-collapsed' : ''}`}>
-                    <LuChevronDown size={14} />
+                    <IconChevronDown size={14} stroke={1.5} />
                   </span>
                 ) : null}
               </div>
@@ -328,7 +328,7 @@ function Block({
               }}
               style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
-              <LuSquareCheck size={16} />
+              <IconSquareCheck size={16} stroke={1.5} />
             </span>
             <span dangerouslySetInnerHTML={{ __html: html }} />
           </div>
@@ -343,7 +343,7 @@ function Block({
               }}
               style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
-              <LuSquare size={16} />
+              <IconSquare size={16} stroke={1.5} />
             </span>
             <span dangerouslySetInnerHTML={{ __html: html }} />
           </div>
