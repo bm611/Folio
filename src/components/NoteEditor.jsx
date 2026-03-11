@@ -86,6 +86,11 @@ export default function NoteEditor({
 
   if (!note) {
     const today = new Date()
+    const hour = today.getHours()
+    let greeting = 'Good evening'
+    if (hour < 12) greeting = 'Good morning'
+    else if (hour < 18) greeting = 'Good afternoon'
+
     const dateStr = today.toLocaleDateString(undefined, {
       weekday: 'long',
       year: 'numeric',
@@ -123,8 +128,8 @@ export default function NoteEditor({
         </div>
 
         {/* Welcome content */}
-        <div className="flex flex-1 flex-col items-center px-6 pt-[4vh] md:pt-[6vh]">
-          <div className="animate-fade-in-up mb-4 flex justify-center text-[var(--accent)] opacity-80 mix-blend-luminosity">
+        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-[10vh]">
+          <div className="animate-fade-in-up mb-6 flex justify-center text-[var(--accent)] opacity-80 mix-blend-luminosity">
             <svg width="120" height="120" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 {/* Background abstract shapes */}
@@ -188,17 +193,17 @@ export default function NoteEditor({
               Aura.
             </h1>
             <p
-              className="mt-3 text-[15px] text-[var(--text-muted)] tracking-wide"
+              className="mt-4 text-[16px] text-[var(--text-muted)] tracking-wide"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
-              Welcome back. It's {dateStr}.
+              {greeting}. It's {dateStr}.
             </p>
           </div>
 
-          <div className="animate-fade-in-up-delay-2 mt-6">
+          <div className="animate-fade-in-up-delay-2 mt-8 mb-2">
             <button
               onClick={() => onNewNote?.()}
-              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-7 py-3.5 text-[15px] font-semibold text-white shadow-lg shadow-[var(--accent-muted)] transition-all duration-300 hover:bg-[var(--accent-hover)] hover:shadow-[0_0_20px_var(--accent-muted)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Create New Note
@@ -206,14 +211,15 @@ export default function NoteEditor({
           </div>
 
           {recentNotes.length > 0 && (
-            <div className="animate-fade-in-up-delay-2 mt-8 w-full max-w-2xl">
-              <p
-                className="mb-4 text-md text-[var(--text-muted)]"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
-              >
-                Recent Notes
-              </p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="animate-fade-in-up-delay-2 mt-12 w-full max-w-3xl">
+              <div className="mb-6 flex items-center justify-center gap-4">
+                 <div className="h-px w-12 bg-[var(--border-subtle)]"></div>
+                 <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-muted)]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                   Recent Notes
+                 </p>
+                 <div className="h-px w-12 bg-[var(--border-subtle)]"></div>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {recentNotes.map((n, index) => {
                   const title = getNoteDisplayTitle(n)
                   const preview = (n.content || '').replace(/[#*>`\-\[\]()!_~]/g, '').trim().slice(0, 80)
@@ -227,24 +233,24 @@ export default function NoteEditor({
                       key={n.id}
                       type="button"
                       onClick={() => onSelectNote(n.id)}
-                      className={`flex flex-col gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-4 text-left transition-colors hover:border-[var(--border-default)] hover:bg-[var(--bg-hover)] ${index >= 2 ? 'hidden sm:flex' : ''}`}
+                      className={`flex flex-col gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all hover:border-[var(--border-default)] hover:bg-[var(--bg-hover)] hover:-translate-y-0.5 hover:shadow-md ${index >= 2 ? 'hidden sm:flex' : ''}`}
                     >
                       <span
-                        className="truncate text-[13px] font-medium text-[var(--text-primary)]"
+                        className="truncate text-[14px] font-semibold text-[var(--text-primary)]"
                         style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {title}
                       </span>
                       {preview && (
                         <span
-                          className="line-clamp-2 text-[12px] leading-relaxed text-[var(--text-muted)]"
+                          className="line-clamp-2 text-[13px] leading-relaxed text-[var(--text-muted)]"
                           style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {preview}
                         </span>
                       )}
                       <span
-                        className="mt-auto text-[10px] text-[var(--text-muted)]"
+                        className="mt-auto text-[11px] font-medium text-[var(--text-muted)] opacity-80"
                         style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {time}

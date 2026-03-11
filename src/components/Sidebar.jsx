@@ -101,7 +101,7 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
   return (
     <div>
       <div
-        className={`tree-node${isActive ? " active" : ""}`}
+        className={`tree-node ${isFolder ? "is-folder" : "is-file"}${isActive ? " active" : ""}`}
         style={{ paddingLeft: depth * 14 + 8 }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -385,29 +385,34 @@ export default function Sidebar({
           transition: background-color 0.2s ease, color 0.2s ease;
         }
 
+        .tree-node.is-folder {
+          font-weight: 600;
+          color: var(--text-primary);
+          font-size: 14px;
+        }
+
         .tree-node:hover {
           background: var(--bg-hover);
           color: var(--text-primary);
         }
 
         .tree-node.active {
-          background: var(--bg-elevated);
+          background: color-mix(in srgb, var(--accent) 8%, transparent);
           color: var(--text-primary);
-          box-shadow: inset 0 0 0 1px var(--border-subtle);
-          font-weight: 500;
+          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 15%, transparent);
+          font-weight: 600;
         }
 
         .tree-node.active::before {
           content: "";
           position: absolute;
           left: 0;
-          top: 50%;
-          transform: translateY(-50%);
-          height: 16px;
+          top: 20%;
+          bottom: 20%;
           width: 3px;
           border-radius: 0 4px 4px 0;
           background: var(--accent);
-          opacity: 0.8;
+          opacity: 1;
         }
 
         .tn-arrow {
