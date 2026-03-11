@@ -8,6 +8,7 @@ import {
   IconSun,
   IconX,
   IconLayoutSidebarLeftCollapse,
+  IconPlus,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 
@@ -24,6 +25,7 @@ function EditorFallback() {
 export default function NoteEditor({
   note,
   notes,
+  onNewNote,
   onUpdateNote,
   onSelectNote,
   onRegisterEditorApi,
@@ -135,6 +137,17 @@ export default function NoteEditor({
           >
             Welcome back.
           </h1>
+
+          <div className="mt-8">
+            <button
+              onClick={() => onNewNote?.()}
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--accent-hover)] active:scale-[0.98]"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
+              <IconPlus size={18} stroke={2} />
+              Create New Note
+            </button>
+          </div>
 
           {recentNotes.length > 0 && (
             <div className="mt-10 w-full max-w-2xl">

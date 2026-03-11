@@ -442,8 +442,13 @@ export default function App() {
     setHasStarted(true)
   }, [])
 
+  const handleStartWithNewNote = useCallback(() => {
+    setHasStarted(true)
+    handleNewNote()
+  }, [handleNewNote])
+
   if (!hasStarted) {
-    return <LandingPage onStart={handleStart} />
+    return <LandingPage onStart={handleStart} onCreateNew={handleStartWithNewNote} />
   }
 
   return (
@@ -468,6 +473,7 @@ export default function App() {
           <NoteEditor
             note={activeNote}
             notes={notes}
+            onNewNote={handleNewNote}
             onUpdateNote={handleUpdateNote}
             onSelectNote={setActiveNoteId}
             onRegisterEditorApi={(api) => {

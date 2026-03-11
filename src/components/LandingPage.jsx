@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { IconArrowRight } from '@tabler/icons-react';
+import { IconArrowRight, IconPlus } from '@tabler/icons-react';
 
-export default function LandingPage({ onStart }) {
+export default function LandingPage({ onStart, onCreateNew }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -67,17 +67,30 @@ export default function LandingPage({ onStart }) {
               A luminous, local-first workspace for your most important ideas. Fast, private, and beautifully restrained.
             </p>
 
-            <button
-              onClick={onStart}
-              className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-[#f2f0ed] px-8 py-4 font-medium text-[#0a0a0c] transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
-              style={{ fontFamily: '"DM Sans", sans-serif' }}
-            >
-              <span className="relative z-10 text-base font-semibold tracking-wide transition-colors duration-300 group-hover:text-[#f2f0ed]">Get Started</span>
-              <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0a0c]/10 transition-all duration-300 group-hover:bg-[#f2f0ed]/20 group-hover:text-[#f2f0ed] group-hover:translate-x-1">
-                <IconArrowRight size={16} stroke={1.5} />
-              </div>
-              <div className="absolute inset-0 z-0 scale-y-0 bg-[#d17b88] transition-transform duration-500 origin-bottom group-hover:scale-y-100"></div>
-            </button>
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={onStart}
+                className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-[#f2f0ed] px-8 py-4 font-medium text-[#0a0a0c] transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                style={{ fontFamily: '"DM Sans", sans-serif' }}
+              >
+                <span className="relative z-10 text-base font-semibold tracking-wide transition-colors duration-300 group-hover:text-[#f2f0ed]">Get Started</span>
+                <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0a0c]/10 transition-all duration-300 group-hover:bg-[#f2f0ed]/20 group-hover:text-[#f2f0ed] group-hover:translate-x-1">
+                  <IconArrowRight size={16} stroke={1.5} />
+                </div>
+                <div className="absolute inset-0 z-0 scale-y-0 bg-[#d17b88] transition-transform duration-500 origin-bottom group-hover:scale-y-100"></div>
+              </button>
+
+              <button
+                onClick={onCreateNew}
+                className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-transparent border border-white/20 px-8 py-4 font-medium text-[#f2f0ed] transition-all duration-300 hover:border-white/40 hover:bg-white/5 active:scale-[0.98]"
+                style={{ fontFamily: '"DM Sans", sans-serif' }}
+              >
+                <span className="relative z-10 text-base font-semibold tracking-wide transition-colors duration-300">Create New Note</span>
+                <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-all duration-300 group-hover:bg-white/20">
+                  <IconPlus size={16} stroke={1.5} />
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
