@@ -102,10 +102,10 @@ export default function NoteEditor({
           {recentNotes.length > 0 && (
             <div className="mt-10 w-full max-w-2xl">
               <p
-                className="mb-4 text-[11px] uppercase tracking-widest text-[var(--text-muted)]"
+                className="mb-4 text-md text-[var(--text-muted)]"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               >
-                Recent notes
+                Recent Notes
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {recentNotes.map((n) => {
