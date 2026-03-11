@@ -6,7 +6,6 @@ import {
   IconSearch,
   IconMoon,
   IconFileText,
-  IconPlus,
   IconSun,
 } from '@tabler/icons-react'
 
@@ -65,7 +64,7 @@ Type \`/\` on a blank line to open **slash commands**, or use the command palett
 
 You can write in *italics*, **bold**, ***bold italics***, or ~~strikethrough~~. Inline \`code\` works too.
 
-Links look like this: [Canvas on GitHub](https://github.com/bm611/aura)
+Links look like this: [Aura on GitHub](https://github.com/bm611/aura)
 
 ## Lists
 
@@ -103,7 +102,7 @@ function greet(name) {
   return \`Hello, \${name}!\`
 }
 
-console.log(greet("Canvas"))
+console.log(greet("Aura"))
 \`\`\`
 
 ## Quotes
@@ -149,10 +148,10 @@ export default function App() {
       {
         id: generateId(),
         type: 'file',
-        name: 'Canvas Knowledge Base',
-        title: 'Canvas Knowledge Base',
+        name: 'Aura Knowledge Base',
+        title: 'Aura Knowledge Base',
         content: SAMPLE_NOTE,
-        tags: ['canvas', 'knowledge-base'],
+        tags: ['aura', 'knowledge-base'],
         createdAt: now,
         updatedAt: now,
       },
@@ -365,7 +364,6 @@ export default function App() {
       section: 'Actions',
       title: 'New note',
       subtitle: 'Create a blank note',
-      icon: <IconPlus size={16} stroke={1.5} />,
       keywords: ['create', 'note', 'new'],
       run: () => handleNewNote(),
     },

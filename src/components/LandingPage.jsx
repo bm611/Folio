@@ -52,13 +52,12 @@ export default function LandingPage({ onStart, onCreateNew }) {
         <div className="flex flex-col justify-center px-8 sm:px-16 lg:px-24">
           <div className={`transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
             
-            <h1 className="mb-6 max-w-2xl font-serif text-6xl font-medium leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[9rem]" style={{ fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em' }}>
-              Think in<br/>
-              <span className="italic text-[#d17b88]">motion.</span>
+            <h1 className="mb-6 max-w-2xl text-6xl leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[10rem] text-[#d17b88]" style={{ fontFamily: '"Italiana", serif' }}>
+              Aura.
             </h1>
             
             <p className="mb-12 max-w-md text-lg text-[#a39e97] sm:text-xl" style={{ fontFamily: '"DM Sans", sans-serif', lineHeight: '1.6' }}>
-              A luminous, local-first workspace for your most important ideas. Fast, private, and beautifully restrained.
+              Your ethereal, local-first workspace for your most important ideas. Fast, private, and beautifully restrained.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">

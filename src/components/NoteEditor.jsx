@@ -8,7 +8,6 @@ import {
   IconSun,
   IconX,
   IconLayoutSidebarLeftCollapse,
-  IconPlus,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 
@@ -191,7 +190,7 @@ export default function NoteEditor({
             className="animate-fade-in-up-delay-1 mt-2 text-4xl font-black tracking-tight text-[var(--text-primary)] sm:text-5xl"
             style={{ fontFamily: "'Fraunces', serif" }}
           >
-            Welcome back.
+            Welcome to <span className="font-normal text-[var(--h1-color)]" style={{ fontFamily: '"Italiana", serif', fontSize: '1.2em' }}>Aura</span>.
           </h1>
 
           <div className="animate-fade-in-up-delay-2 mt-6">
@@ -200,7 +199,6 @@ export default function NoteEditor({
               className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-6 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-[var(--accent-hover)] hover:scale-[1.02] active:scale-[0.98]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
-              <IconPlus size={18} stroke={2} />
               Create New Note
             </button>
           </div>

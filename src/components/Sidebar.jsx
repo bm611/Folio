@@ -223,7 +223,7 @@ export default function Sidebar({
   const renderTree = () => {
     if (!searchQuery.trim()) return tree;
     const lowerQ = searchQuery.toLowerCase();
-    
+
     // A simple function to filter files by name
     const filterNodes = (nodes) => {
       let result = [];
@@ -259,7 +259,7 @@ export default function Sidebar({
           color: var(--text-primary);
           font-family: 'DM Sans', sans-serif;
         }
-        
+
         .sb-header-wrapper {
           display: flex;
           align-items: center;
@@ -396,7 +396,7 @@ export default function Sidebar({
           box-shadow: inset 0 0 0 1px var(--border-subtle);
           font-weight: 500;
         }
-        
+
         .tree-node.active::before {
           content: "";
           position: absolute;
@@ -418,7 +418,7 @@ export default function Sidebar({
           flex-shrink: 0;
           transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         }
-        
+
         .tn-arrow.open {
           transform: rotate(90deg);
         }
@@ -490,12 +490,12 @@ export default function Sidebar({
           margin: 0 8px 4px;
           gap: 8px;
         }
-        
+
         .tn-children {
           animation: slideDown 0.2s cubic-bezier(0.25, 1, 0.5, 1);
           transform-origin: top;
         }
-        
+
         @keyframes slideDown {
           from { opacity: 0; transform: translateY(-4px); }
           to { opacity: 1; transform: translateY(0); }
@@ -517,7 +517,7 @@ export default function Sidebar({
           background: var(--accent);
         }
       `}</style>
-      
+
       {!collapsed && (
         <div
           className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden transition-all duration-300"
@@ -532,15 +532,20 @@ export default function Sidebar({
         <div className="flex flex-col h-full w-full min-w-[200px]">
           {/* Header */}
           <div className="sb-header-wrapper">
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-all hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
-              title="Toggle sidebar (Cmd+B)"
-            >
-              <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} />
-            </button>
-            <span className="sb-title">CANVAS</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-all hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
+                title="Toggle sidebar (Cmd+B)"
+              >
+                <IconLayoutSidebarLeftCollapse size={18} stroke={1.5} />
+              </button>
+              <span className="text-[26px] text-[var(--text-primary)] leading-none select-none opacity-90 mt-1" style={{ fontFamily: '"Italiana", serif' }}>
+                Aura
+              </span>
+            </div>
+
             <div className="sb-actions">
               <button title="New File" onClick={() => handleRootCreate("file")}><Icon n="newFile" s={16} /></button>
               <button title="New Folder" onClick={() => handleRootCreate("folder")}><Icon n="newFolder" s={16} /></button>
@@ -578,7 +583,7 @@ export default function Sidebar({
                 onConfirm={(name) => handleCreateConfirm(name, null, creatingIn.type)}
                 onCancel={() => setCreatingIn(null)} />
             )}
-            
+
             {visibleTree.length === 0 && searchQuery.trim() && (
               <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
                 No results found
@@ -586,7 +591,7 @@ export default function Sidebar({
             )}
           </div>
         </div>
-        
+
         {onResizeStart && <div className="resize-handle max-md:hidden" onMouseDown={onResizeStart} />}
       </aside>
     </>

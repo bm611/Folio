@@ -448,6 +448,15 @@ function applyPaste(blocks, index, selection, text) {
   const end = selection?.end ?? start
   const prefix = currentBlock.raw.slice(0, start)
   const suffix = currentBlock.raw.slice(end)
+
+  // If the current block is a code block, just insert the text as raw string rather than splitting it
+  if (/^```/.test(currentBlock.raw)) {
+    const newRaw = `${prefix}${text}${suffix}`
+    const nextBlocks = [...blocks]
+    nextBlocks[index] = makeBlock(newRaw)
+    return { nextBlocks, focusIndex: index, caret: prefix.length + text.length }
+  }
+
   const insertedBlocks = contentToBlocks(text).map((block) => block.raw)
 
   if (insertedBlocks.length === 0) {
@@ -735,7 +744,8 @@ export default function LiveMarkdownEditor({
     }
 
     // Inside a fenced code block: allow Enter to add newlines normally,
-    // but Escape exits the block by creating a new empty block below
+    // but Escape exits the block by creating a new empty block below.
+    // Also, pressing Enter right after the closing backticks exits the block.
     if (isFencedCodeBlock(currentBlock.raw)) {
       if (event.key === 'Escape') {
         event.preventDefault()
@@ -746,6 +756,18 @@ export default function LiveMarkdownEditor({
       }
 
       if (event.key === 'Enter' && !event.shiftKey) {
+        const target = event.currentTarget
+        const caretPos = target.selectionStart || 0
+        
+        // If cursor is at the very end and the text ends with closing backticks
+        if (caretPos === currentBlock.raw.length && currentBlock.raw.endsWith('```') && currentBlock.raw.trim().length > 3) {
+          event.preventDefault()
+          const nextBlocks = [...blocksRef.current]
+          nextBlocks.splice(index + 1, 0, makeBlock(''))
+          commitBlocks(nextBlocks, { index: index + 1, caret: 0 })
+          return
+        }
+        
         return
       }
     }
