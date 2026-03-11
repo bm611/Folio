@@ -269,8 +269,12 @@ function Block({
           type="button"
           className="notion-block-empty"
           onClick={() => onFocus(index)}
-          aria-label="Edit block"
-        />
+          aria-label="Start typing"
+        >
+          {placeholder && blocks.length === 1 ? (
+            <span className="notion-block-placeholder">{placeholder}</span>
+          ) : null}
+        </button>
       )
     }
 
@@ -371,7 +375,7 @@ function Block({
   }
 
   return (
-    <div className="notion-block-edit" data-index={index}>
+    <div className="notion-block-edit" data-index={index} data-block-type={type}>
       <textarea
         ref={(element) => {
           textareaRef.current = element
@@ -569,6 +573,17 @@ export default function LiveMarkdownEditor({
 
   const handleUpdate = useCallback((index, nextRaw) => {
     const nextBlocks = [...blocksRef.current]
+    const codeFenceMatch = nextRaw.match(/^```([\w#+.-]*)$/)
+
+    if (codeFenceMatch) {
+      const language = codeFenceMatch[1] || ''
+      const openingFence = language ? `\`\`\`${language}` : '```'
+      const fencedBlock = `${openingFence}\n\n\`\`\``
+      nextBlocks[index] = makeBlock(fencedBlock)
+      commitBlocks(nextBlocks, { index, caret: openingFence.length + 1 })
+      return
+    }
+
     nextBlocks[index] = { ...nextBlocks[index], raw: nextRaw }
     commitBlocks(nextBlocks)
     selectionRef.current = {

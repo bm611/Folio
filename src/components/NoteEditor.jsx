@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useRef } from 'react'
+import { lazy, Suspense, useState, useRef, useCallback } from 'react'
 import {
   HiArrowsPointingIn,
   HiArrowsPointingOut,
@@ -44,6 +44,24 @@ export default function NoteEditor({
   // Session word count: capture baseline when a note is first opened
   const sessionBaseRef = useRef(null)
   const prevNoteIdRef = useRef(null)
+
+  // Keeps a local reference to the editor API so the title input can focus it
+  const editorApiRef = useRef(null)
+
+  const handleRegisterEditorApi = useCallback(
+    (api) => {
+      editorApiRef.current = api
+      onRegisterEditorApi?.(api)
+    },
+    [onRegisterEditorApi]
+  )
+
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === 'Tab') {
+      e.preventDefault()
+      editorApiRef.current?.focus()
+    }
+  }
 
   const handleAddTag = (event) => {
     if (event.key !== 'Enter' || !tagInput.trim()) {
@@ -295,6 +313,7 @@ export default function NoteEditor({
               type="text"
               value={note.title}
               onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
+              onKeyDown={handleTitleKeyDown}
               className="w-full bg-transparent text-3xl font-black tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] sm:text-4xl md:text-5xl"
               style={{ fontFamily: "'Fraunces', serif" }}
               placeholder="Untitled"
