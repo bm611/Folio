@@ -134,7 +134,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -145,7 +145,7 @@ export default function NoteEditor({
           <button
             type="button"
             onClick={onToggleTheme}
-            className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+            className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
             title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
           >
             {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -228,7 +228,7 @@ export default function NoteEditor({
           <div className="animate-fade-in-up-delay-2 mt-8 mb-2">
             <button
               onClick={() => onNewNote?.()}
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-7 py-3.5 text-[15px] font-semibold text-white shadow-lg shadow-[var(--accent-muted)] transition-all duration-300 hover:bg-[var(--accent-hover)] hover:shadow-[0_0_20px_var(--accent-muted)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
+              className="neu-btn-primary inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-8 py-4 text-[15px] font-semibold text-white transition-all duration-150 hover:translate-y-[2px] active:translate-y-[6px]"
               style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               Create New Note
@@ -258,7 +258,7 @@ export default function NoteEditor({
                       key={n.id}
                       type="button"
                       onClick={() => onSelectNote(n.id)}
-                      className={`flex flex-col gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all hover:border-[var(--border-default)] hover:bg-[var(--bg-hover)] hover:-translate-y-0.5 hover:shadow-md ${index >= 2 ? 'hidden sm:flex' : ''}`}
+                      className={`neu-card flex flex-col gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all duration-200 hover:border-[var(--border-default)] hover:translate-y-[1px] active:translate-y-[2px] ${index >= 2 ? 'hidden sm:flex' : ''}`}
                     >
                       <span
                         className="truncate text-[14px] font-semibold text-[var(--text-primary)]"
@@ -383,7 +383,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -395,7 +395,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleFocusMode}
-              className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title="Focus mode (⌘⇧F)"
             >
               <IconArrowsMinimize size={18} stroke={1.5} />
@@ -403,7 +403,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="flex h-10 w-10 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -450,7 +450,7 @@ export default function NoteEditor({
                 return (
                   <span
                     key={tag}
-                    className="group/tag relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition-all max-md:pr-5 md:hover:pr-5"
+                    className="group/tag relative inline-flex items-center gap-1 rounded-full px-2 py-0.5 transition-all max-md:pr-5 md:hover:pr-5 border border-[var(--border-subtle)]"
                     style={{
                       backgroundColor: `var(--tag-${c}-bg)`,
                       color: `var(--tag-${c}-text)`,

@@ -514,14 +514,19 @@ export default function App() {
 
       {deletedNote && (
         <div
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-3 shadow-lg"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}
+          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-5 py-3"
+          style={{ fontFamily: "'DM Sans', sans-serif", boxShadow: 'var(--neu-shadow)' }}
         >
           <span className="text-sm text-[var(--text-secondary)]">Note deleted</span>
           <button
             type="button"
             onClick={handleUndoDelete}
-            className="text-sm font-medium text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+            className="rounded-full bg-[var(--accent)] px-4 py-1.5 text-sm font-medium text-white transition-all duration-200 hover:translate-y-[1px] active:translate-y-[2px]"
+            style={{ boxShadow: 'var(--neu-shadow)' }}
+            onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--neu-shadow-hover)'}
+            onMouseLeave={e => e.currentTarget.style.boxShadow = 'var(--neu-shadow)'}
+            onMouseDown={e => e.currentTarget.style.boxShadow = 'var(--neu-shadow-active)'}
+            onMouseUp={e => e.currentTarget.style.boxShadow = 'var(--neu-shadow-hover)'}
           >
             Undo
           </button>

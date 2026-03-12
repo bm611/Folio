@@ -94,7 +94,7 @@ export default function CommandPalette({
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] shadow-[0_24px_80px_color-mix(in_srgb,var(--bg-deep)_50%,transparent)]">
+      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]" style={{ boxShadow: 'var(--neu-shadow), 0 24px 80px color-mix(in srgb, var(--bg-deep) 50%, transparent)' }}>
         {/* Search input */}
         <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
           <IconSearch size={15} stroke={1.5} className="shrink-0 text-[var(--text-muted)]" />
@@ -108,8 +108,8 @@ export default function CommandPalette({
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
           <kbd
-            className="shrink-0 rounded border border-[var(--border-subtle)] px-1.5 py-0.5 text-[10px] text-[var(--text-muted)]"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
+            className="shrink-0 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]"
+            style={{ fontFamily: "'DM Sans', sans-serif", boxShadow: 'var(--neu-shadow)' }}
           >
             esc
           </kbd>

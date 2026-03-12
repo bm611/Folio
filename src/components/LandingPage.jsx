@@ -63,14 +63,21 @@ export default function LandingPage({ onStart, onCreateNew }) {
             <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={onStart}
-                className="group relative inline-flex items-center gap-4 overflow-hidden rounded-full bg-[#f2f0ed] px-8 py-4 font-medium text-[#0a0a0c] transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
-                style={{ fontFamily: '"DM Sans", sans-serif' }}
+                className="group inline-flex items-center gap-4 rounded-full bg-[#d17b88] px-10 py-4.5 font-medium text-white transition-all duration-150 hover:translate-y-[2px] active:translate-y-[6px]"
+                style={{
+                  fontFamily: '"DM Sans", sans-serif',
+                  boxShadow: '0 6px 0 #a3505e, 0 8px 0 #8a3f4d, 0 12px 24px rgba(0,0,0,0.5)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                }}
+                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 5px 0 #a3505e, 0 7px 0 #8a3f4d, 0 10px 20px rgba(0,0,0,0.45)'}
+                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 6px 0 #a3505e, 0 8px 0 #8a3f4d, 0 12px 24px rgba(0,0,0,0.5)'}
+                onMouseDown={e => e.currentTarget.style.boxShadow = '0 1px 0 #a3505e, 0 2px 0 #8a3f4d, 0 3px 6px rgba(0,0,0,0.3)'}
+                onMouseUp={e => e.currentTarget.style.boxShadow = '0 5px 0 #a3505e, 0 7px 0 #8a3f4d, 0 10px 20px rgba(0,0,0,0.45)'}
               >
-                <span className="relative z-10 text-base font-semibold tracking-wide transition-colors duration-300 group-hover:text-[#f2f0ed]">Get Started</span>
-                <div className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-[#0a0a0c]/10 transition-all duration-300 group-hover:bg-[#f2f0ed]/20 group-hover:text-[#f2f0ed] group-hover:translate-x-1">
+                <span className="text-base font-semibold tracking-wide">Get Started</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 transition-transform duration-200 group-hover:translate-x-1">
                   <IconArrowRight size={16} stroke={1.5} />
                 </div>
-                <div className="absolute inset-0 z-0 scale-y-0 bg-[#d17b88] transition-transform duration-500 origin-bottom group-hover:scale-y-100"></div>
               </button>
             </div>
           </div>

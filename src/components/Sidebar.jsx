@@ -353,26 +353,28 @@ export default function Sidebar({
         }
 
         .sb-actions button, .tn-actions button {
-          background: none;
+          background: var(--bg-elevated);
           border: none;
           cursor: pointer;
           color: var(--text-muted);
           padding: 5px;
-          border-radius: 6px;
+          border-radius: 9999px;
           display: inline-flex;
           align-items: center;
           line-height: 1;
-          transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+          transition: all 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+          box-shadow: var(--neu-shadow);
         }
 
         .sb-actions button:hover, .tn-actions button:hover {
-          background: var(--bg-hover);
           color: var(--text-primary);
-          transform: scale(1.05);
+          transform: translateY(1px);
+          box-shadow: var(--neu-shadow-hover);
         }
 
         .sb-actions button:active, .tn-actions button:active {
-          transform: scale(0.95);
+          transform: translateY(3px);
+          box-shadow: var(--neu-shadow-active);
         }
 
         .tn-actions button.hover-danger:hover {
@@ -390,17 +392,17 @@ export default function Sidebar({
           height: 36px;
           align-items: center;
           gap: 10px;
-          border-radius: 10px;
-          background: var(--bg-elevated);
+          border-radius: 9999px;
+          background: var(--bg-surface);
           padding: 0 14px;
-          border: 1px solid transparent;
+          border: 1px solid var(--border-subtle);
           transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-          box-shadow: inset 0 1px 2px color-mix(in srgb, var(--bg-deep) 40%, transparent);
+          box-shadow: var(--neu-shadow-inset);
         }
 
         .sb-search:focus-within {
           border-color: var(--accent);
-          box-shadow: inset 0 1px 2px color-mix(in srgb, var(--bg-deep) 40%, transparent), 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+          box-shadow: var(--neu-shadow-inset), 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
         }
 
         .sb-search input {
@@ -610,7 +612,7 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={onToggleCollapse}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] transition-all hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:scale-105 active:scale-95"
+                className="neu-icon-btn flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
                 title="Toggle sidebar (Cmd+B)"
               >
                 <IconLayoutSidebarFilled size={18} stroke={1.5} />
