@@ -383,7 +383,7 @@ function Block({
           resizeTextarea(element)
         }}
         value={raw}
-        placeholder={placeholder}
+        placeholder={blocks.length === 1 && index === 0 ? placeholder : ''}
         onChange={(event) => onUpdate(index, event.target.value)}
         onKeyDown={(event) => onKeyDown(event, index)}
         onPaste={(event) => onPaste(event, index)}
