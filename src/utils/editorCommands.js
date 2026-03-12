@@ -87,7 +87,7 @@ export const EDITOR_COMMANDS = [
     title: 'Table',
     trigger: 'table',
     keywords: ['columns', 'grid'],
-    template: '| Column | Value |\n| --- | --- |\n| __SELECTION____CURSOR__ |  |',
+    template: '| Column 1 | Column 2 | Column 3 |\n| --- | --- | --- |\n| __SELECTION____CURSOR__ |  |  |',
   },
   {
     id: 'divider',

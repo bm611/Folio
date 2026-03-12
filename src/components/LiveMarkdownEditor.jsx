@@ -24,7 +24,7 @@ import {
   IconPencil, IconFlame, IconInfoCircle, IconAlertTriangle, IconAlertOctagon,
   IconBug, IconList, IconMessageCircle, IconCircleCheck, IconHelpCircle,
   IconCircleX, IconFileText, IconAlertCircle, IconClipboardList,
-  IconChevronDown, IconSquare, IconSquareCheck,
+  IconChevronDown, IconSquare, IconSquareCheck, IconX,
 } from '@tabler/icons-react'
 
 hljs.registerLanguage('javascript', javascript)
@@ -115,6 +115,19 @@ function contentToBlocks(content = '') {
       continue
     }
 
+    // Group Markdown tables: consecutive lines that start with |
+    if (/^\|/.test(line)) {
+      const tableLines = [line]
+
+      while (index + 1 < lines.length && /^\|/.test(lines[index + 1])) {
+        index += 1
+        tableLines.push(lines[index])
+      }
+
+      blocks.push(makeBlock(tableLines.join('\n')))
+      continue
+    }
+
     blocks.push(makeBlock(line))
   }
 
@@ -173,6 +186,12 @@ function getBlockType(line) {
   if (/^[-*] /.test(line)) return { type: 'li', content: line.slice(2) }
   if (/^\d+\. /.test(line)) return { type: 'oli', content: line.replace(/^\d+\. /, '') }
   if (/^---$/.test(line.trim())) return { type: 'hr', content: '' }
+  if (/^\|/.test(line)) {
+    const parsed = parseMarkdownTable(line)
+    if (parsed) {
+      return { type: 'table', headerRow: parsed.headerRow, dataRows: parsed.dataRows }
+    }
+  }
   if (/^```/.test(line)) {
     const lines = line.split('\n')
     const language = lines[0].slice(3).trim()
@@ -185,6 +204,54 @@ function getBlockType(line) {
 
 function isFencedCodeBlock(raw = '') {
   return /^```/.test(raw)
+}
+
+// ── Table helpers ──────────────────────────────────────────────────────────
+
+function isMarkdownTableRaw(raw = '') {
+  const lines = raw.trim().split('\n')
+  return lines.length >= 2 && lines.every((l) => /^\|/.test(l.trim()))
+}
+
+function parseTableRow(line) {
+  // Split on | but ignore leading/trailing pipes
+  return line
+    .replace(/^\||\|$/g, '')
+    .split('|')
+    .map((cell) => cell.trim())
+}
+
+function parseMarkdownTable(raw) {
+  const lines = raw.trim().split('\n').filter(Boolean)
+  if (lines.length < 2) return null
+
+  const headerRow = parseTableRow(lines[0])
+  // lines[1] is the separator row — skip it
+  const dataRows = lines.slice(2).map(parseTableRow)
+
+  // Normalise: all rows should have the same number of cols as header
+  const cols = headerRow.length
+  const normalize = (row) => {
+    const r = [...row]
+    while (r.length < cols) r.push('')
+    return r.slice(0, cols)
+  }
+
+  return { headerRow, dataRows: dataRows.map(normalize) }
+}
+
+function serializeTable(headerRow, dataRows) {
+  const colWidths = headerRow.map((h, ci) =>
+    Math.max(h.length, 3, ...dataRows.map((r) => (r[ci] ?? '').length))
+  )
+
+  const pad = (str, w) => ` ${str.padEnd(w)} `
+  const headerLine = `|${headerRow.map((h, i) => pad(h, colWidths[i])).join('|')}|`
+  const sepLine = `|${colWidths.map((w) => ` ${'-'.repeat(w)} `).join('|')}|`
+  const dataLines = dataRows.map(
+    (row) => `|${row.map((c, i) => pad(c ?? '', colWidths[i])).join('|')}|`
+  )
+  return [headerLine, sepLine, ...dataLines].join('\n')
 }
 
 function resizeTextarea(element) {
@@ -228,6 +295,234 @@ const calloutIcons = {
   caution: IconAlertTriangle,
 }
 
+// ── TableEditor ────────────────────────────────────────────────────────────
+
+function TableEditor({ initHeaders, initRows, onUpdate, onBlurBlock, onDelete }) {
+  const [headers, setHeaders] = useState(() => initHeaders)
+  const [rows, setRows] = useState(() => initRows)
+  const cellRefs = useRef({})
+  // When the component remounts (because raw changed after addCol/addRow),
+  // this ref tells the mount effect which cell to focus instead of defaulting to h-0.
+  const pendingFocusKey = useRef('h-0')
+
+  // Auto-focus the pending cell on mount
+  useEffect(() => {
+    const key = pendingFocusKey.current
+    window.requestAnimationFrame(() => {
+      cellRefs.current[key]?.focus()
+    })
+  }, [])
+
+  const focusCell = (key) => {
+    window.requestAnimationFrame(() => cellRefs.current[key]?.focus())
+  }
+
+  const commit = (nextHeaders, nextRows) => {
+    onUpdate(serializeTable(nextHeaders, nextRows))
+  }
+
+  const updateHeader = (ci, val) => {
+    const next = [...headers]
+    next[ci] = val
+    setHeaders(next)
+    commit(next, rows)
+  }
+
+  const updateCell = (ri, ci, val) => {
+    const next = rows.map((r, i) => (i === ri ? r.map((c, j) => (j === ci ? val : c)) : r))
+    setRows(next)
+    commit(headers, next)
+  }
+
+  const addRow = () => {
+    const newRow = headers.map(() => '')
+    const next = [...rows, newRow]
+    const newRi = next.length - 1
+    pendingFocusKey.current = `r-${newRi}-0`
+    setRows(next)
+    commit(headers, next)
+    focusCell(`r-${newRi}-0`)
+  }
+
+  const deleteRow = (ri) => {
+    if (rows.length <= 1) return
+    const next = rows.filter((_, i) => i !== ri)
+    const focusRi = Math.min(ri, next.length - 1)
+    pendingFocusKey.current = `r-${focusRi}-0`
+    setRows(next)
+    commit(headers, next)
+    focusCell(`r-${focusRi}-0`)
+  }
+
+  const addCol = () => {
+    const nextHeaders = [...headers, '']
+    const nextRows = rows.map((r) => [...r, ''])
+    const newCi = nextHeaders.length - 1
+    pendingFocusKey.current = `h-${newCi}`
+    setHeaders(nextHeaders)
+    setRows(nextRows)
+    commit(nextHeaders, nextRows)
+    focusCell(`h-${newCi}`)
+  }
+
+  const deleteCol = (ci) => {
+    if (headers.length <= 1) return
+    const nextHeaders = headers.filter((_, i) => i !== ci)
+    const nextRows = rows.map((r) => r.filter((_, i) => i !== ci))
+    const focusCi = Math.min(ci, nextHeaders.length - 1)
+    pendingFocusKey.current = `h-${focusCi}`
+    setHeaders(nextHeaders)
+    setRows(nextRows)
+    commit(nextHeaders, nextRows)
+    focusCell(`h-${focusCi}`)
+  }
+
+  const handleKeyDown = (e, currentKey, ri, ci, isHeader) => {
+    const colCount = headers.length
+
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      onBlurBlock()
+      return
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const rowCount = rows.length
+
+      if (e.shiftKey) {
+        // Move to previous cell
+        if (isHeader && ci === 0) return
+        if (isHeader) {
+          focusCell(`h-${ci - 1}`)
+        } else if (ci === 0 && ri === 0) {
+          focusCell(`h-${colCount - 1}`)
+        } else if (ci === 0) {
+          focusCell(`r-${ri - 1}-${colCount - 1}`)
+        } else {
+          focusCell(`r-${ri}-${ci - 1}`)
+        }
+      } else {
+        // Move to next cell, or add row if at the very end
+        if (isHeader && ci < colCount - 1) {
+          focusCell(`h-${ci + 1}`)
+        } else if (isHeader && ci === colCount - 1 && rowCount > 0) {
+          focusCell(`r-0-0`)
+        } else if (!isHeader && ci < colCount - 1) {
+          focusCell(`r-${ri}-${ci + 1}`)
+        } else if (!isHeader && ri < rowCount - 1) {
+          focusCell(`r-${ri + 1}-0`)
+        } else if (!isHeader) {
+          // Last cell of last row → add a new row
+          addRow()
+        }
+      }
+    }
+  }
+
+  return (
+    <div className="md-table-editor">
+      <div className="md-table-scroll">
+        <table className="md-table">
+          <thead>
+            <tr>
+              {headers.map((h, ci) => (
+                <th key={ci} className="md-table-th">
+                  <div className="md-table-cell-wrap">
+                    <input
+                      ref={(el) => { cellRefs.current[`h-${ci}`] = el }}
+                      className="md-table-input md-table-input--header"
+                      value={h}
+                      placeholder="Header"
+                      onChange={(e) => updateHeader(ci, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, `h-${ci}`, -1, ci, true)}
+                    />
+                    {headers.length > 1 ? (
+                      <button
+                        type="button"
+                        className="md-table-del-col"
+                        title="Delete column"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => deleteCol(ci)}
+                        aria-label="Delete column"
+                      >
+                        <IconX size={10} stroke={2} />
+                      </button>
+                    ) : null}
+                  </div>
+                </th>
+              ))}
+              {/* Add column button */}
+              <th className="md-table-th md-table-th--add">
+                <button
+                  type="button"
+                  className="md-table-add-col"
+                  title="Add column"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={addCol}
+                  aria-label="Add column"
+                >
+                  +
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, ri) => (
+              <tr key={ri} className="md-table-row">
+                {row.map((cell, ci) => (
+                  <td key={ci} className="md-table-td">
+                    <input
+                      ref={(el) => { cellRefs.current[`r-${ri}-${ci}`] = el }}
+                      className="md-table-input"
+                      value={cell}
+                      placeholder=""
+                      onChange={(e) => updateCell(ri, ci, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(e, `r-${ri}-${ci}`, ri, ci, false)}
+                    />
+                  </td>
+                ))}
+                {/* Delete row button — extra cell aligned to add-col column */}
+                <td className="md-table-td md-table-td--ctrl">
+                  {rows.length > 1 ? (
+                    <button
+                      type="button"
+                      className="md-table-del-row"
+                      title="Delete row"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => deleteRow(ri)}
+                      aria-label="Delete row"
+                    >
+                      <IconX size={10} stroke={2} />
+                    </button>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <button
+        type="button"
+        className="md-table-add-row"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={addRow}
+      >
+        + Add row
+      </button>
+      <button
+        type="button"
+        className="md-table-delete-table"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={onDelete}
+        title="Delete table"
+      >
+        Delete table
+      </button>
+    </div>
+  )
+}
+
 function Block({
   block,
   index,
@@ -239,10 +534,12 @@ function Block({
   onPaste,
   onSelectionChange,
   registerInput,
+  onBlurBlock,
+  onDeleteBlock,
 }) {
   const { raw } = block
-  const { type, content, label, language, calloutTitle, foldable, defaultCollapsed } = getBlockType(raw)
-  const html = parseInline(content)
+  const { type, content, label, language, calloutTitle, foldable, defaultCollapsed, headerRow, dataRows } = getBlockType(raw)
+  const html = parseInline(content ?? '')
   const textareaRef = useRef(null)
   const [collapsed, setCollapsed] = useState(defaultCollapsed ?? false)
 
@@ -361,6 +658,28 @@ function Block({
           </div>
         ) : null}
         {type === 'hr' ? <hr /> : null}
+        {type === 'table' ? (
+          <div className="md-table-readonly-wrap">
+            <table className="md-table md-table--readonly">
+              <thead>
+                <tr>
+                  {(headerRow || []).map((h, i) => (
+                    <th key={i}><span dangerouslySetInnerHTML={{ __html: parseInline(h) }} /></th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(dataRows || []).map((row, ri) => (
+                  <tr key={ri}>
+                    {row.map((cell, ci) => (
+                      <td key={ci}><span dangerouslySetInnerHTML={{ __html: parseInline(cell) }} /></td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
         {type === 'codeblock' ? (
           <pre data-language={language || undefined}>
             <code
@@ -376,24 +695,34 @@ function Block({
 
   return (
     <div className="notion-block-edit" data-index={index} data-block-type={type}>
-      <textarea
-        ref={(element) => {
-          textareaRef.current = element
-          registerInput(index, element)
-          resizeTextarea(element)
-        }}
-        value={raw}
-        placeholder={blocks.length === 1 && index === 0 ? placeholder : ''}
-        onChange={(event) => onUpdate(index, event.target.value)}
-        onKeyDown={(event) => onKeyDown(event, index)}
-        onPaste={(event) => onPaste(event, index)}
-        onFocus={() => onFocus(index)}
-        onSelect={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
-        onClick={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
-        onKeyUp={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
-        rows={1}
-        onInput={(event) => resizeTextarea(event.currentTarget)}
-      />
+      {type === 'table' && headerRow ? (
+        <TableEditor
+          initHeaders={headerRow}
+          initRows={dataRows || []}
+          onUpdate={(nextRaw) => onUpdate(index, nextRaw)}
+          onBlurBlock={onBlurBlock}
+          onDelete={onDeleteBlock}
+        />
+      ) : (
+        <textarea
+          ref={(element) => {
+            textareaRef.current = element
+            registerInput(index, element)
+            resizeTextarea(element)
+          }}
+          value={raw}
+          placeholder={blocks.length === 1 && index === 0 ? placeholder : ''}
+          onChange={(event) => onUpdate(index, event.target.value)}
+          onKeyDown={(event) => onKeyDown(event, index)}
+          onPaste={(event) => onPaste(event, index)}
+          onFocus={() => onFocus(index)}
+          onSelect={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
+          onClick={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
+          onKeyUp={(event) => onSelectionChange(index, event.currentTarget.selectionStart, event.currentTarget.selectionEnd)}
+          rows={1}
+          onInput={(event) => resizeTextarea(event.currentTarget)}
+        />
+      )}
     </div>
   )
 }
@@ -413,7 +742,7 @@ function applyInsertion(blocks, index, selection, insertion) {
   const start = selection?.start ?? currentBlock.raw.length
   const end = selection?.end ?? start
   const nextRaw = `${currentBlock.raw.slice(0, start)}${insertion.text}${currentBlock.raw.slice(end)}`
-  const replacementBlocks = /^```[\s\S]*\n```$/.test(nextRaw)
+  const replacementBlocks = /^```[\s\S]*\n```$/.test(nextRaw) || isMarkdownTableRaw(nextRaw)
     ? [makeBlock(nextRaw)]
     : nextRaw.split('\n').map((line) => makeBlock(line))
   const nextBlocks = [...blocks]
@@ -600,6 +929,16 @@ export default function LiveMarkdownEditor({
       start: nextRaw.length,
       end: nextRaw.length,
     }
+  }, [commitBlocks])
+
+  const handleDeleteBlock = useCallback((index) => {
+    const nextBlocks = [...blocksRef.current]
+    nextBlocks.splice(index, 1)
+    // Always leave at least one empty block
+    if (nextBlocks.length === 0) nextBlocks.push(makeBlock(''))
+    const focusIdx = Math.max(0, index - 1)
+    setFocusedIndex(null)
+    commitBlocks(nextBlocks, { index: focusIdx, caret: nextBlocks[focusIdx]?.raw.length ?? 0 })
   }, [commitBlocks])
 
   const handleSelectionChange = useCallback((index, start, end) => {
@@ -885,6 +1224,8 @@ export default function LiveMarkdownEditor({
                   delete inputRefs.current[nextIndex]
                 }
               }}
+              onBlurBlock={() => setFocusedIndex(null)}
+              onDeleteBlock={() => handleDeleteBlock(index)}
             />
 
             {focusedIndex === index && slashCommands.length > 0 ? (

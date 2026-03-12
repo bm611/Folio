@@ -1308,3 +1308,260 @@ input[type='number'] {
   color: var(--tag-peach-x-hover);
   background: rgba(232, 149, 162, 0.15);
 }
+
+/* ──────────────────────────────────────────────
+   Markdown Table — Read-only + Editor
+   ────────────────────────────────────────────── */
+
+/* Shared table base */
+.md-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ── Read-only rendered table ── */
+
+.md-table-readonly-wrap {
+  overflow-x: auto;
+  margin: 0.15rem 0;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.md-table--readonly th,
+.md-table--readonly td {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  text-align: left;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.md-table--readonly th {
+  background: color-mix(in srgb, var(--bg-surface) 70%, transparent);
+  font-weight: 600;
+  font-size: 0.84rem;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+}
+
+.md-table--readonly tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--bg-surface) 30%, transparent);
+}
+
+/* ── Interactive TableEditor ── */
+
+.md-table-editor {
+  padding: 0.15rem 0;
+  width: 100%;
+}
+
+.md-table-scroll {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-default);
+  background: color-mix(in srgb, var(--bg-surface) 50%, transparent);
+}
+
+.md-table .md-table-th,
+.md-table .md-table-td {
+  border: 1px solid var(--border-subtle);
+  padding: 0;
+  min-width: 80px;
+  position: relative;
+}
+
+.md-table .md-table-th {
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+}
+
+/* The inner wrapper in <th> holds the input + delete button */
+.md-table-cell-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.md-table-input {
+  width: 100%;
+  min-width: 60px;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.4rem 0.6rem;
+  font-family: var(--body-font);
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  line-height: 1.45;
+}
+
+.md-table-input--header {
+  font-weight: 600;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.md-table-input:focus {
+  background: color-mix(in srgb, var(--accent-muted) 60%, transparent);
+}
+
+/* Delete column button — hidden by default, shown on th:hover */
+.md-table-del-col {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.md-table-th:hover .md-table-del-col {
+  opacity: 1;
+}
+
+.md-table-del-col:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+/* Add column — extra <th> */
+.md-table-th--add {
+  width: 2rem;
+  min-width: 2rem;
+  border: 1px dashed var(--border-subtle) !important;
+  background: transparent !important;
+}
+
+.md-table-add-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.md-table-add-col:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
+}
+
+/* Delete row button — in extra <td>, hidden by default, shown on tr:hover */
+.md-table-td--ctrl {
+  width: 1.5rem;
+  min-width: 1.5rem;
+  border: 1px dashed var(--border-subtle) !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.md-table-del-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+}
+
+.md-table-row:hover .md-table-del-row {
+  opacity: 1;
+}
+
+.md-table-del-row:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+/* Add row + delete table buttons row */
+.md-table-add-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--body-font);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  min-height: unset;
+}
+
+.md-table-add-row:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.md-table-delete-table {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.35rem;
+  margin-left: 0.4rem;
+  padding: 0.2rem 0.6rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--body-font);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  min-height: unset;
+}
+
+.md-table-delete-table:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+/* Mobile tweaks */
+@media (max-width: 640px) {
+  .md-table-input {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.45rem;
+  }
+
+  .md-table-input--header {
+    font-size: 0.78rem;
+  }
+
+  .md-table--readonly th,
+  .md-table--readonly td {
+    padding: 0.35rem 0.55rem;
+    font-size: 0.82rem;
+  }
+}
