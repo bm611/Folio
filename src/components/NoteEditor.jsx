@@ -10,6 +10,7 @@ import {
   IconPlus,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
+import TagInput from './TagInput'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
 
@@ -385,6 +386,16 @@ export default function NoteEditor({
                 {createdAtLabel}
               </span>
 
+            </div>
+          )}
+
+          {/* Tags — hidden in focus mode */}
+          {!focusMode && (
+            <div className="mt-3">
+              <TagInput
+                tags={note.tags || []}
+                onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+              />
             </div>
           )}
 

@@ -1066,3 +1066,245 @@ input[type='number'] {
     transform: translateX(-50%) translateY(0) scale(1);
   }
 }
+
+/* ──────────────────────────────────────────────
+   Tag Input + Tag Chips
+   ────────────────────────────────────────────── */
+
+/* Tag color palette — dark mode (default) */
+:root {
+  --tag-rose-bg:       rgba(209, 123, 136, 0.14);
+  --tag-rose-border:   rgba(209, 123, 136, 0.35);
+  --tag-rose-text:     #e895a2;
+  --tag-rose-x:        rgba(209, 123, 136, 0.55);
+  --tag-rose-x-hover:  #e895a2;
+
+  --tag-lavender-bg:       rgba(171, 161, 196, 0.14);
+  --tag-lavender-border:   rgba(171, 161, 196, 0.35);
+  --tag-lavender-text:     #c5bce0;
+  --tag-lavender-x:        rgba(171, 161, 196, 0.55);
+  --tag-lavender-x-hover:  #c5bce0;
+
+  --tag-teal-bg:       rgba(94, 159, 184, 0.14);
+  --tag-teal-border:   rgba(94, 159, 184, 0.35);
+  --tag-teal-text:     #7eb5cc;
+  --tag-teal-x:        rgba(94, 159, 184, 0.55);
+  --tag-teal-x-hover:  #7eb5cc;
+
+  --tag-mauve-bg:       rgba(197, 188, 224, 0.12);
+  --tag-mauve-border:   rgba(197, 188, 224, 0.32);
+  --tag-mauve-text:     #b8b0d4;
+  --tag-mauve-x:        rgba(197, 188, 224, 0.5);
+  --tag-mauve-x-hover:  #b8b0d4;
+
+  --tag-sky-bg:       rgba(126, 181, 204, 0.13);
+  --tag-sky-border:   rgba(126, 181, 204, 0.33);
+  --tag-sky-text:     #93c4d8;
+  --tag-sky-x:        rgba(126, 181, 204, 0.5);
+  --tag-sky-x-hover:  #93c4d8;
+
+  --tag-peach-bg:       rgba(232, 149, 162, 0.13);
+  --tag-peach-border:   rgba(232, 149, 162, 0.33);
+  --tag-peach-text:     #f0a8b4;
+  --tag-peach-x:        rgba(232, 149, 162, 0.5);
+  --tag-peach-x-hover:  #f0a8b4;
+}
+
+/* Light mode overrides — deeper, more saturated for legibility */
+:root[data-theme="light"] {
+  --tag-rose-bg:       rgba(184, 96, 112, 0.1);
+  --tag-rose-border:   rgba(184, 96, 112, 0.3);
+  --tag-rose-text:     #9e4555;
+  --tag-rose-x:        rgba(184, 96, 112, 0.45);
+  --tag-rose-x-hover:  #9e4555;
+
+  --tag-lavender-bg:       rgba(140, 123, 163, 0.1);
+  --tag-lavender-border:   rgba(140, 123, 163, 0.3);
+  --tag-lavender-text:     #6b5a8a;
+  --tag-lavender-x:        rgba(140, 123, 163, 0.45);
+  --tag-lavender-x-hover:  #6b5a8a;
+
+  --tag-teal-bg:       rgba(75, 130, 156, 0.1);
+  --tag-teal-border:   rgba(75, 130, 156, 0.3);
+  --tag-teal-text:     #2f6e8c;
+  --tag-teal-x:        rgba(75, 130, 156, 0.45);
+  --tag-teal-x-hover:  #2f6e8c;
+
+  --tag-mauve-bg:       rgba(160, 150, 190, 0.1);
+  --tag-mauve-border:   rgba(160, 150, 190, 0.3);
+  --tag-mauve-text:     #6e6090;
+  --tag-mauve-x:        rgba(160, 150, 190, 0.45);
+  --tag-mauve-x-hover:  #6e6090;
+
+  --tag-sky-bg:       rgba(100, 158, 180, 0.1);
+  --tag-sky-border:   rgba(100, 158, 180, 0.3);
+  --tag-sky-text:     #336e8a;
+  --tag-sky-x:        rgba(100, 158, 180, 0.45);
+  --tag-sky-x-hover:  #336e8a;
+
+  --tag-peach-bg:       rgba(209, 123, 136, 0.1);
+  --tag-peach-border:   rgba(209, 123, 136, 0.3);
+  --tag-peach-text:     #a04458;
+  --tag-peach-x:        rgba(209, 123, 136, 0.45);
+  --tag-peach-x-hover:  #a04458;
+}
+
+/* Tag input row — wrapping flex container */
+.tag-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+}
+
+/* The text input that lives at the end of the chip row */
+.tag-input-field {
+  flex: 1 1 80px;
+  min-width: 64px;
+  max-width: 200px;
+  height: 24px;
+  padding: 0 4px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.tag-input-field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* Base chip */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 8px;
+  border-radius: 999px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid;
+  cursor: default;
+  user-select: none;
+  transition: opacity 150ms ease;
+  animation: tagPopIn 0.18s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes tagPopIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Remove button inside chip */
+.tag-chip__label {
+  line-height: 1;
+}
+
+.tag-chip__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease, transform 120ms ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tag-chip__remove:hover {
+  transform: scale(1.15);
+}
+
+.tag-chip__remove:active {
+  transform: scale(0.9);
+}
+
+/* ── Color Variants ─── */
+.tag-chip.tag--rose {
+  background: var(--tag-rose-bg);
+  border-color: var(--tag-rose-border);
+  color: var(--tag-rose-text);
+}
+.tag-chip.tag--rose .tag-chip__remove {
+  color: var(--tag-rose-x);
+}
+.tag-chip.tag--rose .tag-chip__remove:hover {
+  color: var(--tag-rose-x-hover);
+  background: rgba(209, 123, 136, 0.15);
+}
+
+.tag-chip.tag--lavender {
+  background: var(--tag-lavender-bg);
+  border-color: var(--tag-lavender-border);
+  color: var(--tag-lavender-text);
+}
+.tag-chip.tag--lavender .tag-chip__remove {
+  color: var(--tag-lavender-x);
+}
+.tag-chip.tag--lavender .tag-chip__remove:hover {
+  color: var(--tag-lavender-x-hover);
+  background: rgba(171, 161, 196, 0.15);
+}
+
+.tag-chip.tag--teal {
+  background: var(--tag-teal-bg);
+  border-color: var(--tag-teal-border);
+  color: var(--tag-teal-text);
+}
+.tag-chip.tag--teal .tag-chip__remove {
+  color: var(--tag-teal-x);
+}
+.tag-chip.tag--teal .tag-chip__remove:hover {
+  color: var(--tag-teal-x-hover);
+  background: rgba(94, 159, 184, 0.15);
+}
+
+.tag-chip.tag--mauve {
+  background: var(--tag-mauve-bg);
+  border-color: var(--tag-mauve-border);
+  color: var(--tag-mauve-text);
+}
+.tag-chip.tag--mauve .tag-chip__remove {
+  color: var(--tag-mauve-x);
+}
+.tag-chip.tag--mauve .tag-chip__remove:hover {
+  color: var(--tag-mauve-x-hover);
+  background: rgba(197, 188, 224, 0.15);
+}
+
+.tag-chip.tag--sky {
+  background: var(--tag-sky-bg);
+  border-color: var(--tag-sky-border);
+  color: var(--tag-sky-text);
+}
+.tag-chip.tag--sky .tag-chip__remove {
+  color: var(--tag-sky-x);
+}
+.tag-chip.tag--sky .tag-chip__remove:hover {
+  color: var(--tag-sky-x-hover);
+  background: rgba(126, 181, 204, 0.15);
+}
+
+.tag-chip.tag--peach {
+  background: var(--tag-peach-bg);
+  border-color: var(--tag-peach-border);
+  color: var(--tag-peach-text);
+}
+.tag-chip.tag--peach .tag-chip__remove {
+  color: var(--tag-peach-x);
+}
+.tag-chip.tag--peach .tag-chip__remove:hover {
+  color: var(--tag-peach-x-hover);
+  background: rgba(232, 149, 162, 0.15);
+}

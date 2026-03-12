@@ -13,6 +13,7 @@ export function normalizeNote(note) {
     createdAt: note.createdAt || fallbackTimestamp,
     updatedAt: note.updatedAt || note.createdAt || fallbackTimestamp,
     wordGoal: typeof note.wordGoal === 'number' && note.wordGoal > 0 ? note.wordGoal : null,
+    tags: Array.isArray(note.tags) ? note.tags.filter(t => typeof t === 'string' && t.trim()) : [],
   }
 }
 
