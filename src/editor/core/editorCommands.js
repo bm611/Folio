@@ -50,6 +50,20 @@ export function runAuraEditorCommand(editor, commandId, options = {}) {
             },
           ],
         })
+        .command(({ tr }) => {
+          const { doc } = tr
+          const resolvedPos = tr.selection.$from
+          // Walk backward from cursor to find the taskItem paragraph and place cursor there
+          for (let i = resolvedPos.pos - 1; i >= 0; i--) {
+            const node = doc.nodeAt(i)
+            if (node && node.type.name === 'taskItem') {
+              // Position cursor inside the taskItem's paragraph (i + 2: past taskItem open + paragraph open)
+              tr.setSelection(editor.state.selection.constructor.near(doc.resolve(i + 2)))
+              return true
+            }
+          }
+          return true
+        })
         .run()
     case 'bullets':
       return chain.toggleBulletList().run()

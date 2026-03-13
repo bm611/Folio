@@ -60,9 +60,10 @@ export function createAuraEditorExtensions() {
 
         if (node.type.name === 'paragraph') {
           const $pos = editor.state.doc.resolve(pos)
-          const inTaskItem = $pos.depth > 0 && $pos.node($pos.depth - 1)?.type?.name === 'taskItem'
-          if (inTaskItem) {
-            return 'To-do'
+          for (let d = $pos.depth; d > 0; d--) {
+            if ($pos.node(d).type.name === 'taskItem') {
+              return 'To-do'
+            }
           }
         }
 
