@@ -414,13 +414,12 @@ body {
 
 .aura-editor .ProseMirror li[data-type="taskItem"] {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   list-style: none;
 }
 
 .aura-editor .ProseMirror li[data-type="taskItem"] > label {
   margin-right: 8px;
-  margin-top: 0.18rem;
   flex-shrink: 0;
   user-select: none;
   cursor: pointer;
