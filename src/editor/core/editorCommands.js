@@ -39,7 +39,18 @@ export function runAuraEditorCommand(editor, commandId, options = {}) {
     case 'heading-3':
       return chain.toggleHeading({ level: 3 }).run()
     case 'todo':
-      return chain.toggleTaskList().run()
+      return chain
+        .insertContent({
+          type: 'taskList',
+          content: [
+            {
+              type: 'taskItem',
+              attrs: { checked: false },
+              content: [{ type: 'paragraph' }],
+            },
+          ],
+        })
+        .run()
     case 'bullets':
       return chain.toggleBulletList().run()
     case 'numbered':

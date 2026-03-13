@@ -397,9 +397,14 @@ body {
   font-style: italic;
 }
 
-.aura-editor .ProseMirror ul,
+.aura-editor .ProseMirror ul {
+  padding-left: 1.4rem;
+  list-style-type: disc;
+}
+
 .aura-editor .ProseMirror ol {
   padding-left: 1.4rem;
+  list-style-type: decimal;
 }
 
 .aura-editor .ProseMirror ul[data-type="taskList"] {
@@ -408,18 +413,55 @@ body {
 }
 
 .aura-editor .ProseMirror li[data-type="taskItem"] {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
+  position: relative;
+  list-style: none;
+  padding-left: 1.6rem;
 }
 
 .aura-editor .ProseMirror li[data-type="taskItem"] > label {
-  margin-top: 0.15rem;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  top: 0.18rem;
+  margin-top: 0;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
 .aura-editor .ProseMirror li[data-type="taskItem"] > div {
-  flex: 1;
+  display: block;
   min-width: 0;
+  position: relative;
+}
+
+.aura-editor .ProseMirror li[data-type="taskItem"] > label input[type="checkbox"] {
+  display: block;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.aura-editor .ProseMirror li[data-type="taskItem"] > div p.is-empty::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  inset: 0 auto auto 0;
+  color: var(--text-muted);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.aura-editor .ProseMirror li[data-type="taskItem"] > div.is-empty::before {
+  content: attr(data-placeholder);
+  position: absolute;
+  inset: 0 auto auto 0;
+  color: var(--text-muted);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.aura-editor .ProseMirror li[data-type="taskItem"] > div > p {
+  margin: 0;
+  position: relative;
 }
 
 .aura-editor .ProseMirror .tableWrapper {

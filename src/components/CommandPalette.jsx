@@ -21,7 +21,7 @@ export default function CommandPalette({
       inputRef.current?.focus()
       inputRef.current?.select()
     })
-  }, [open, query])
+  }, [open])
 
   useEffect(() => {
     if (!open) {
