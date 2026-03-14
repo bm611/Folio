@@ -5,25 +5,36 @@ import { IconPlus } from '@tabler/icons-react'
 function TableView({ editor, node, getPos }) {
   const gridRef = useRef(null)
 
-  const addRowAfter = useCallback(() => {
+  const focusLastCell = useCallback((row, col) => {
     const tablePos = getPos()
-    if (tablePos == null) return
-    let lastRowOffset = 0
-    node.forEach((child, offset) => {
-      if (child.type.name === 'tableRow') lastRowOffset = offset
-    })
-    editor.chain().setTextSelection(tablePos + 1 + lastRowOffset + 1 + 1).addRowAfter().run()
+    if (tablePos == null) return false
+    const resolved = editor.state.doc.resolve(tablePos + 1)
+    const tableNode = resolved.parent.type.name === 'table' ? resolved.parent : node
+    const targetRow = tableNode.child(row)
+    if (!targetRow) return false
+    let offset = tablePos + 1
+    for (let r = 0; r < row; r++) offset += tableNode.child(r).nodeSize
+    offset += 1
+    for (let c = 0; c < col; c++) offset += targetRow.child(c).nodeSize
+    offset += 1
+    editor.chain().setTextSelection(offset).run()
+    return true
   }, [editor, getPos, node])
 
+  const addRowAfter = useCallback(() => {
+    const rowCount = node.childCount
+    if (!rowCount) return
+    const lastRow = node.child(rowCount - 1)
+    focusLastCell(rowCount - 1, lastRow.childCount - 1)
+    editor.chain().addRowAfter().run()
+  }, [editor, node, focusLastCell])
+
   const addColumnAfter = useCallback(() => {
-    const tablePos = getPos()
-    if (tablePos == null) return
     const firstRow = node.firstChild
     if (!firstRow) return
-    let lastCellOffset = 0
-    firstRow.forEach((_, offset) => { lastCellOffset = offset })
-    editor.chain().setTextSelection(tablePos + 1 + 0 + 1 + lastCellOffset + 1).addColumnAfter().run()
-  }, [editor, getPos, node])
+    focusLastCell(0, firstRow.childCount - 1)
+    editor.chain().addColumnAfter().run()
+  }, [editor, node, focusLastCell])
 
   return (
     <NodeViewWrapper className="table-wrapper">

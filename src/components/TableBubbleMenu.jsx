@@ -1,4 +1,5 @@
 import { BubbleMenu } from '@tiptap/react/menus'
+import { useCallback, useEffect, useRef } from 'react'
 
 const TABLE_ACTIONS = [
   { id: 'delete-row', label: 'Delete Row', command: (editor) => editor.chain().focus(undefined, { scrollIntoView: false }).deleteRow().run() },
@@ -7,6 +8,37 @@ const TABLE_ACTIONS = [
 ]
 
 export default function TableBubbleMenu({ editor }) {
+  const menuRef = useRef(null)
+  const isVisible = useRef(false)
+
+  const shouldShow = useCallback(({ editor: e }) => {
+    if (!e.isActive('table')) {
+      isVisible.current = false
+      return false
+    }
+    const show = e.state.selection.empty !== true
+    isVisible.current = show
+    return show
+  }, [])
+
+  useEffect(() => {
+    if (!editor) return undefined
+
+    const editorEl = editor.view.dom
+
+    const suppressNativeMenu = (e) => {
+      if (isVisible.current) {
+        e.preventDefault()
+      }
+    }
+
+    editorEl.addEventListener('contextmenu', suppressNativeMenu)
+
+    return () => {
+      editorEl.removeEventListener('contextmenu', suppressNativeMenu)
+    }
+  }, [editor])
+
   if (!editor) {
     return null
   }
@@ -14,16 +46,14 @@ export default function TableBubbleMenu({ editor }) {
   return (
     <BubbleMenu
       editor={editor}
-      shouldShow={({ editor: e }) => {
-        if (!e.isActive('table')) return false
-        const { selection } = e.state
-        return selection.empty !== true
-      }}
+      shouldShow={shouldShow}
       options={{ placement: 'top', offset: 10 }}
     >
       <div
+        ref={menuRef}
         className="flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-1"
-        style={{ boxShadow: 'var(--neu-shadow)' }}
+        style={{ boxShadow: 'var(--neu-shadow)', WebkitUserSelect: 'none', userSelect: 'none' }}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {TABLE_ACTIONS.map((action) => (
           <button
