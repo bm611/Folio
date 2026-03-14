@@ -152,7 +152,14 @@ export default function App() {
 
 function AppInner() {
   const { user } = useAuth()
-  const [hasStarted, setHasStarted] = useState(false)
+  const [hasStarted, setHasStartedRaw] = useState(
+    () => localStorage.getItem('canvas-started') === 'true' || loadTree()?.length > 0
+  )
+
+  const setHasStarted = useCallback((val) => {
+    setHasStartedRaw(val)
+    if (val) localStorage.setItem('canvas-started', 'true')
+  }, [])
   const [tree, setTree] = useState(() => {
     const savedTree = loadTree()
     if (savedTree && savedTree.length > 0) return savedTree
@@ -213,7 +220,11 @@ function AppInner() {
       return
     }
 
-    // Signed in — load notes from Supabase
+    // Signed in — advance past landing page automatically
+    setHasStarted(true)
+    setAuthModalOpen(false)
+
+    // Load notes from Supabase
     fetchNotes(user.id)
       .then((cloudNotes) => {
         if (cloudNotes.length > 0) {

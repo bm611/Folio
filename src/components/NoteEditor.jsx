@@ -145,14 +145,35 @@ export default function NoteEditor({
           ) : (
             <div className="w-10" />
           )}
-          <button
-            type="button"
-            onClick={onToggleTheme}
-            className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
-            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          >
-            {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
+            </button>
+            {user ? (
+              <button
+                type="button"
+                onClick={signOut}
+                className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-red-400"
+                title={`Signed in as ${user.email} — click to sign out`}
+              >
+                <IconLogout size={18} stroke={1.5} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAuthModal}
+                className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--accent)]"
+                title="Sign in to sync"
+              >
+                <IconUser size={18} stroke={1.5} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Welcome content */}
@@ -238,7 +259,7 @@ export default function NoteEditor({
             </div>
           )}
         </div>
-        {/* Mobile action bar — floating liquid glass */}
+        {/* Mobile action bar */}
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="mobile-action-bar-inner">
             <button type="button" onClick={onToggleSidebar}>
@@ -255,6 +276,15 @@ export default function NoteEditor({
             <button type="button" onClick={onToggleTheme}>
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
+            {user ? (
+              <button type="button" onClick={signOut} title="Sign out">
+                <IconLogout size={18} stroke={1.5} />
+              </button>
+            ) : (
+              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync">
+                <IconUser size={18} stroke={1.5} />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -574,6 +604,15 @@ export default function NoteEditor({
             <button type="button" onClick={onToggleTheme}>
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
+            {user ? (
+              <button type="button" onClick={signOut} title="Sign out">
+                <IconLogout size={18} stroke={1.5} />
+              </button>
+            ) : (
+              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync">
+                <IconUser size={18} stroke={1.5} />
+              </button>
+            )}
           </div>
         </div>
       )}
