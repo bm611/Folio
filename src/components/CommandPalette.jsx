@@ -94,7 +94,7 @@ export default function CommandPalette({
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-t-2xl md:rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.25s_ease-out]" style={{ boxShadow: 'var(--neu-shadow), 0 24px 80px color-mix(in srgb, var(--bg-deep) 50%, transparent)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div className="w-full max-w-lg overflow-hidden rounded-t-2xl md:rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.25s_ease-out]" style={{ boxShadow: '0 8px 40px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {/* Search input */}
         <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
           <IconSearch size={15} stroke={1.5} className="shrink-0 text-[var(--text-muted)]" />
@@ -105,11 +105,9 @@ export default function CommandPalette({
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="Search..."
             className="w-full bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
           <kbd
             className="shrink-0 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]"
-            style={{ fontFamily: "'DM Sans', sans-serif", boxShadow: 'var(--neu-shadow)' }}
           >
             esc
           </kbd>
@@ -129,7 +127,6 @@ export default function CommandPalette({
                     <div
                       key={entry.id}
                       className="px-3 pt-3 pb-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]"
-                      style={{ fontFamily: "'DM Sans', sans-serif" }}
                     >
                       {entry.label}
                     </div>
@@ -155,7 +152,6 @@ export default function CommandPalette({
                       {item.icon ? <span className="shrink-0 text-[var(--text-muted)]">{item.icon}</span> : null}
                       <span
                         className="truncate text-[13px] font-medium"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {item.title}
                       </span>

@@ -70,7 +70,7 @@ export default function TableBubbleMenu({ editor }) {
                 ? 'text-[var(--danger)] hover:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]'
                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
             }`}
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
+
           >
             {action.label}
           </button>

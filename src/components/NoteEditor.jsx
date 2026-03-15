@@ -180,7 +180,7 @@ function FirstNotePrompt() {
               return (
                 <motion.circle
                   key={deg} cx={cx} cy={cy} r={i % 2 === 0 ? 2.5 : 1.5}
-                  fill={i % 2 === 0 ? 'var(--accent)' : '#aba1c4'}
+                  fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
                   animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
                   style={{ transformOrigin: `${cx}px ${cy}px` }}
@@ -192,8 +192,8 @@ function FirstNotePrompt() {
           {/* Floating ink drops */}
           {[
             { x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
-            { x: 158, y: 58, delay: 1.4, color: '#aba1c4' },
-            { x: 148, y: 128, delay: 2.1, color: '#5e9fb8' },
+            { x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
+            { x: 148, y: 128, delay: 2.1, color: 'var(--success)' },
           ].map(({ x, y, delay, color }, i) => (
             <motion.circle
               key={i} cx={x} cy={y} r="3.5" fill={color}
@@ -214,13 +214,12 @@ function FirstNotePrompt() {
       >
         <p
           className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight"
-          style={{ fontFamily: '"Fraunces", serif' }}
+          style={{ fontFamily: 'var(--font-display)' }}
         >
           Your canvas is empty.
         </p>
         <p
           className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed"
-          style={{ fontFamily: '"DM Sans", sans-serif' }}
         >
           Every great idea starts somewhere. Write your first note.
         </p>
@@ -239,12 +238,12 @@ function getGradientForNote(id) {
   // Color palette for gradients
   const colors = [
     'var(--accent)',
-    '#5e9fb8',
-    '#aba1c4',
-    '#d17b88',
-    '#7eb5cc',
-    '#c5bce0',
-    '#e895a2'
+    'var(--success)',
+    'var(--color-h2)',
+    'var(--accent)',
+    'var(--success)',
+    'var(--color-h2)',
+    'var(--accent-hover)'
   ];
 
   const color1 = colors[Math.abs(hash) % colors.length];
@@ -324,7 +323,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -336,7 +335,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -345,7 +344,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={signOut}
-                className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-red-400"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
                 title={`Signed in as ${user.email} — click to sign out`}
               >
                 <IconLogout size={18} stroke={1.5} />
@@ -354,7 +353,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="neu-icon-btn flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--accent)]"
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
                 title="Sign in to sync"
               >
                 <IconUser size={18} stroke={1.5} />
@@ -368,13 +367,12 @@ export default function NoteEditor({
           <div className="animate-fade-in-up flex flex-col items-center">
             <h1
               className="text-6xl tracking-tight text-[var(--h1-color)] sm:text-7xl"
-              style={{ fontFamily: '"Italiana", serif', textShadow: '0 4px 24px var(--accent-muted)' }}
+              style={{ fontFamily: 'var(--font-logo)', textShadow: '0 4px 24px var(--accent-muted)' }}
             >
               Aura.
             </h1>
             <p
               className="mt-4 text-[16px] text-[var(--text-muted)] tracking-wide"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               {greeting}. It's {dateStr}.
             </p>
@@ -383,8 +381,7 @@ export default function NoteEditor({
           <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex flex-col items-center gap-3">
             <button
               onClick={() => onNewNote?.()}
-              className="neu-btn-primary group relative inline-flex items-center gap-2.5 rounded-full bg-[var(--accent)] px-8 py-4 text-[15px] font-semibold text-white transition-all duration-300 hover:translate-y-[2px] hover:shadow-[0_0_20px_rgba(209,123,136,0.3)] active:translate-y-[6px]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
+              className="neu-btn-primary group relative inline-flex items-center gap-2.5 rounded-full bg-[var(--accent)] px-8 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
             >
               <IconPlus size={18} stroke={2} className="transition-transform duration-300 group-hover:rotate-90" />
               <span>Create New Note</span>
@@ -398,7 +395,7 @@ export default function NoteEditor({
             <div className="animate-fade-in-up-delay-2 mt-12 w-full max-w-3xl">
               <div className="mb-6 flex items-center justify-center gap-4">
                  <div className="h-px w-12 bg-[var(--border-subtle)]" />
-                 <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-muted)]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+                 <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-muted)]">
                    Recent Notes
                  </p>
                  <div className="h-px w-12 bg-[var(--border-subtle)]" />
@@ -417,25 +414,22 @@ export default function NoteEditor({
                       key={n.id}
                       type="button"
                       onClick={() => onSelectNote(n.id)}
-                      className={`neu-card group flex flex-col gap-2 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all duration-300 hover:border-[var(--accent)] hover:shadow-lg hover:shadow-[var(--accent-muted)] hover:-translate-y-1 active:translate-y-1 ${index >= 2 ? 'hidden sm:flex' : ''}`}
+                      className={`group flex flex-col gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all duration-200 hover:border-[var(--accent)] hover:bg-[var(--bg-hover)] active:scale-[0.98] ${index >= 2 ? 'hidden sm:flex' : ''}`}
                     >
                       <span
                         className="truncate text-[14px] font-semibold text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)]"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {title}
                       </span>
                       {preview && (
                         <span
                           className="line-clamp-2 text-[13px] leading-relaxed text-[var(--text-muted)]"
-                          style={{ fontFamily: "'DM Sans', sans-serif" }}
                         >
                           {preview}
                         </span>
                       )}
                       <span
                         className="mt-auto text-[11px] font-medium text-[var(--text-muted)] opacity-80"
-                        style={{ fontFamily: "'DM Sans', sans-serif" }}
                       >
                         {time}
                       </span>
@@ -556,7 +550,7 @@ export default function NoteEditor({
           type="button"
           onClick={onToggleFocusMode}
           className="absolute top-3 right-3 z-50 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-all hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
-          style={{ fontFamily: "'DM Sans', sans-serif", color: 'var(--text-muted)', fontSize: '11px' }}
+          style={{ color: 'var(--text-muted)', fontSize: '11px' }}
           title="Exit focus mode (⌘⇧F)"
         >
           <IconArrowsMaximize size={12} stroke={1.5} />
@@ -571,7 +565,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
@@ -584,7 +578,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={() => exportNoteAsMarkdown(note)}
-                className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
                 title="Export as Markdown"
               >
                 <IconDownload size={18} stroke={1.5} />
@@ -593,7 +587,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleFocusMode}
-              className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
               title="Focus mode (⌘⇧F)"
             >
               <IconArrowsMinimize size={18} stroke={1.5} />
@@ -601,7 +595,7 @@ export default function NoteEditor({
             <button
               type="button"
               onClick={onToggleTheme}
-              className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--text-primary)]"
+              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -611,7 +605,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={signOut}
-                className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-red-400"
+                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-red-400 hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
                 title={`Signed in as ${user.email} — click to sign out`}
               >
                 <IconLogout size={18} stroke={1.5} />
@@ -620,7 +614,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="neu-icon-btn hidden md:flex h-10 w-10 items-center justify-center rounded-full text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--accent)]"
+                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--accent)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
                 title="Sign in to sync"
               >
                 <IconUser size={18} stroke={1.5} />
@@ -644,8 +638,8 @@ export default function NoteEditor({
               value={note.title}
               onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
               onKeyDown={handleTitleKeyDown}
-              className="note-title-input w-full bg-transparent text-3xl font-black tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-5xl"
-              style={{ fontFamily: "'Fraunces', serif" }}
+              className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-4xl"
+              style={{ fontFamily: 'var(--font-display)' }}
               placeholder="Untitled"
             />
           )}
@@ -654,7 +648,6 @@ export default function NoteEditor({
           {!focusMode && (
             <div
               className="mt-3 text-[12px] text-[var(--text-muted)]"
-              style={{ fontFamily: "'DM Sans', sans-serif" }}
             >
               <span className="inline-flex items-center gap-1.5">
                 <IconCalendar size={14} stroke={1.5} className="opacity-70" />
@@ -691,8 +684,7 @@ export default function NoteEditor({
 
       {/* Stats bar — bottom right */}
       <div
-        className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-3 md:px-5 md:bottom-5 md:right-5 bg-gradient-to-t from-[var(--bg-primary)] to-transparent md:bg-none md:bg-[var(--bg-elevated)]/60 md:backdrop-blur-md md:rounded-2xl md:border border-[var(--border-subtle)] md:shadow-lg transition-all duration-500 z-20"
-        style={{ fontFamily: "'DM Sans', sans-serif" }}
+        className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-2.5 md:px-4 md:bottom-4 md:right-4 bg-gradient-to-t from-[var(--bg-primary)] to-transparent md:bg-none md:bg-[var(--bg-surface)]/80 md:backdrop-blur-lg md:rounded-xl md:border border-[var(--border-subtle)] transition-all duration-300 z-20"
       >
         {/* Word goal progress bar */}
         {wordGoal !== null && !showGoalInput && (

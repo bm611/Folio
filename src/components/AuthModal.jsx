@@ -70,18 +70,18 @@ export default function AuthModal({ open, onClose }) {
           <div>
             <h2
               className="text-2xl font-bold text-[var(--text-primary)]"
-              style={{ fontFamily: '"Fraunces", serif' }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               {tab === 'signin' ? 'Welcome back.' : 'Create account.'}
             </h2>
-            <p className="mt-1 text-[13px] text-[var(--text-muted)]" style={{ fontFamily: '"DM Sans", sans-serif' }}>
+            <p className="mt-1 text-[13px] text-[var(--text-muted)]">
               {tab === 'signin' ? 'Sign in to sync your notes.' : 'Sync your notes across devices.'}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="neu-icon-btn flex h-8 w-8 items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
             aria-label="Close"
           >
             <IconX size={16} stroke={1.5} />
@@ -108,7 +108,6 @@ export default function AuthModal({ open, onClose }) {
                   ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-sm'
                   : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
               }`}
-              style={{ fontFamily: '"DM Sans", sans-serif' }}
             >
               {t.label}
             </button>
@@ -134,7 +133,6 @@ export default function AuthModal({ open, onClose }) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
               className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-deep)] py-2.5 pl-9 pr-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] transition-colors"
-              style={{ fontFamily: '"DM Sans", sans-serif' }}
             />
           </div>
 
@@ -155,18 +153,17 @@ export default function AuthModal({ open, onClose }) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-deep)] py-2.5 pl-9 pr-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] transition-colors"
-              style={{ fontFamily: '"DM Sans", sans-serif' }}
             />
           </div>
 
           {/* Error / success */}
           {error && (
-            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-[13px] text-red-400" style={{ fontFamily: '"DM Sans", sans-serif' }}>
+            <p className="rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-[13px] text-[var(--danger)]">
               {error}
             </p>
           )}
           {success && (
-            <p className="rounded-xl border border-[var(--success)]/20 bg-[var(--success)]/10 px-3 py-2 text-[13px] text-[var(--success)]" style={{ fontFamily: '"DM Sans", sans-serif' }}>
+            <p className="rounded-xl border border-[var(--success)]/20 bg-[var(--success)]/10 px-3 py-2 text-[13px] text-[var(--success)]">
               {success}
             </p>
           )}
@@ -175,8 +172,8 @@ export default function AuthModal({ open, onClose }) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-all duration-200 hover:translate-y-[1px] hover:shadow-[0_0_20px_rgba(209,123,136,0.3)] active:translate-y-[3px] disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{ fontFamily: '"DM Sans", sans-serif', boxShadow: 'var(--neu-shadow)' }}
+            className="mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
+            style={{ boxShadow: 'var(--neu-shadow)' }}
           >
             {loading && <IconLoader2 size={15} stroke={2} className="animate-spin" />}
             {tab === 'signin' ? 'Sign In' : 'Create Account'}
