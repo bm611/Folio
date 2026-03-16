@@ -518,6 +518,18 @@ export default function Sidebar({
           </div>
         </div>
 
+        {/* Mobile close button */}
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
+            aria-label="Close sidebar"
+          >
+            <IconX size={24} stroke={2} />
+          </button>
+        )}
+
         {onResizeStart && <div className="resize-handle max-md:hidden" onMouseDown={onResizeStart} />}
       </aside>
     </>

@@ -13,6 +13,7 @@ import {
   IconDownload,
   IconLogout,
   IconUser,
+  IconChevronLeft,
 } from '@tabler/icons-react'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 import { docToMarkdown } from '../editor/markdown/markdownConversion'
@@ -522,19 +523,31 @@ export default function NoteEditor({
       {/* Top bar — hidden in focus mode */}
       {!focusMode && (
         <div className="flex items-center justify-between px-4 py-2 md:px-6 relative z-10">
-          {sidebarCollapsed ? (
+          <div className="flex items-center gap-2">
+            {/* Back button — Mobile only */}
             <button
               type="button"
-              onClick={onToggleSidebar}
-              className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
-              title="Open sidebar (Cmd+B)"
+              onClick={() => onSelectNote(null)}
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+              title="Back to Home"
             >
-              <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
+              <IconChevronLeft size={22} stroke={2} />
             </button>
-          ) : (
-            <div className="hidden md:block w-10" />
-          )}
-          <div className="flex items-center gap-1 max-md:ml-auto">
+
+            {sidebarCollapsed ? (
+              <button
+                type="button"
+                onClick={onToggleSidebar}
+                className="hidden md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)]"
+                title="Open sidebar (Cmd+B)"
+              >
+                <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
+              </button>
+            ) : (
+              <div className="hidden md:block w-10" />
+            )}
+          </div>
+          <div className="flex items-center gap-1">
             {note && (
               <button
                 type="button"
