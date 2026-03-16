@@ -376,30 +376,35 @@ export default function NoteEditor({
             </p>
           </div>
 
-          <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex flex-col items-center gap-3 w-full max-w-sm">
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
+          <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
+            <div className="flex items-center gap-2 w-full justify-center px-2 sm:px-0">
               <button
                 onClick={() => onNewNote?.()}
-                className="neu-btn-primary group relative flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-6 py-3.5 text-[14px] font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-lg shadow-[var(--accent)]/15 transition-all duration-200 hover:brightness-110 active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
-                <IconPlus size={18} stroke={2} className="transition-transform duration-300 group-hover:rotate-90" />
-                <span>New Note</span>
+                <IconPlus size={16} stroke={2.5} className="shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+                <span className="truncate">New Note</span>
               </button>
               <button
                 onClick={() => onCreateDailyNote?.()}
-                className="group relative flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-[var(--bg-surface)] to-[var(--bg-primary)] border border-[var(--border-subtle)] px-6 py-3.5 text-[14px] font-semibold text-[var(--title-color)] transition-all duration-200 hover:border-[var(--accent)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] active:scale-[0.98]"
+                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--bg-surface)]/40 backdrop-blur-md border border-[var(--border-subtle)] px-3 py-3 text-[13px] font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--accent)]/50 hover:bg-[var(--bg-surface)]/60 hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
-                <IconCalendar size={18} stroke={1.5} className="text-[var(--accent)] transition-transform duration-300 group-hover:-translate-y-0.5" />
-                <span>Daily Note</span>
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)] transition-transform duration-300 group-hover:-translate-y-0.5">
+                  <IconCalendar size={14} stroke={2} />
+                </div>
+                <span className="truncate">Daily Note</span>
               </button>
             </div>
           </div>
 
           {recentNotes.length > 0 ? (
             <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-2xl md:mt-16" style={{ fontFamily: '"Outfit", sans-serif' }}>
-              <div className="mb-2 flex items-baseline justify-between pb-2 md:mb-4">
+              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
                 <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">Recent</h2>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">{recentNotes.length} Notes</span>
+                <div className="flex items-center gap-1.5 opacity-40">
+                  <span className="text-xs font-light">/</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.15em]">{recentNotes.length} Notes</span>
+                </div>
               </div>
               <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
                  <div className="w-20 md:w-24">/ Date</div>
