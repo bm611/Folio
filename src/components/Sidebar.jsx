@@ -168,20 +168,16 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
   // Close context menu when tapping elsewhere
   useEffect(() => {
     if (!contextMenu) return;
-    const close = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setContextMenu(null);
-    };
-    // Use a short delay so the menu renders first
+    const close = () => setContextMenu(null);
+    
+    // We add a tiny delay to prevent the initial long-press from immediately closing the menu
     const timer = setTimeout(() => {
-      document.addEventListener('touchstart', close, { once: true, capture: true });
-      document.addEventListener('mousedown', close, { once: true, capture: true });
+      window.addEventListener('click', close);
     }, 10);
+
     return () => {
       clearTimeout(timer);
-      document.removeEventListener('touchstart', close, { capture: true });
-      document.removeEventListener('mousedown', close, { capture: true });
+      window.removeEventListener('click', close);
     };
   }, [contextMenu]);
 
@@ -234,31 +230,30 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
 
       {/* Long-press context menu */}
       {contextMenu && (
-        <div className="ctx-menu-overlay" onTouchStart={e => { e.stopPropagation(); }}>
+        <div className="ctx-menu-overlay" onClick={() => setContextMenu(null)}>
           <div
             className="ctx-menu animate-ctx-fade-in"
             style={{ top: contextMenu.y, left: contextMenu.x, transformOrigin: 'top center' }}
-            onTouchStart={e => e.stopPropagation()}
             onClick={e => e.stopPropagation()}
           >
             {isFolder ? (
               <>
-                <button onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); setContextMenu(null); }}>
+                <button onClick={(e) => { e.stopPropagation(); setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); setContextMenu(null); }}>
                   <Icon n="newFile" s={14} />
                   <span>New File</span>
                 </button>
-                <button onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); setContextMenu(null); }}>
+                <button onClick={(e) => { e.stopPropagation(); setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); setContextMenu(null); }}>
                   <Icon n="newFolder" s={14} />
                   <span>New Folder</span>
                 </button>
                 <div className="ctx-divider" />
               </>
             ) : null}
-            <button onClick={() => { setRenaming(true); setRenameVal(node.name); setContextMenu(null); }}>
+            <button onClick={(e) => { e.stopPropagation(); setRenaming(true); setRenameVal(node.name); setContextMenu(null); }}>
               <Icon n="edit" s={14} />
               <span>Rename</span>
             </button>
-            <button className="ctx-danger" onClick={() => { onDelete(node.id); setContextMenu(null); }}>
+            <button className="ctx-danger" onClick={(e) => { e.stopPropagation(); onDelete(node.id); setContextMenu(null); }}>
               <Icon n="trash" s={14} />
               <span>Delete</span>
             </button>
