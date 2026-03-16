@@ -9,7 +9,7 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
   }, []);
 
   return (
-    <div className="relative flex h-screen w-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)] selection:bg-[var(--accent)]/30">
+    <div className="relative flex h-[100dvh] w-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)] selection:bg-[var(--accent)]/30">
       {/* Background Ambient SVG */}
       <div className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-screen">
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
