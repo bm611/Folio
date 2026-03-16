@@ -139,19 +139,26 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
   const submitRename = () => { if (renameVal.trim()) onRename(node.id, renameVal.trim()); setRenaming(false); };
 
   const handleTouchStart = (e) => {
+    // If already renaming, don't start long press
+    if (renaming) return;
+    
     const touch = e.touches[0];
     const rect = nodeRef.current?.getBoundingClientRect();
     longPressRef.current = setTimeout(() => {
-      if (navigator.vibrate) navigator.vibrate(10);
+      if (navigator.vibrate) navigator.vibrate(12); // Slightly stronger vibration for feedback
       setContextMenu({
         x: Math.min(touch.clientX, window.innerWidth - 180),
         y: rect ? rect.bottom + 4 : touch.clientY,
       });
-    }, 500);
+      longPressRef.current = null;
+    }, 550); // Slightly longer for clearer intent
   };
 
   const handleTouchEnd = () => {
-    if (longPressRef.current) clearTimeout(longPressRef.current);
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current);
+      longPressRef.current = null;
+    }
   };
 
   const handleTouchMove = () => {
@@ -186,10 +193,17 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
         style={{ paddingLeft: depth * 14 + 10 }}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
+        onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchMove={handleTouchMove}
-        onClick={() => { if (!renaming && !contextMenu) { isFolder ? toggleExpand(node.id) : onSelect(node.id); } }}
+        onClick={(e) => { 
+          if (!renaming && !contextMenu && !longPressRef.current) { 
+            isFolder ? toggleExpand(node.id) : onSelect(node.id); 
+          } else if (contextMenu) {
+            e.stopPropagation();
+          }
+        }}
       >
         <span className={`tn-arrow relative after:absolute after:-inset-2 ${isOpen ? "open" : ""}`} style={{ opacity: isFolder ? 1 : 0 }}>
           <Icon n="chevR" s={12} />
