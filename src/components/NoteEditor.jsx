@@ -647,7 +647,7 @@ export default function NoteEditor({
 
       {/* Stats bar — bottom right */}
       <div
-        className="absolute bottom-0 right-0 left-0 md:left-auto flex flex-col items-center md:items-end gap-1.5 px-4 py-3 md:py-2.5 md:px-4 md:bottom-4 md:right-4 bg-gradient-to-t from-[var(--bg-primary)] to-transparent md:bg-none md:bg-[var(--bg-surface)]/80 md:backdrop-blur-lg md:rounded-xl md:border border-[var(--border-subtle)] transition-all duration-300 z-20"
+        className="hidden md:flex absolute bottom-4 right-4 flex-col items-end gap-1.5 px-4 py-2.5 bg-[var(--bg-surface)]/80 backdrop-blur-lg rounded-xl border border-[var(--border-subtle)] transition-all duration-300 z-20"
       >
         {/* Stats line */}
         <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] tabular-nums select-none">
