@@ -441,7 +441,7 @@ export default function Sidebar({
       )}
 
       <aside
-        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-full'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-screen shrink-0 overflow-hidden transition-all duration-300`}
+        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-full'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-[100dvh] shrink-0 overflow-hidden transition-all duration-300`}
         style={{ width: collapsed ? 0 : width, maxWidth: '100vw' }}
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
@@ -523,7 +523,7 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
+            className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 md:hidden absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-all active:scale-95"
             aria-label="Close sidebar"
           >
             <IconX size={24} stroke={2} />

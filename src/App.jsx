@@ -334,10 +334,6 @@ function AppInner() {
         setActiveNoteId(note.id)
       }
 
-      if (sidebarCollapsed) {
-        setSidebarCollapsed(false)
-      }
-
       return note
     },
     [sidebarCollapsed, user]
@@ -398,9 +394,6 @@ function AppInner() {
     }
 
     setActiveNoteId(newNote.id)
-    if (sidebarCollapsed) {
-      setSidebarCollapsed(false)
-    }
   }, [notes, sidebarCollapsed, user])
 
   const handleDeleteNote = useCallback(

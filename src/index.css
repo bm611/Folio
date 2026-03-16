@@ -1441,7 +1441,7 @@ body {
 .sync-spin { animation: spin 0.8s linear infinite; }
 
 .sb-footer {
-  padding: 10px 16px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
