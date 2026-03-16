@@ -4,6 +4,14 @@ const createdAtFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 export function normalizeNote(note) {
+  if (note.type === 'folder') {
+    return {
+      ...note,
+      name: typeof note.name === 'string' ? note.name : 'Untitled',
+      children: Array.isArray(note.children) ? note.children.map(normalizeNote) : [],
+    }
+  }
+
   const fallbackTimestamp = note.updatedAt || note.createdAt || new Date().toISOString()
   const contentDoc =
     note.contentDoc && typeof note.contentDoc === 'object' && !Array.isArray(note.contentDoc)

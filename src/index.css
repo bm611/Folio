@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&family=Italiana&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&family=Italiana&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Outfit:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
@@ -1065,7 +1065,7 @@ body {
   overflow: hidden;
   user-select: none;
   color: var(--text-primary);
-  font-family: var(--body-font);
+  font-family: "Outfit", var(--body-font);
 }
 
 .sb-header-wrapper {
@@ -1147,7 +1147,7 @@ body {
   color: var(--text-primary);
   outline: none;
   border: none;
-  font-family: var(--body-font);
+  font-family: "Outfit", var(--body-font);
 }
 
 .sb-search input::placeholder { color: var(--text-muted); }
@@ -1181,7 +1181,7 @@ body {
   position: relative;
   transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   border: 1px solid transparent;
-  font-family: var(--body-font);
+  font-family: "Outfit", var(--body-font);
 }
 
 .tree-node.is-folder {
@@ -1284,7 +1284,7 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--accent);
   color: var(--text-primary);
-  font-family: var(--body-font);
+  font-family: "Outfit", var(--body-font);
   font-size: 13.5px;
   padding: 4px 8px;
   border-radius: 6px;
@@ -1363,7 +1363,7 @@ body {
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
-  font-family: var(--body-font);
+  font-family: "Outfit", var(--body-font);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   min-height: auto;
@@ -1404,7 +1404,7 @@ body {
   letter-spacing: 0.02em;
   border: 1px solid transparent;
   transition: all 0.3s var(--ease-out-quart);
-  font-family: var(--body-font);
+  font-family: "Outfit", var(--body-font);
   user-select: none;
 }
 

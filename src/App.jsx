@@ -142,6 +142,43 @@ function matchesQuery(query, values) {
   return values.some((value) => value?.toLowerCase().includes(normalizedQuery))
 }
 
+/**
+ * Ensures all notes tagged with 'daily' are moved into a root-level 'Daily' folder.
+ * This provides robust folder persistence even when the underlying storage is flat.
+ */
+function ensureDailyFolder(tree) {
+  const allNotes = flattenTree(tree)
+  const dailyNotes = allNotes.filter(n => n.tags?.includes('daily'))
+  
+  const recursiveFilter = (nodes) => {
+    return nodes
+      .filter(n => {
+        if (n.type === 'file' && n.tags?.includes('daily')) return false
+        // Cleanup: remove phantom "Daily" notes created by previous folder-sync logic
+        if (n.type === 'file' && n.title === 'Daily' && n.name === 'Daily' && (!n.content || n.content.length < 5)) return false
+        if (n.type === 'folder' && n.name.toLowerCase() === 'daily') return false
+        return true
+      })
+      .map(n => n.children ? { ...n, children: recursiveFilter(n.children) } : n)
+  }
+  
+  const otherItems = recursiveFilter(tree)
+  
+  if (dailyNotes.length === 0) return otherItems
+
+  const dailyFolder = {
+    id: 'folder-daily',
+    type: 'folder',
+    name: 'Daily',
+    title: 'Daily',
+    children: dailyNotes.sort((a,b) => b.createdAt.localeCompare(a.createdAt)),
+    createdAt: dailyNotes[dailyNotes.length - 1].createdAt,
+    updatedAt: dailyNotes[0].updatedAt,
+  }
+
+  return [dailyFolder, ...otherItems]
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -162,19 +199,20 @@ function AppInner() {
   }, [])
   const [tree, setTree] = useState(() => {
     const savedTree = loadTree()
-    if (savedTree && savedTree.length > 0) return savedTree
+    if (savedTree && savedTree.length > 0) return ensureDailyFolder(savedTree)
 
     const savedNotes = loadNotes()
     if (savedNotes.length > 0) {
-      return savedNotes.map(n => ({
+      const flatTree = savedNotes.map(n => ({
         ...normalizeNote(n),
         type: 'file',
         name: n.title || 'Untitled'
       }))
+      return ensureDailyFolder(flatTree)
     }
 
     const now = new Date().toISOString()
-    return [
+    const initialTree = [
       {
         id: generateId(),
         type: 'file',
@@ -185,6 +223,7 @@ function AppInner() {
         updatedAt: now,
       },
     ]
+    return ensureDailyFolder(initialTree)
   })
 
   const notes = flattenTree(tree)
@@ -206,9 +245,13 @@ function AppInner() {
   const [syncing, setSyncing] = useState(false)
   const deleteTimerRef = useRef(null)
   const cloudSaveTimers = useRef({})
-
   const [sbWidth, setSbWidth] = useState(240)
   const editorApiRef = useRef(null)
+  const treeRef = useRef(tree)
+
+  useEffect(() => {
+    treeRef.current = tree
+  }, [tree])
 
   // ── Cloud sync: load notes when user signs in, revert on sign-out ────────
   useEffect(() => {
@@ -229,7 +272,7 @@ function AppInner() {
     fetchNotes(user.id)
       .then((cloudNotes) => {
         if (cloudNotes.length > 0) {
-          setTree(cloudNotes)
+          setTree(ensureDailyFolder(cloudNotes))
           setActiveNoteId(null)
         }
       })
@@ -332,7 +375,7 @@ function AppInner() {
 `.trim()
 
     const now = new Date().toISOString()
-    const note = normalizeNote({
+    const newNote = normalizeNote({
       id: generateId(),
       type: 'file',
       name: dateStr,
@@ -344,22 +387,17 @@ function AppInner() {
     })
 
     setTree(prevTree => {
-      let folder = prevTree.find(n => n.type === 'folder' && n.name.toLowerCase() === 'daily')
-      let nextTree = prevTree
-      if (!folder) {
-        folder = { id: generateId(), name: 'Daily', type: 'folder', children: [] }
-        nextTree = insertNode(nextTree, null, folder)
-      }
-      return insertNode(nextTree, folder.id, note)
+      const newTree = insertNode(prevTree, null, newNote)
+      return ensureDailyFolder(newTree)
     })
 
     if (user) {
-      upsertNote(note, user.id).catch((err) =>
+      upsertNote(newNote, user.id).catch((err) =>
         console.error('[createDailyNote] Supabase upsert failed:', err)
       )
     }
 
-    setActiveNoteId(note.id)
+    setActiveNoteId(newNote.id)
     if (sidebarCollapsed) {
       setSidebarCollapsed(false)
     }
@@ -416,11 +454,13 @@ function AppInner() {
   }, [deletedNote])
 
   const handleUpdateNote = useCallback((id, updates, options = {}) => {
+    const now = new Date().toISOString()
+    const updatedValues = { ...updates }
+    if (updates.title !== undefined) updatedValues.name = updates.title
+    if (!options.skipTimestamp) updatedValues.updatedAt = now
+
     setTree((previousTree) => {
-      const updated = { ...updates }
-      if (updates.title !== undefined) updated.name = updates.title
-      if (!options.skipTimestamp) updated.updatedAt = new Date().toISOString()
-      return updateFileNode(previousTree, id, updated)
+      return updateFileNode(previousTree, id, updatedValues)
     })
 
     // Debounced cloud save (1.5s after last keystroke)
@@ -428,20 +468,19 @@ function AppInner() {
       setSyncing(true)
       clearTimeout(cloudSaveTimers.current[id])
       cloudSaveTimers.current[id] = setTimeout(() => {
-        setTree((currentTree) => {
-          const note = flattenTree(currentTree).find(n => n.id === id)
-          if (note) {
-            upsertNote({ ...note, ...updates }, user.id)
-              .catch((err) => console.error('[updateNote] Supabase upsert failed:', err))
-              .finally(() => {
-                // Only clear syncing if no other timers are pending
-                const pending = Object.values(cloudSaveTimers.current).some(Boolean)
-                if (!pending) setSyncing(false)
-              })
-          }
-          return currentTree
-        })
-        cloudSaveTimers.current[id] = null
+        // Use treeRef to get the most recent tree state for syncing
+        const currentNote = flattenTree(treeRef.current).find(n => n.id === id)
+        if (currentNote) {
+          upsertNote(currentNote, user.id)
+            .catch((err) => console.error('[updateNote] Supabase upsert failed:', err))
+            .finally(() => {
+              cloudSaveTimers.current[id] = null
+              const pending = Object.values(cloudSaveTimers.current).some(Boolean)
+              if (!pending) setSyncing(false)
+            })
+        } else {
+          setSyncing(false)
+        }
       }, 1500)
     }
   }, [user])
