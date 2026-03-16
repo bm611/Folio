@@ -393,52 +393,39 @@ export default function NoteEditor({
                 <span>Daily Note</span>
               </button>
             </div>
-            <span className="text-[11px] font-medium tracking-wider text-[var(--text-muted)] opacity-60 mt-2">
-              PRESS <kbd className="font-sans px-1.5 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[9px] mx-1">⌘N</kbd> ANYTIME
-            </span>
           </div>
 
           {recentNotes.length > 0 ? (
-            <div className="animate-fade-in-up-delay-2 mt-12 w-full max-w-3xl">
-              <div className="mb-6 flex items-center justify-center gap-4">
-                 <div className="h-px w-12 bg-[var(--border-subtle)]" />
-                 <p className="text-xs font-medium uppercase tracking-widest text-[var(--text-muted)]">
-                   Recent Notes
-                 </p>
-                 <div className="h-px w-12 bg-[var(--border-subtle)]" />
+            <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-2xl md:mt-16" style={{ fontFamily: '"Outfit", sans-serif' }}>
+              <div className="mb-2 flex items-baseline justify-between pb-2 md:mb-4">
+                <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">Recent</h2>
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60">{recentNotes.length} Notes</span>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {recentNotes.map((n, index) => {
+              <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
+                 <div className="w-20 md:w-24">/ Date</div>
+                 <div>/ Name</div>
+              </div>
+              <div className="flex flex-col">
+                {recentNotes.map((n) => {
                   const title = getNoteDisplayTitle(n)
-                  const preview = (n.content || '').replace(/[#*>`\-\[\]()!_~]/g, '').trim().slice(0, 80)
-                  const time = new Date(n.updatedAt || n.createdAt).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                  })
+                  const date = new Date(n.updatedAt || n.createdAt)
+                  const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
 
                   return (
                     <button
                       key={n.id}
                       type="button"
                       onClick={() => onSelectNote(n.id)}
-                      className={`group flex flex-col gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-5 text-left transition-all duration-200 hover:border-[var(--accent)] hover:bg-[var(--bg-hover)] active:scale-[0.98] ${index >= 2 ? 'hidden sm:flex' : ''}`}
+                      className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-all duration-200 hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
                     >
-                      <span
-                        className="truncate text-[14px] font-semibold text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)]"
-                      >
-                        {title}
-                      </span>
-                      {preview && (
-                        <span
-                          className="line-clamp-2 text-[13px] leading-relaxed text-[var(--text-muted)]"
-                        >
-                          {preview}
+                      <div className="flex w-20 shrink-0 items-center gap-3 md:w-24">
+                        <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80" />
+                        <span className="text-[12px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[13px]">
+                          {formattedDate}
                         </span>
-                      )}
-                      <span
-                        className="mt-auto text-[11px] font-medium text-[var(--text-muted)] opacity-80"
-                      >
-                        {time}
+                      </div>
+                      <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[26px]">
+                        {title}
                       </span>
                     </button>
                   )
