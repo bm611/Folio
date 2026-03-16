@@ -282,7 +282,9 @@ function AppInner() {
 
       // Immediately persist to cloud if signed in
       if (user) {
-        upsertNote(note, user.id).catch(console.error)
+        upsertNote(note, user.id).catch((err) =>
+          console.error('[createNote] Supabase upsert failed:', err)
+        )
       }
 
       if (options.activate !== false) {
@@ -338,7 +340,7 @@ function AppInner() {
         deleteTimerRef.current = null
       }, 5000)
     },
-    [activeNoteId, tree]
+    [activeNoteId, tree, user]
   )
 
   const handleUndoDelete = useCallback(() => {
@@ -369,7 +371,7 @@ function AppInner() {
           const note = flattenTree(currentTree).find(n => n.id === id)
           if (note) {
             upsertNote({ ...note, ...updates }, user.id)
-              .catch(console.error)
+              .catch((err) => console.error('[updateNote] Supabase upsert failed:', err))
               .finally(() => {
                 // Only clear syncing if no other timers are pending
                 const pending = Object.values(cloudSaveTimers.current).some(Boolean)
