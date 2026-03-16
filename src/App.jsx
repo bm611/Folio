@@ -304,6 +304,67 @@ function AppInner() {
     createNote()
   }, [createNote])
 
+  const handleCreateDailyNote = useCallback(() => {
+    const today = new Date()
+    const day = String(today.getDate()).padStart(2, '0')
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const year = today.getFullYear()
+    const dateStr = `${day}-${month}-${year}`
+
+    const existingNote = notes.find(n => n.title === dateStr && n.tags?.includes('daily'))
+    if (existingNote) {
+      setActiveNoteId(existingNote.id)
+      if (sidebarCollapsed) setSidebarCollapsed(false)
+      return
+    }
+
+    const template = `
+# Daily Note: ${dateStr}
+
+## Journal
+- 
+
+## To-Dos
+[ ] 
+
+## Ideas & Notes
+- 
+`.trim()
+
+    const now = new Date().toISOString()
+    const note = normalizeNote({
+      id: generateId(),
+      type: 'file',
+      name: dateStr,
+      title: dateStr,
+      content: template,
+      tags: ['daily'],
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    setTree(prevTree => {
+      let folder = prevTree.find(n => n.type === 'folder' && n.name.toLowerCase() === 'daily')
+      let nextTree = prevTree
+      if (!folder) {
+        folder = { id: generateId(), name: 'Daily', type: 'folder', children: [] }
+        nextTree = insertNode(nextTree, null, folder)
+      }
+      return insertNode(nextTree, folder.id, note)
+    })
+
+    if (user) {
+      upsertNote(note, user.id).catch((err) =>
+        console.error('[createDailyNote] Supabase upsert failed:', err)
+      )
+    }
+
+    setActiveNoteId(note.id)
+    if (sidebarCollapsed) {
+      setSidebarCollapsed(false)
+    }
+  }, [notes, sidebarCollapsed, user])
+
   const handleDeleteNote = useCallback(
     (id) => {
       const nodeToDelete = findNode(tree, id)
@@ -636,6 +697,7 @@ function AppInner() {
             note={activeNote}
             notes={notes}
             onNewNote={handleNewNote}
+            onCreateDailyNote={handleCreateDailyNote}
             onUpdateNote={handleUpdateNote}
             onSelectNote={setActiveNoteId}
             onRegisterEditorApi={(api) => {

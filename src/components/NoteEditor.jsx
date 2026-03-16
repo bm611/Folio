@@ -17,6 +17,7 @@ import {
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 import { docToMarkdown } from '../editor/markdown/markdownConversion'
 import TagInput from './TagInput'
+import DailyHeader from './DailyHeader'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
 
@@ -257,6 +258,7 @@ export default function NoteEditor({
   note,
   notes,
   onNewNote,
+  onCreateDailyNote,
   onUpdateNote,
   onSelectNote,
   onRegisterEditorApi,
@@ -374,15 +376,24 @@ export default function NoteEditor({
             </p>
           </div>
 
-          <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex flex-col items-center gap-3">
-            <button
-              onClick={() => onNewNote?.()}
-              className="neu-btn-primary group relative inline-flex items-center gap-2.5 rounded-full bg-[var(--accent)] px-8 py-3.5 text-[15px] font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.97]"
-            >
-              <IconPlus size={18} stroke={2} className="transition-transform duration-300 group-hover:rotate-90" />
-              <span>Create New Note</span>
-            </button>
-            <span className="text-[11px] font-medium tracking-wider text-[var(--text-muted)] opacity-60">
+          <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex flex-col items-center gap-3 w-full max-w-sm">
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full justify-center">
+              <button
+                onClick={() => onNewNote?.()}
+                className="neu-btn-primary group relative flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-6 py-3.5 text-[14px] font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+              >
+                <IconPlus size={18} stroke={2} className="transition-transform duration-300 group-hover:rotate-90" />
+                <span>New Note</span>
+              </button>
+              <button
+                onClick={() => onCreateDailyNote?.()}
+                className="group relative flex-1 min-w-[160px] inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-[var(--bg-surface)] to-[var(--bg-primary)] border border-[var(--border-subtle)] px-6 py-3.5 text-[14px] font-semibold text-[var(--title-color)] transition-all duration-200 hover:border-[var(--accent)] hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)] active:scale-[0.98]"
+              >
+                <IconCalendar size={18} stroke={1.5} className="text-[var(--accent)] transition-transform duration-300 group-hover:-translate-y-0.5" />
+                <span>Daily Note</span>
+              </button>
+            </div>
+            <span className="text-[11px] font-medium tracking-wider text-[var(--text-muted)] opacity-60 mt-2">
               PRESS <kbd className="font-sans px-1.5 py-0.5 rounded border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[9px] mx-1">⌘N</kbd> ANYTIME
             </span>
           </div>
@@ -622,6 +633,13 @@ export default function NoteEditor({
                 tags={note.tags || []}
                 onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
               />
+            </div>
+          )}
+
+          {/* Daily Header */}
+          {!focusMode && note.tags?.includes('daily') && (
+            <div className="mt-6">
+              <DailyHeader note={note} />
             </div>
           )}
 
