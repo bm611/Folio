@@ -99,7 +99,7 @@ export default function CommandPalette({
         }
       }}
     >
-      <div className="w-full max-w-lg overflow-hidden rounded-t-2xl md:rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.25s_ease-out] md:animate-ctx-fade-in" style={{ boxShadow: '0 8px 40px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)', paddingBottom: 'env(safe-area-inset-bottom, 0px)', transformOrigin: 'top center' }}>
+      <div className="w-full max-w-lg overflow-hidden rounded-t-2xl md:rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.25s_ease-out] md:animate-ctx-fade-in" style={{ boxShadow: 'var(--dialog-shadow)', paddingBottom: 'env(safe-area-inset-bottom, 0px)', transformOrigin: 'top center' }}>
         {/* Search input */}
         <div className="flex items-center gap-2.5 border-b border-[var(--border-subtle)] px-4 py-3">
           <IconSearch size={15} stroke={1.5} className="shrink-0 text-[var(--text-muted)]" />

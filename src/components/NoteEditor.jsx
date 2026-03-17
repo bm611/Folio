@@ -24,6 +24,7 @@ import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle 
 import { docToMarkdown } from '../editor/markdown/markdownConversion'
 import TagInput from './TagInput'
 import DailyHeader from './DailyHeader'
+import AccentPicker from './AccentPicker'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
 
@@ -339,6 +340,8 @@ export default function NoteEditor({
   onRegisterEditorApi,
   theme,
   onToggleTheme,
+  accentId,
+  onAccentChange,
   sidebarCollapsed,
   onToggleSidebar,
   focusMode,
@@ -408,6 +411,7 @@ export default function NoteEditor({
             <div className="hidden md:block w-10" />
           )}
           <div className="ml-auto flex items-center gap-1">
+            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
             <button
               type="button"
               onClick={onToggleTheme}
@@ -643,6 +647,7 @@ export default function NoteEditor({
             >
               <IconArrowsMinimize size={18} stroke={1.5} />
             </button>
+            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
             <button
               type="button"
               onClick={onToggleTheme}
@@ -814,6 +819,7 @@ export default function NoteEditor({
                 <IconCommand size={18} stroke={1.5} />
               </button>
             )}
+            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} mobile />
             <button type="button" onClick={onToggleTheme} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>

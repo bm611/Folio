@@ -23,7 +23,7 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
               <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="orb3" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#aba1c4" stopOpacity="0.25" />
+              <stop offset="0%" stopColor="var(--color-h2)" stopOpacity="0.25" />
               <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
             </radialGradient>
           </defs>
@@ -106,7 +106,7 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
                               M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z"
                     dur="15s" repeatCount="indefinite" />
                 </path>
-                <path d="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z" fill="none" stroke="#aba1c4" strokeWidth="1" strokeOpacity="0.7">
+                <path d="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z" fill="none" stroke="var(--color-h2)" strokeWidth="1" strokeOpacity="0.7">
                   <animate attributeName="d"
                     values="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z;
                               M 400 350 C 550 250, 550 450, 450 550 C 350 650, 250 500, 350 400 C 450 300, 250 400, 400 350 Z;

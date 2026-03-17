@@ -21,6 +21,7 @@ import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
 import { fetchNotes, upsertNote, deleteNote as dbDeleteNote } from './lib/notesDb'
 import { docToMarkdown } from './editor/markdown/markdownConversion'
+import { ACCENT_COLORS } from './config/accents'
 
 const STORAGE_KEY = 'canvas-notes'
 const TREE_STORAGE_KEY = 'canvas-tree'
@@ -248,6 +249,7 @@ function AppInner() {
   const [commandPaletteQuery, setCommandPaletteQuery] = useState('')
   const [theme, setTheme] = useState(() => localStorage.getItem('canvas-theme') || 'dark')
   const [fontId, setFontId] = useState(() => localStorage.getItem('canvas-font') || 'outfit')
+  const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'rose')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState(null)
   const [focusMode, setFocusMode] = useState(false)
@@ -448,6 +450,17 @@ function AppInner() {
     }
     localStorage.setItem('canvas-font', fontId)
   }, [fontId])
+
+  useEffect(() => {
+    const palette = ACCENT_COLORS.find((a) => a.id === accentId)
+    if (palette) {
+      const c = theme === 'light' ? palette.light : palette.dark
+      document.documentElement.style.setProperty('--accent', c.accent)
+      document.documentElement.style.setProperty('--accent-hover', c.accentHover)
+      document.documentElement.style.setProperty('--color-h1', c.colorH1)
+    }
+    localStorage.setItem('canvas-accent', accentId)
+  }, [accentId, theme])
 
   const openCommandPalette = useCallback(() => {
     setCommandPaletteQuery('')
@@ -983,6 +996,8 @@ function AppInner() {
             }}
             theme={theme}
             onToggleTheme={toggleTheme}
+            accentId={accentId}
+            onAccentChange={setAccentId}
             sidebarCollapsed={sidebarCollapsed}
             onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
             focusMode={focusMode}
