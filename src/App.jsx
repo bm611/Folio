@@ -190,6 +190,88 @@ function ensureDailyFolder(tree) {
   return [dailyFolder, ...otherItems]
 }
 
+function getComparableTimestamp(value) {
+  const parsed = Date.parse(value || '')
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+function getNoteChangeTimestamp(note) {
+  return Math.max(
+    getComparableTimestamp(note?.localCheckpointAt),
+    getComparableTimestamp(note?.updatedAt),
+    getComparableTimestamp(note?.createdAt)
+  )
+}
+
+function notesHaveDifferentContent(localNote, cloudNote) {
+  return (
+    (localNote.title || '') !== (cloudNote.title || '') ||
+    (localNote.content || '') !== (cloudNote.content || '') ||
+    JSON.stringify(localNote.contentDoc || null) !== JSON.stringify(cloudNote.contentDoc || null) ||
+    JSON.stringify(localNote.tags || []) !== JSON.stringify(cloudNote.tags || []) ||
+    (localNote.wordGoal || null) !== (cloudNote.wordGoal || null)
+  )
+}
+
+function shouldPreferLocalNote(localNote, cloudNote) {
+  const localChangedAt = getNoteChangeTimestamp(localNote)
+  const cloudChangedAt = getNoteChangeTimestamp(cloudNote)
+  const lastSyncedAt = getComparableTimestamp(localNote.lastSyncedAt)
+
+  if (lastSyncedAt && localChangedAt > lastSyncedAt) {
+    return true
+  }
+
+  return notesHaveDifferentContent(localNote, cloudNote) && localChangedAt >= cloudChangedAt
+}
+
+function mergeLocalChangesIntoCloud(localTree, cloudNotes) {
+  const localNotes = flattenTree(localTree || []).map(normalizeNote)
+  const mergedNotes = cloudNotes.map(normalizeNote)
+  const mergedById = new Map(mergedNotes.map((note) => [note.id, note]))
+  const notesToUploadById = new Map()
+
+  for (const localNote of localNotes) {
+    const cloudNote = mergedById.get(localNote.id)
+
+    if (!cloudNote) {
+      const mergedNote = { ...localNote, syncError: null }
+      mergedById.set(localNote.id, mergedNote)
+      mergedNotes.push(mergedNote)
+      notesToUploadById.set(localNote.id, mergedNote)
+      continue
+    }
+
+    if (!shouldPreferLocalNote(localNote, cloudNote)) {
+      continue
+    }
+
+    const mergedNote = { ...cloudNote, ...localNote, syncError: null }
+    mergedById.set(localNote.id, mergedNote)
+    const noteIndex = mergedNotes.findIndex((note) => note.id === localNote.id)
+    if (noteIndex !== -1) {
+      mergedNotes[noteIndex] = mergedNote
+    }
+    notesToUploadById.set(localNote.id, mergedNote)
+  }
+
+  return {
+    mergedTree: ensureDailyFolder(mergedNotes),
+    notesToUpload: Array.from(notesToUploadById.values()),
+  }
+}
+
+function formatImportedChangesMessage(count, didSyncToCloud) {
+  if (count <= 0) {
+    return ''
+  }
+
+  const label = count === 1 ? 'local note' : 'local notes'
+  return didSyncToCloud
+    ? `Imported ${count} ${label} from this device and synced to cloud`
+    : `Imported ${count} ${label} from this device`
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -404,6 +486,8 @@ function AppInner() {
 
   // ── Cloud sync: load notes when user signs in, revert on sign-out ────────
   useEffect(() => {
+    let cancelled = false
+
     if (!user) {
       setSyncing(false)
       setSyncError(null)
@@ -424,13 +508,60 @@ function AppInner() {
 
     // Load notes from Supabase
     fetchNotes(user.id)
-      .then((cloudNotes) => {
-        if (cloudNotes.length > 0) {
-          setTree(ensureDailyFolder(cloudNotes))
-          setActiveNoteId(null)
+      .then(async (cloudNotes) => {
+        if (cancelled) {
+          return
+        }
+
+        const { mergedTree, notesToUpload } = mergeLocalChangesIntoCloud(treeRef.current, cloudNotes)
+        const noteIdsToUpload = notesToUpload.map((note) => note.id)
+        const importedChangesMessage = formatImportedChangesMessage(noteIdsToUpload.length, false)
+
+        if (!navigator.onLine && noteIdsToUpload.length > 0) {
+          const message = 'Offline — local changes will sync to cloud when connection returns.'
+          const treeWithPendingSync = noteIdsToUpload.reduce(
+            (currentTree, noteId) => updateFileNode(currentTree, noteId, { syncError: message }),
+            mergedTree
+          )
+
+          setTree(treeWithPendingSync)
+          setSyncError(message)
+          setFailedSyncNoteIds(noteIdsToUpload)
+          showSyncToast(`${importedChangesMessage}. Will sync when you're back online.`)
+        } else {
+          setTree(mergedTree)
+          setFailedSyncNoteIds([])
+        }
+
+        setActiveNoteId((currentId) => (currentId && findNode(mergedTree, currentId) ? currentId : null))
+
+        if (noteIdsToUpload.length === 0 || !navigator.onLine) {
+          return
+        }
+
+        setSyncing(true)
+
+        let successCount = 0
+        for (const note of notesToUpload) {
+          const didSync = await syncNoteToCloud(note)
+          if (didSync) {
+            successCount += 1
+          }
+        }
+
+        finishSyncingIfIdle()
+
+        if (successCount > 0 && successCount === notesToUpload.length) {
+          showSyncToast(formatImportedChangesMessage(successCount, true))
+        } else if (noteIdsToUpload.length > 0) {
+          showSyncToast(importedChangesMessage)
         }
       })
       .catch(console.error)
+
+    return () => {
+      cancelled = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
