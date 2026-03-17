@@ -92,8 +92,11 @@ const Icon = ({ n, s = 14 }) => {
 };
 
 // ─── Sync Status Badge ────────────────────────────────────────────────────────
-function SyncBadge({ syncing }) {
+function SyncBadge({ syncing, syncStatus }) {
   const { user } = useAuth()
+  const state = syncStatus?.state
+  const message = syncStatus?.message
+  const error = syncStatus?.error
 
   if (!user) {
     return (
@@ -104,7 +107,25 @@ function SyncBadge({ syncing }) {
     )
   }
 
-  if (syncing) {
+  if (state === 'offline') {
+    return (
+      <div className="sync-badge sync-badge--offline" title="Offline — changes are safe locally">
+        <IconCloud size={13} stroke={1.5} />
+        <span>{message || 'Offline'}</span>
+      </div>
+    )
+  }
+
+  if (state === 'error') {
+    return (
+      <div className="sync-badge sync-badge--error" title={error || 'Cloud sync failed'}>
+        <IconCloud size={13} stroke={1.5} />
+        <span>{message || 'Sync failed'}</span>
+      </div>
+    )
+  }
+
+  if (syncing || state === 'syncing') {
     return (
       <div className="sync-badge sync-badge--syncing" title="Saving to cloud…">
         <IconLoader2 size={13} stroke={2} className="sync-spin" />
@@ -116,7 +137,7 @@ function SyncBadge({ syncing }) {
   return (
     <div className="sync-badge sync-badge--synced" title={`Synced to cloud as ${user.email}`}>
       <IconCloudCheck size={13} stroke={1.5} />
-      <span>Synced</span>
+      <span>{message || 'Synced'}</span>
     </div>
   )
 }
@@ -313,6 +334,7 @@ export default function Sidebar({
   width = 240,
   onResizeStart,
   syncing = false,
+  syncStatus = null,
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
   const [creatingIn, setCreatingIn] = useState(null);
@@ -541,7 +563,7 @@ export default function Sidebar({
 
           {/* Sync status footer */}
           <div className="sb-footer">
-            <SyncBadge syncing={syncing} />
+            <SyncBadge syncing={syncing} syncStatus={syncStatus} />
           </div>
         </div>
 

@@ -61,6 +61,14 @@ function saveTree(tree) {
   localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree))
 }
 
+function getInitialOnlineState() {
+  if (typeof navigator === 'undefined') {
+    return true
+  }
+
+  return navigator.onLine
+}
+
 const SAMPLE_NOTE = `# Welcome to Aura
 
 > [!note] - Local-First
@@ -245,19 +253,160 @@ function AppInner() {
   const [focusMode, setFocusMode] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
+  const [syncError, setSyncError] = useState(null)
+  const [failedSyncNoteIds, setFailedSyncNoteIds] = useState([])
+  const [isOnline, setIsOnline] = useState(getInitialOnlineState)
+  const [syncToast, setSyncToast] = useState(null)
   const deleteTimerRef = useRef(null)
   const cloudSaveTimers = useRef({})
+  const syncToastTimerRef = useRef(null)
   const [sbWidth, setSbWidth] = useState(240)
   const editorApiRef = useRef(null)
   const treeRef = useRef(tree)
+
+  const hasPendingCloudSaves = useCallback(() => {
+    return Object.values(cloudSaveTimers.current).some(Boolean)
+  }, [])
+
+  const finishSyncingIfIdle = useCallback(() => {
+    if (!hasPendingCloudSaves()) {
+      setSyncing(false)
+    }
+  }, [hasPendingCloudSaves])
+
+  const showSyncToast = useCallback((message) => {
+    setSyncToast(message)
+    window.clearTimeout(syncToastTimerRef.current)
+    syncToastTimerRef.current = window.setTimeout(() => {
+      setSyncToast(null)
+      syncToastTimerRef.current = null
+    }, 2600)
+  }, [])
+
+  const syncNoteToCloud = useCallback(async (noteOrId) => {
+    if (!user) {
+      return false
+    }
+
+    const noteId = typeof noteOrId === 'string' ? noteOrId : noteOrId?.id
+    if (!noteId) {
+      return false
+    }
+
+    if (!navigator.onLine) {
+      const message = 'Offline — changes are saved locally and will retry when online.'
+      setSyncError(message)
+      setFailedSyncNoteIds((currentIds) => (
+        currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
+      ))
+      setTree((previousTree) => updateFileNode(previousTree, noteId, { syncError: message }))
+      return false
+    }
+
+    const note = typeof noteOrId === 'string'
+      ? flattenTree(treeRef.current).find((currentNote) => currentNote.id === noteOrId)
+      : noteOrId
+
+    if (!note) {
+      return false
+    }
+
+    try {
+      await upsertNote(note, user.id)
+      const syncedAt = new Date().toISOString()
+      setSyncError(null)
+      setFailedSyncNoteIds((currentIds) => currentIds.filter((id) => id !== noteId))
+      setTree((previousTree) => updateFileNode(previousTree, noteId, {
+        lastSyncedAt: syncedAt,
+        syncError: null,
+      }))
+      return true
+    } catch (err) {
+      const message = err?.message || 'Sync failed. Your changes are still saved locally.'
+      setSyncError(message)
+      setFailedSyncNoteIds((currentIds) => (
+        currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
+      ))
+      setTree((previousTree) => updateFileNode(previousTree, noteId, { syncError: message }))
+      return false
+    }
+  }, [user])
+
+  const retryFailedSyncs = useCallback(async () => {
+    if (!user || failedSyncNoteIds.length === 0) {
+      return
+    }
+
+    if (!navigator.onLine) {
+      setSyncError('Offline — changes are saved locally and will retry when online.')
+      return
+    }
+
+    setSyncing(true)
+    let successCount = 0
+
+    for (const noteId of failedSyncNoteIds) {
+      window.clearTimeout(cloudSaveTimers.current[noteId])
+      cloudSaveTimers.current[noteId] = null
+
+      const didSync = await syncNoteToCloud(noteId)
+      if (didSync) {
+        successCount += 1
+      }
+    }
+
+    finishSyncingIfIdle()
+
+    if (successCount === failedSyncNoteIds.length && successCount > 0) {
+      showSyncToast('All changes synced')
+    }
+  }, [failedSyncNoteIds, finishSyncingIfIdle, showSyncToast, syncNoteToCloud, user])
 
   useEffect(() => {
     treeRef.current = tree
   }, [tree])
 
+  useEffect(() => {
+    const handleConnectivityChange = () => {
+      setIsOnline(navigator.onLine)
+    }
+
+    window.addEventListener('online', handleConnectivityChange)
+    window.addEventListener('offline', handleConnectivityChange)
+
+    return () => {
+      window.removeEventListener('online', handleConnectivityChange)
+      window.removeEventListener('offline', handleConnectivityChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!user || !isOnline || failedSyncNoteIds.length === 0) {
+      return
+    }
+
+    retryFailedSyncs()
+  }, [failedSyncNoteIds, isOnline, retryFailedSyncs, user])
+
+  useEffect(() => {
+    return () => {
+      Object.values(cloudSaveTimers.current).forEach((timer) => {
+        if (timer) {
+          window.clearTimeout(timer)
+        }
+      })
+
+      window.clearTimeout(syncToastTimerRef.current)
+    }
+  }, [])
+
   // ── Cloud sync: load notes when user signs in, revert on sign-out ────────
   useEffect(() => {
     if (!user) {
+      setSyncing(false)
+      setSyncError(null)
+      setFailedSyncNoteIds([])
+
       // Signed out — revert to localStorage tree
       const savedTree = loadTree()
       if (savedTree && savedTree.length > 0) {
@@ -269,6 +418,7 @@ function AppInner() {
     // Signed in — advance past landing page automatically
     setHasStarted(true)
     setAuthModalOpen(false)
+    setSyncError(null)
 
     // Load notes from Supabase
     fetchNotes(user.id)
@@ -327,9 +477,10 @@ function AppInner() {
 
       // Immediately persist to cloud if signed in
       if (user) {
-        upsertNote(note, user.id).catch((err) =>
-          console.error('[createNote] Supabase upsert failed:', err)
-        )
+        setSyncing(true)
+        syncNoteToCloud(note).finally(() => {
+          finishSyncingIfIdle()
+        })
       }
 
       if (options.activate !== false) {
@@ -338,7 +489,7 @@ function AppInner() {
 
       return note
     },
-    [sidebarCollapsed, user]
+    [finishSyncingIfIdle, syncNoteToCloud, user]
   )
 
   const handleNewNote = useCallback(() => {
@@ -388,13 +539,14 @@ function AppInner() {
     })
 
     if (user) {
-      upsertNote(newNote, user.id).catch((err) =>
-        console.error('[createDailyNote] Supabase upsert failed:', err)
-      )
+      setSyncing(true)
+      syncNoteToCloud(newNote).finally(() => {
+        finishSyncingIfIdle()
+      })
     }
 
     setActiveNoteId(newNote.id)
-  }, [notes, sidebarCollapsed, user])
+  }, [finishSyncingIfIdle, notes, sidebarCollapsed, syncNoteToCloud, user])
 
   const handleDeleteNote = useCallback(
     (id) => {
@@ -404,6 +556,20 @@ function AppInner() {
       if (deleteTimerRef.current) {
         clearTimeout(deleteTimerRef.current)
       }
+
+      const fileIdsToClear = nodeToDelete.type === 'folder'
+        ? flattenTree([nodeToDelete]).map((file) => file.id)
+        : [nodeToDelete.id]
+
+      fileIdsToClear.forEach((fileId) => {
+        window.clearTimeout(cloudSaveTimers.current[fileId])
+        cloudSaveTimers.current[fileId] = null
+      })
+
+      setFailedSyncNoteIds((currentIds) => (
+        currentIds.filter((currentId) => !fileIdsToClear.includes(currentId))
+      ))
+      finishSyncingIfIdle()
 
       setTree((previousTree) => deleteNode(previousTree, id))
 
@@ -432,7 +598,7 @@ function AppInner() {
         deleteTimerRef.current = null
       }, 5000)
     },
-    [activeNoteId, tree, user]
+    [activeNoteId, finishSyncingIfIdle, tree, user]
   )
 
   const handleUndoDelete = useCallback(() => {
@@ -448,7 +614,10 @@ function AppInner() {
 
   const handleUpdateNote = useCallback((id, updates, options = {}) => {
     const now = new Date().toISOString()
-    const updatedValues = { ...updates }
+    const updatedValues = {
+      ...updates,
+      localCheckpointAt: now,
+    }
     if (updates.title !== undefined) updatedValues.name = updates.title
     if (!options.skipTimestamp) updatedValues.updatedAt = now
 
@@ -456,27 +625,30 @@ function AppInner() {
       return updateFileNode(previousTree, id, updatedValues)
     })
 
-    // Debounced cloud save (1.5s after last keystroke)
-    if (user) {
-      setSyncing(true)
-      clearTimeout(cloudSaveTimers.current[id])
-      cloudSaveTimers.current[id] = setTimeout(() => {
-        // Use treeRef to get the most recent tree state for syncing
-        const currentNote = flattenTree(treeRef.current).find(n => n.id === id)
-        if (currentNote) {
-          upsertNote(currentNote, user.id)
-            .catch((err) => console.error('[updateNote] Supabase upsert failed:', err))
-            .finally(() => {
-              cloudSaveTimers.current[id] = null
-              const pending = Object.values(cloudSaveTimers.current).some(Boolean)
-              if (!pending) setSyncing(false)
-            })
-        } else {
-          setSyncing(false)
-        }
-      }, 1500)
+    if (!user) {
+      return
     }
-  }, [user])
+
+    if (!isOnline) {
+      const message = 'Offline — changes are saved locally and will retry when online.'
+      setSyncError(message)
+      setFailedSyncNoteIds((currentIds) => (
+        currentIds.includes(id) ? currentIds : [...currentIds, id]
+      ))
+      setTree((previousTree) => updateFileNode(previousTree, id, { syncError: message }))
+      return
+    }
+
+    // Debounced cloud save (1.5s after last keystroke)
+    setSyncing(true)
+    window.clearTimeout(cloudSaveTimers.current[id])
+    cloudSaveTimers.current[id] = window.setTimeout(() => {
+      syncNoteToCloud(id).finally(() => {
+        cloudSaveTimers.current[id] = null
+        finishSyncingIfIdle()
+      })
+    }, 1500)
+  }, [finishSyncingIfIdle, isOnline, syncNoteToCloud, user])
 
   const toggleTheme = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
@@ -570,6 +742,77 @@ function AppInner() {
   }, [handleNewNote, openCommandPalette, toggleFocusMode])
 
   const activeNote = notes.find((note) => note.id === activeNoteId) || null
+  const activeNoteSyncFailed = activeNote
+    ? failedSyncNoteIds.includes(activeNote.id)
+    : failedSyncNoteIds.length > 0
+
+  const activeNoteLastSavedAt = activeNote
+    ? (user
+      ? activeNote.lastSyncedAt || activeNote.localCheckpointAt
+      : activeNote.localCheckpointAt || activeNote.updatedAt)
+    : null
+
+  let saveStatus = {
+    state: 'local',
+    label: 'Local',
+    detail: 'Saved in this browser',
+    error: null,
+    canRetry: false,
+  }
+
+  if (user) {
+    saveStatus = {
+      state: 'saved',
+      label: 'Saved',
+      detail: 'Backed up to cloud',
+      error: null,
+      canRetry: false,
+    }
+
+    if (!isOnline) {
+      saveStatus = {
+        state: 'offline',
+        label: 'Offline',
+        detail: 'Changes stay local until connection returns',
+        error: null,
+        canRetry: false,
+      }
+    } else if (syncing) {
+      saveStatus = {
+        state: 'syncing',
+        label: 'Saving…',
+        detail: 'Syncing with cloud',
+        error: null,
+        canRetry: false,
+      }
+    } else if (activeNoteSyncFailed || syncError) {
+      saveStatus = {
+        state: 'error',
+        label: 'Sync failed',
+        detail: 'Changes are safe locally',
+        error: activeNote?.syncError || syncError,
+        canRetry: true,
+      }
+    }
+  }
+
+  const sidebarSyncStatus = {
+    state: !user
+      ? 'local'
+      : (!isOnline
+        ? 'offline'
+        : (syncing
+          ? 'syncing'
+          : (failedSyncNoteIds.length > 0 ? 'error' : 'saved'))),
+    message: !user
+      ? 'Saved locally'
+      : (!isOnline
+        ? 'Offline'
+        : (syncing
+          ? 'Saving…'
+          : (failedSyncNoteIds.length > 0 ? 'Sync failed' : 'Synced'))),
+    error: syncError,
+  }
 
   // Exit focus mode automatically if there's no active note to write in
   useEffect(() => {
@@ -717,6 +960,7 @@ function AppInner() {
           onNewNote={createNote}
           onDeleteNote={handleDeleteNote}
           syncing={syncing}
+          syncStatus={sidebarSyncStatus}
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((current) => !current)}
           searchQuery={sidebarSearch}
@@ -745,6 +989,9 @@ function AppInner() {
             onToggleFocusMode={toggleFocusMode}
             onOpenCommandPalette={openCommandPalette}
             onOpenAuthModal={() => setAuthModalOpen(true)}
+            saveStatus={saveStatus}
+            lastSavedAt={activeNoteLastSavedAt}
+            onRetrySync={retryFailedSyncs}
           />
         </div>
       </div>
@@ -775,6 +1022,15 @@ function AppInner() {
           >
             Undo
           </button>
+        </div>
+      )}
+
+      {syncToast && (
+        <div
+          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--success)_14%,var(--bg-elevated))] px-4 py-2 text-xs text-[var(--text-primary)]"
+          style={{ boxShadow: 'var(--neu-shadow)' }}
+        >
+          {syncToast}
         </div>
       )}
 

@@ -1,10 +1,15 @@
-import { lazy, Suspense, useState, useRef, useCallback } from 'react'
+import { lazy, Suspense, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import {
   IconArrowsMinimize,
   IconArrowsMaximize,
+  IconAlertCircle,
   IconCalendar,
+  IconCloudCheck,
+  IconCloudOff,
+  IconDeviceFloppy,
+  IconLoader2,
   IconMoon,
   IconSun,
   IconLayoutSidebarFilled,
@@ -255,6 +260,75 @@ function getGradientForNote(id) {
           radial-gradient(ellipse at top right, color-mix(in srgb, ${color2} 15%, transparent) 0%, transparent 50%)`;
 }
 
+function formatRelativeSaveTime(timestamp) {
+  if (!timestamp) {
+    return null
+  }
+
+  const parsed = new Date(timestamp)
+  if (Number.isNaN(parsed.getTime())) {
+    return null
+  }
+
+  const diffSeconds = Math.max(0, Math.round((Date.now() - parsed.getTime()) / 1000))
+
+  if (diffSeconds < 5) {
+    return 'just now'
+  }
+
+  if (diffSeconds < 60) {
+    return `${diffSeconds}s ago`
+  }
+
+  const diffMinutes = Math.round(diffSeconds / 60)
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m ago`
+  }
+
+  const diffHours = Math.round(diffMinutes / 60)
+  if (diffHours < 24) {
+    return `${diffHours}h ago`
+  }
+
+  const diffDays = Math.round(diffHours / 24)
+  return `${diffDays}d ago`
+}
+
+function getSaveBadgeMeta(saveStatus) {
+  switch (saveStatus?.state) {
+    case 'syncing':
+      return {
+        Icon: IconLoader2,
+        toneClassName: 'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
+        spin: true,
+      }
+    case 'saved':
+      return {
+        Icon: IconCloudCheck,
+        toneClassName: 'text-[var(--success)] border-[color-mix(in_srgb,var(--success)_26%,transparent)] bg-[color-mix(in_srgb,var(--success)_14%,transparent)]',
+        spin: false,
+      }
+    case 'offline':
+      return {
+        Icon: IconCloudOff,
+        toneClassName: 'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
+        spin: false,
+      }
+    case 'error':
+      return {
+        Icon: IconAlertCircle,
+        toneClassName: 'text-[var(--danger)] border-[color-mix(in_srgb,var(--danger)_28%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]',
+        spin: false,
+      }
+    default:
+      return {
+        Icon: IconDeviceFloppy,
+        toneClassName: 'text-[var(--text-muted)] border-[color-mix(in_srgb,var(--text-muted)_24%,transparent)] bg-[color-mix(in_srgb,var(--text-muted)_10%,transparent)]',
+        spin: false,
+      }
+  }
+}
+
 export default function NoteEditor({
   note,
   notes,
@@ -271,6 +345,9 @@ export default function NoteEditor({
   onToggleFocusMode,
   onOpenCommandPalette,
   onOpenAuthModal,
+  saveStatus,
+  lastSavedAt,
+  onRetrySync,
 }) {
   const { user, signOut } = useAuth()
 
@@ -480,6 +557,11 @@ export default function NoteEditor({
     sessionBaseRef.current = wordCount
   }
   const sessionDelta = wordCount - (sessionBaseRef.current ?? wordCount)
+  const saveBadgeMeta = getSaveBadgeMeta(saveStatus)
+  const saveLabel = saveStatus?.label || 'Local'
+  const saveDetail = saveStatus?.detail || 'Saved in this browser'
+  const saveError = saveStatus?.error
+  const lastSavedLabel = formatRelativeSaveTime(lastSavedAt)
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -658,7 +740,7 @@ export default function NoteEditor({
                 value={note.content}
                 contentDoc={note.contentDoc}
                 onChange={(updates) => onUpdateNote(note.id, updates)}
-                onRegisterEditorApi={onRegisterEditorApi}
+                onRegisterEditorApi={handleRegisterEditorApi}
               />
             </Suspense>
           </div>
@@ -669,6 +751,30 @@ export default function NoteEditor({
       <div
         className="hidden md:flex absolute bottom-4 right-4 flex-col items-end gap-1.5 px-4 py-2.5 bg-[var(--bg-surface)]/80 backdrop-blur-lg rounded-xl border border-[var(--border-subtle)] transition-all duration-300 z-20"
       >
+        <div className="flex items-center gap-2 text-[11px]">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${saveBadgeMeta.toneClassName}`}
+            title={saveError || saveDetail}
+          >
+            <saveBadgeMeta.Icon size={12} stroke={1.8} className={saveBadgeMeta.spin ? 'sync-spin' : undefined} />
+            {saveLabel}
+          </span>
+          {(lastSavedLabel || saveStatus?.state === 'offline') && (
+            <span className="text-[var(--text-muted)]" title={saveDetail}>
+              Last saved {lastSavedLabel || 'locally'}
+            </span>
+          )}
+          {saveStatus?.canRetry && onRetrySync && (
+            <button
+              type="button"
+              onClick={onRetrySync}
+              className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+
         {/* Stats line */}
         <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] tabular-nums select-none">
           {/* Session delta */}
