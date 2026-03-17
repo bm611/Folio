@@ -70,77 +70,81 @@ function getInitialOnlineState() {
   return navigator.onLine
 }
 
-const SAMPLE_NOTE = `# Welcome to Aura
+const SAMPLE_NOTE = `# ✍️ Welcome to Aura
 
-> [!note] - Local-First
-> Welcome to your local-first markdown workspace. Everything is stored in your browser — no account needed.
+Aura is a fast, local-first markdown editor designed for speed and clarity. This note is your interactive onboarding guide to help you master the editor.
 
-This note is a walkthrough of what you can do. Try typing \`/\` on a blank line to open the **slash command menu**, or press \`Cmd+K\` (or \`Ctrl+K\`) to open the **command palette**.
+> [!tip] - Pro Tip
+> Press \`Cmd + K\` (or \`Ctrl + K\`) to search notes, change fonts, or switch between Dark/Light mode.
 
 ---
 
-## ✍️ Rich Formatting
+## 🚀 Speed up with Slash Commands
 
-Aura supports all your favorite markdown formatting. You can write in *italics*, **bold**, ***bold italics***, or ~~strikethrough~~. You can also use \`inline code\`.
+Type \`/\` on a new line to see all available components. Try these:
 
-Links are easy: [Aura on GitHub](https://github.com/bm611/aura)
+- \`/h1\` or \`/h2\` — Quick headings
+- \`/todo\` — Insert a task checkbox
+- \`/callout\` — Add a beautiful info box (like the one above!)
+- \`/table\` — Insert a starter table
+- \`/divider\` — Add a horizontal rule
+- \`/today\` — Insert the current date
 
-## 📋 Organization
+---
 
-Keep things structured with lists and tasks.
+## 📝 Markdown Cheat Sheet
 
-### Lists
+Aura supports standard markdown. Here is how to format your thoughts:
 
-*   **Unordered lists** for loose items
-    *   Like this nested one
-*   And another item
+### Typography
+- **Bold**: \`**text**\`
+- *Italic*: \`*text*\`
+- ~~Strikethrough~~: \`~~text~~\`
+- \`Inline Code\`: \` \`code\` \`
+- [Links are easy](https://github.com/bm611/aura)
 
-1.  **Ordered lists** for steps
-2.  Step two
-3.  Step three
+### Lists & Tasks
+- [ ] Task: \`- [ ] item\`
+- [x] Completed: \`- [x] item\`
+- Bullets: \`- item\`
+- Numbered: \`1. item\`
 
-### Tasks
-
-Stay on top of what you need to do:
-
-- [x] Set up the workspace
-- [x] Try the slash commands
-- [ ] Add your first real note
-- [ ] Explore search
-
-## 💡 Callouts
-
-Draw attention to important information using callouts. Type \`/callout\` to quickly insert one.
-
-> [!tip] - Did you know?
-> You can change the editor font and theme! Open the command palette (\`Cmd+K\`) and search for "theme" or "font".
-
-> [!warning] - Important
-> Because Aura is local-first, notes are saved to your browser's local storage. Clearing site data will remove them!
-
-## 💻 Code Blocks
-
-Share code with syntax highlighting:
+### Code Blocks
+Type \` \` \` \` followed by a language to start a block:
 
 \`\`\`js
-function greet(name) {
-  return \`Hello, \${name}! Welcome to Aura.\`;
+function hello() {
+  console.log("Hello from Aura!");
 }
-
-console.log(greet("Friend"));
 \`\`\`
-
-## 💬 Quotes
-
-> "The best way to predict the future is to invent it." 
 
 ---
 
-## 🚀 Getting Started
+## 🏗️ Premium Components
 
-1. Use the **sidebar** to create a new note.
-2. Switch between **Dark Mode** and **Light Mode** using the button in the top right.
-3. Try **Focus Mode** for distraction-free writing!
+### Callouts
+Aura supports high-visibility callouts for expert organization. Use types like \`[!note]\`, \`[!tip]\`, \`[!warning]\`, and \`[!caution]\`.
+
+> [!warning] - Local-First Storage
+> Your notes stay in your browser. Clearing site data will delete your notes unless you **sign in** to sync them to the cloud.
+
+### Tables
+| Feature | Shortcut | Status |
+| :--- | :--- | :--- |
+| Slash Menu | \`/\` | ✅ |
+| Themes | \`Cmd + K\` | ✅ |
+| Export MD | Top Bar | ✅ |
+
+---
+
+## ⌨️ Useful Shortcuts
+
+- \`Cmd + B\` — Toggle Sidebar
+- \`Cmd + Shift + F\` — Toggle Focus Mode (distraction-free)
+- \`Cmd + K\` — Open Command Palette
+- \`Cmd + N\` — Create New Note
+
+Ready to go? Create your first note from the **Sidebar** or press \`Cmd + N\`!
 `
 
 function matchesQuery(query, values) {
@@ -160,7 +164,7 @@ function matchesQuery(query, values) {
 function ensureDailyFolder(tree) {
   const allNotes = flattenTree(tree)
   const dailyNotes = allNotes.filter(n => n.tags?.includes('daily'))
-  
+
   const recursiveFilter = (nodes) => {
     return nodes
       .filter(n => {
@@ -172,9 +176,9 @@ function ensureDailyFolder(tree) {
       })
       .map(n => n.children ? { ...n, children: recursiveFilter(n.children) } : n)
   }
-  
+
   const otherItems = recursiveFilter(tree)
-  
+
   if (dailyNotes.length === 0) return otherItems
 
   const dailyFolder = {
@@ -182,7 +186,7 @@ function ensureDailyFolder(tree) {
     type: 'folder',
     name: 'Daily',
     title: 'Daily',
-    children: dailyNotes.sort((a,b) => b.createdAt.localeCompare(a.createdAt)),
+    children: dailyNotes.sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
     createdAt: dailyNotes[dailyNotes.length - 1].createdAt,
     updatedAt: dailyNotes[0].updatedAt,
   }
