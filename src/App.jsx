@@ -603,6 +603,12 @@ function AppInner() {
       document.documentElement.style.setProperty('--accent', c.accent)
       document.documentElement.style.setProperty('--accent-hover', c.accentHover)
       document.documentElement.style.setProperty('--color-h1', c.colorH1)
+      document.documentElement.style.setProperty('--color-h2', c.colorH1)
+      document.documentElement.style.setProperty('--color-h3', c.accent)
+      document.documentElement.style.setProperty('--color-title', c.accent)
+      // Update the alias used in JSX
+      document.documentElement.style.setProperty('--title-color', c.accent)
+      document.documentElement.style.setProperty('--h1-color', c.colorH1)
     }
     localStorage.setItem('canvas-accent', accentId)
   }, [accentId, theme])

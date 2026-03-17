@@ -111,10 +111,10 @@
   --warning: #c89640;
 
   /* ── Heading scale — harmonious warm tones ── */
-  --color-h1: #e07a8a;
-  --color-h2: #b8a9d4;
-  --color-h3: #6aafca;
-  --color-title: #6aafca;
+  --color-h1: var(--accent);
+  --color-h2: color-mix(in srgb, var(--accent) 85%, #b8a9d4);
+  --color-h3: color-mix(in srgb, var(--accent) 80%, #6aafca);
+  --color-title: var(--accent);
   /* Aliases (referenced in JSX) */
   --h1-color: var(--color-h1);
   --h2-color: var(--color-h2);
@@ -202,10 +202,11 @@
   --success-muted: rgba(75, 130, 156, 0.08);
   --warning: #a07830;
 
-  --color-h1: #c4566a;
-  --color-h2: #8570a0;
-  --color-h3: #3e7e9e;
-  --color-title: #3e7e9e;
+  --color-h1: var(--accent);
+  --color-h2: color-mix(in srgb, var(--accent) 85%, #b8a9d4);
+  --color-h3: color-mix(in srgb, var(--accent) 80%, #6aafca);
+  --color-title: var(--accent);
+  /* Aliases (referenced in JSX) */
   --h1-color: var(--color-h1);
   --h2-color: var(--color-h2);
   --title-color: var(--color-title);
@@ -458,21 +459,136 @@ body {
   font-size: 0.85em;
 }
 
-.aura-editor .ProseMirror pre {
-  margin: 0.5rem 0;
-  overflow-x: auto;
+.aura-code-block-wrapper {
+  position: relative;
+  margin: 1.2rem 0;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--bg-surface) 88%, transparent);
-  padding: 0.85rem 1rem;
+  border-radius: var(--radius-xl);
+  background: #141414;
+  overflow: hidden;
+  transition: border-color var(--duration-fast);
+}
+
+.aura-code-block-wrapper:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border-subtle));
+}
+
+.aura-code-block-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.8rem;
+  background: rgba(20, 20, 20, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 10;
+  transition: all var(--duration-fast);
+}
+
+.aura-code-block-lang {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.aura-code-block-select {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: #999;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding-right: 1.4rem;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.15s;
+}
+
+.aura-code-block-select:hover {
+  color: #fff;
+}
+
+.aura-code-block-select-icon {
+  position: absolute;
+  right: 0;
+  pointer-events: none;
+  color: #666;
+}
+
+.aura-code-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aura-code-block-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.aura-code-block-copy:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.aura-code-block-copy.is-copied {
+  color: var(--success);
+}
+
+.aura-code-block-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: #666;
+  opacity: 0;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.aura-code-block-wrapper:hover .aura-code-block-delete {
+  opacity: 1;
+}
+
+.aura-code-block-delete:hover {
+  color: var(--danger);
+  background: var(--danger-muted);
+}
+
+.aura-editor .ProseMirror pre {
+  margin: 0;
+  padding: 3.2rem 1rem 1rem; /* Fixed spacing: more room for header, snug bottom */
+  overflow-x: auto;
+  background: transparent;
+  border: none;
 }
 
 .aura-editor .ProseMirror pre code {
-  border: none;
   background: none;
   padding: 0;
-  color: var(--text-primary);
-  font-size: 0.92rem;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  line-height: 1.6;
 }
 
 .aura-editor .ProseMirror hr {
