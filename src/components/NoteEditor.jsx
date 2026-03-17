@@ -541,6 +541,7 @@ export default function NoteEditor({
                 <IconCommand size={18} stroke={1.5} />
               </button>
             )}
+            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} mobile />
             <button type="button" onClick={onToggleTheme}>
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
