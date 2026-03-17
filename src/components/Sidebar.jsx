@@ -467,9 +467,27 @@ export default function Sidebar({
 
             <div className="sb-actions">
               <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><IconHome size={16} stroke={1.5} /></button>
-              <button title="New File" onClick={() => handleRootCreate("file")} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><Icon n="newFile" s={16} /></button>
-              <button title="New Folder" onClick={() => handleRootCreate("folder")} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><Icon n="newFolder" s={16} /></button>
             </div>
+          </div>
+
+          {/* New file / folder buttons */}
+          <div className="flex items-center gap-1.5 px-3 pb-2">
+            <button
+              onClick={() => handleRootCreate("file")}
+              className="sb-create-btn flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] active:scale-[0.97]"
+              style={{ fontFamily: '"Outfit", sans-serif' }}
+            >
+              <IconFilePlus size={14} stroke={1.5} />
+              New File
+            </button>
+            <button
+              onClick={() => handleRootCreate("folder")}
+              className="sb-create-btn flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] active:scale-[0.97]"
+              style={{ fontFamily: '"Outfit", sans-serif' }}
+            >
+              <IconFolderPlus size={14} stroke={1.5} />
+              New Folder
+            </button>
           </div>
 
           <div className="sb-search-container">

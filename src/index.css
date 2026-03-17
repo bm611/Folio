@@ -1131,6 +1131,17 @@ body {
   color: var(--danger);
 }
 
+.sb-create-btn {
+  transition: transform 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sb-create-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+}
+
 .sb-search-container {
   padding: 0 16px 12px;
   border-bottom: 1px solid var(--border-subtle);

@@ -7,6 +7,7 @@ import {
   IconMoon,
   IconFileText,
   IconSun,
+  IconPlus,
 } from '@tabler/icons-react'
 
 import Sidebar, { flattenTree, insertNode, deleteNode, updateFileNode, findNode } from './components/Sidebar'
@@ -588,6 +589,7 @@ function AppInner() {
       section: 'Actions',
       title: 'New note',
       subtitle: 'Create a blank note',
+      icon: <IconPlus size={16} stroke={1.5} />,
       keywords: ['create', 'note', 'new'],
       run: () => handleNewNote(),
     },

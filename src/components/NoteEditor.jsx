@@ -316,25 +316,25 @@ export default function NoteEditor({
 
     return (
       <div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
-        {/* Top bar — hidden on mobile (actions are in bottom bar) */}
-        <div className="hidden md:flex items-center justify-between px-4 py-2 md:px-6">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-4 py-2 md:px-6">
           {sidebarCollapsed ? (
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title="Open sidebar (Cmd+B)"
             >
               <IconLayoutSidebarFilled size={18} stroke={1.5} style={{ transform: "scaleX(-1)" }} />
             </button>
           ) : (
-            <div className="w-10" />
+            <div className="hidden md:block w-10" />
           )}
-          <div className="flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-1">
             <button
               type="button"
               onClick={onToggleTheme}
-              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-all duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
@@ -463,21 +463,6 @@ export default function NoteEditor({
             <button type="button" onClick={onToggleTheme}>
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
-            {user ? (
-              <div className="auth-group-mobile">
-                <div title={`Signed in as ${user.email}`} className="auth-pill-mobile auth-pill-mobile--signed-in">
-                  <span className="auth-pill__avatar auth-pill__avatar--sm">{user.email?.[0]?.toUpperCase() || '?'}</span>
-                  <span className="auth-pill__dot auth-pill__dot--mobile" />
-                </div>
-                <button type="button" onClick={signOut} title="Sign out" className="auth-signout-btn-mobile">
-                  <IconLogout size={16} stroke={2} />
-                </button>
-              </div>
-            ) : (
-              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync" className="auth-pill-mobile auth-pill-mobile--signed-out">
-                <IconCloudUp size={16} stroke={2} />
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -586,7 +571,7 @@ export default function NoteEditor({
             </button>
             {/* Auth: show sign-in or user avatar+signout */}
             {user ? (
-              <div className="hidden md:flex auth-group">
+              <div className="flex auth-group">
                 <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
                   <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
                   <span className="auth-pill__dot" />
@@ -604,7 +589,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={onOpenAuthModal}
-                className="hidden md:relative md:flex auth-pill auth-pill--signed-out"
+                className="relative flex auth-pill auth-pill--signed-out"
                 title="Sign in to sync your notes"
               >
                 <IconCloudUp size={14} stroke={2} />
@@ -726,21 +711,6 @@ export default function NoteEditor({
             <button type="button" onClick={onToggleTheme} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-4">
               {theme === 'dark' ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
             </button>
-            {user ? (
-              <div className="auth-group-mobile">
-                <div title={`Signed in as ${user.email}`} className="auth-pill-mobile auth-pill-mobile--signed-in">
-                  <span className="auth-pill__avatar auth-pill__avatar--sm">{user.email?.[0]?.toUpperCase() || '?'}</span>
-                  <span className="auth-pill__dot auth-pill__dot--mobile" />
-                </div>
-                <button type="button" onClick={signOut} title="Sign out" className="auth-signout-btn-mobile">
-                  <IconLogout size={16} stroke={2} />
-                </button>
-              </div>
-            ) : (
-              <button type="button" onClick={onOpenAuthModal} title="Sign in to sync" className="auth-pill-mobile auth-pill-mobile--signed-out">
-                <IconCloudUp size={16} stroke={2} />
-              </button>
-            )}
           </div>
         </div>
       )}

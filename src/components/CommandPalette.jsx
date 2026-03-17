@@ -17,10 +17,15 @@ export default function CommandPalette({
       return
     }
 
-    window.requestAnimationFrame(() => {
-      inputRef.current?.focus()
-      inputRef.current?.select()
-    })
+    // Skip auto-focus on touch devices to prevent the mobile keyboard
+    // from opening and blocking the command options
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
+    if (!isTouchDevice) {
+      window.requestAnimationFrame(() => {
+        inputRef.current?.focus()
+        inputRef.current?.select()
+      })
+    }
   }, [open])
 
   useEffect(() => {
@@ -152,6 +157,7 @@ export default function CommandPalette({
                       {item.icon ? <span className="shrink-0 text-[var(--text-muted)]">{item.icon}</span> : null}
                       <span
                         className="truncate text-[13px] font-medium"
+                        style={{ fontFamily: '"Outfit", sans-serif' }}
                       >
                         {item.title}
                       </span>
