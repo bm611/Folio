@@ -360,8 +360,6 @@ function AppInner() {
     }
 
     const template = `
-# Daily Note: ${dateStr}
-
 ## Journal
 - 
 
