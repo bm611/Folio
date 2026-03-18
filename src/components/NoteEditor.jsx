@@ -470,9 +470,15 @@ export default function NoteEditor({
             <div className="flex items-center gap-2 w-full justify-center px-2 sm:px-0">
               <button
                 onClick={() => onNewNote?.()}
-                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-lg shadow-[var(--accent)]/15 transition-all duration-200 hover:brightness-110 active:scale-[0.98] sm:px-6 sm:text-[14px]"
+                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-3 text-[13px] font-semibold text-white shadow-[0_0_30px_var(--accent)]/35 transition-all duration-300 hover:brightness-125 hover:shadow-[0_0_50px_var(--accent)]/60 active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
-                <Icon icon={Add01Icon} size={16} strokeWidth={2.5} className="shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+                <Icon
+                  icon={Add01Icon}
+                  size={16}
+                  strokeWidth={2.5}
+                  className="shrink-0 transition-transform duration-300 group-hover:rotate-90"
+                  style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))' }}
+                />
                 <span className="truncate">New Note</span>
               </button>
               <button

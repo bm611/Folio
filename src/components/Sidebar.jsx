@@ -96,53 +96,45 @@ function SidebarIcon({ n, s = 14 }) {
   return <Icon icon={iconData} size={s} strokeWidth={1.5} style={{ display: 'block' }} />
 }
 
-// ─── Sync Status Badge ────────────────────────────────────────────────────────
-function SyncBadge({ syncing, syncStatus }) {
+// ─── Sync Nav Item ────────────────────────────────────────────────────────────
+function SyncNavItem({ syncing, syncStatus }) {
   const { user } = useAuth()
   const state = syncStatus?.state
-  const message = syncStatus?.message
-  const error = syncStatus?.error
 
+  let icon, className, label, tooltip
   if (!user) {
-    return (
-      <div className="sync-badge sync-badge--local" title="Notes saved locally in your browser">
-        <Icon icon={FloppyDiskIcon} size={13} stroke={1.5} />
-        <span>Local</span>
-      </div>
-    )
-  }
-
-  if (state === 'offline') {
-    return (
-      <div className="sync-badge sync-badge--offline" title="Offline — changes are safe locally">
-        <Icon icon={CloudIcon} size={13} stroke={1.5} />
-        <span>{message || 'Offline'}</span>
-      </div>
-    )
-  }
-
-  if (state === 'error') {
-    return (
-      <div className="sync-badge sync-badge--error" title={error || 'Cloud sync failed'}>
-        <Icon icon={CloudIcon} size={13} stroke={1.5} />
-        <span>{message || 'Sync failed'}</span>
-      </div>
-    )
-  }
-
-  if (syncing || state === 'syncing') {
-    return (
-      <div className="sync-badge sync-badge--syncing" title="Saving to cloud…">
-        <Icon icon={Loading01Icon} size={13} stroke={2} className="sync-spin" />
-        <span>Syncing…</span>
-      </div>
-    )
+    icon = FloppyDiskIcon
+    className = 'sync-nav--local'
+    label = 'Local'
+    tooltip = 'Notes saved locally in your browser'
+  } else if (state === 'offline') {
+    icon = CloudIcon
+    className = 'sync-nav--offline'
+    label = 'Offline'
+    tooltip = syncStatus?.message || 'Offline — changes are safe locally'
+  } else if (state === 'error') {
+    icon = CloudIcon
+    className = 'sync-nav--error'
+    label = 'Sync error'
+    tooltip = syncStatus?.error || 'Cloud sync failed'
+  } else if (syncing || state === 'syncing') {
+    icon = Loading01Icon
+    className = 'sync-nav--syncing'
+    label = 'Syncing…'
+    tooltip = 'Saving to cloud…'
+  } else {
+    icon = CloudSavingDone01Icon
+    className = 'sync-nav--synced'
+    label = 'Synced'
+    tooltip = `Synced to cloud as ${user.email}`
   }
 
   return (
-    <div className="sync-badge sync-badge--synced" title={`Synced to cloud as ${user.email}`}>
-      <Icon icon={CloudSavingDone01Icon} size={13} stroke={1.5} />
-      <span>{message || 'Synced'}</span>
+    <div className={`sb-nav-item sb-nav-sync ${className}`} title={tooltip}>
+      <span className="sb-nav-icon">
+        <Icon icon={icon} size={16} stroke={1.5} className={syncing || state === 'syncing' ? 'sync-spin' : ''} />
+      </span>
+      <span className="sb-nav-label">{label}</span>
     </div>
   )
 }
@@ -248,8 +240,8 @@ function TreeNode({ node, depth, activeId, onSelect, onDelete, onRename, expande
               <button title="New File" onClick={() => { setCreatingIn({ parentId: node.id, type: "file" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFile" s={12} /></button>
               <button title="New Folder" onClick={() => { setCreatingIn({ parentId: node.id, type: "folder" }); toggleExpand(node.id, true); }}><SidebarIcon n="newFolder" s={12} /></button>
             </>}
-            <button title="Rename" onClick={() => setRenaming(true)} className="relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><SidebarIcon n="edit" s={12} /></button>
-            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger relative transition-transform active:scale-[0.9] after:absolute after:-inset-2"><SidebarIcon n="trash" s={12} /></button>
+            <button title="Rename" onClick={() => setRenaming(true)}><SidebarIcon n="edit" s={12} /></button>
+            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger"><SidebarIcon n="trash" s={12} /></button>
           </span>
         )}
       </div>
@@ -343,6 +335,10 @@ export default function Sidebar({
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
   const [creatingIn, setCreatingIn] = useState(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [foldersOpen, setFoldersOpen] = useState(true);
+  const [filesOpen, setFilesOpen] = useState(true);
+  const searchInputRef = useRef(null);
 
   const toggleExpand = (id, forceOpen) => setExpanded(prev => {
     const s = new Set(prev);
@@ -411,6 +407,10 @@ export default function Sidebar({
     return sortNodes(filterNodes(tree));
   }, [tree, searchQuery]);
 
+  const visibleFolders = useMemo(() => visibleTree.filter(n => n.type === 'folder'), [visibleTree]);
+  const visibleFiles = useMemo(() => visibleTree.filter(n => n.type === 'file'), [visibleTree]);
+  const searchExpanded = searchFocused || searchQuery.length > 0;
+
   const getVisibleFiles = useCallback((nodes) => {
     let result = [];
     for (const node of nodes) {
@@ -471,18 +471,20 @@ export default function Sidebar({
     <>
       {!collapsed && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden transition-all duration-300"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden transition-opacity duration-300"
           onClick={onToggleCollapse}
         />
       )}
 
       <aside
-        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-full'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-[100dvh] shrink-0 overflow-hidden transition-all duration-300`}
+        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-full'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-[100dvh] shrink-0 overflow-hidden transition-[width] duration-300 ease-out`}
         style={{ width: collapsed ? 0 : width, maxWidth: '100vw' }}
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
-          {/* Header */}
+
+          {/* Header — app name + collapse icon */}
           <div className="sb-header-wrapper">
+            <span className="sb-app-name">Aura</span>
             <button
               type="button"
               onClick={onToggleCollapse}
@@ -491,84 +493,161 @@ export default function Sidebar({
             >
               <Icon icon={SidebarLeftIcon} size={18} stroke={1.5} />
             </button>
-
-            <div className="sb-actions">
-              <button title="Home" onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }} className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3"><Icon icon={Home01Icon} size={16} stroke={1.5} /></button>
-            </div>
           </div>
 
-          {/* New file / folder buttons */}
-          <div className="flex items-center gap-1.5 px-3 pb-2">
+          {/* Nav items — Home, Search, Sync */}
+          <div className="sb-nav-items">
+            {/* Home */}
             <button
-              onClick={() => handleRootCreate("file")}
-              className="sb-create-btn flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] active:scale-[0.97]"
-              style={{ fontFamily: '"Outfit", sans-serif' }}
+              className="sb-nav-item"
+              onClick={() => { onSelectNote(null); if (window.innerWidth < 768) onToggleCollapse(); }}
             >
-              <Icon icon={FileAddIcon} size={14} stroke={1.5} />
-              New File
+              <span className="sb-nav-icon">
+                <Icon icon={Home01Icon} size={16} stroke={1.5} />
+              </span>
+              <span className="sb-nav-label">Home</span>
             </button>
-            <button
-              onClick={() => handleRootCreate("folder")}
-              className="sb-create-btn flex-1 flex items-center justify-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2 py-1.5 text-[12px] font-medium text-[var(--text-secondary)] active:scale-[0.97]"
-              style={{ fontFamily: '"Outfit", sans-serif' }}
-            >
-              <Icon icon={FolderAddIcon} size={14} stroke={1.5} />
-              New Folder
-            </button>
-          </div>
 
-          <div className="sb-search-container">
-            <label className="sb-search">
-              <Icon icon={Search01Icon} size={16} stroke={1.5} className="shrink-0 text-[var(--text-muted)] transition-colors" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(event) => onSearchChange(event.target.value)}
-                placeholder="Search notes..."
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => onSearchChange('')}
-                  className="relative transition-transform active:scale-[0.97] after:absolute after:-inset-3 shrink-0 flex items-center justify-center w-5 h-5 rounded-full text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
-                  aria-label="Clear search"
-                >
-                  <Icon icon={Cancel01Icon} size={12} stroke={2} />
-                </button>
+            {/* Search — expands inline on click */}
+            <div
+              className={`sb-nav-item sb-nav-search${searchExpanded ? ' is-expanded' : ''}`}
+              onClick={() => {
+                if (!searchExpanded) {
+                  setSearchFocused(true);
+                  setTimeout(() => searchInputRef.current?.focus(), 10);
+                }
+              }}
+            >
+              <span className="sb-nav-icon">
+                <Icon icon={Search01Icon} size={16} stroke={1.5} />
+              </span>
+              {searchExpanded ? (
+                <>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    placeholder="Search..."
+                    onFocus={() => setSearchFocused(true)}
+                    onBlur={() => { if (!searchQuery) setSearchFocused(false); }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="sb-nav-search-clear"
+                      onClick={(e) => { e.stopPropagation(); onSearchChange(''); setSearchFocused(false); }}
+                      aria-label="Clear search"
+                    >
+                      <Icon icon={Cancel01Icon} size={12} stroke={2} />
+                    </button>
+                  )}
+                </>
+              ) : (
+                <span className="sb-nav-label">Search</span>
               )}
-            </label>
+            </div>
+
+            {/* Sync status — icon only with tooltip */}
+            <SyncNavItem syncing={syncing} syncStatus={syncStatus} />
           </div>
 
           {/* Tree list */}
           <div className="sb-tree">
-            {visibleTree.map(node => (
-              <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
-                onSelect={(id) => {
-                  onSelectNote(id);
-                  if (window.innerWidth < 768) onToggleCollapse();
-                }}
-                onDelete={(id) => onDeleteNote(id)}
-                onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
-                expanded={expanded} toggleExpand={toggleExpand}
-                creatingIn={creatingIn} setCreatingIn={setCreatingIn}
-                onCreateConfirm={handleCreateConfirm} />
-            ))}
-            {creatingIn?.parentId === null && (
-              <InlineCreator depth={0} type={creatingIn.type}
-                onConfirm={(name) => handleCreateConfirm(name, null, creatingIn.type)}
-                onCancel={() => setCreatingIn(null)} />
-            )}
+            {searchQuery.trim() ? (
+              /* Search mode — flat filtered results */
+              <>
+                {visibleTree.map(node => (
+                  <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
+                    onSelect={(id) => { onSelectNote(id); if (window.innerWidth < 768) onToggleCollapse(); }}
+                    onDelete={(id) => onDeleteNote(id)}
+                    onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
+                    expanded={expanded} toggleExpand={toggleExpand}
+                    creatingIn={creatingIn} setCreatingIn={setCreatingIn}
+                    onCreateConfirm={handleCreateConfirm} />
+                ))}
+                {creatingIn?.parentId === null && (
+                  <InlineCreator depth={0} type={creatingIn.type}
+                    onConfirm={(name) => handleCreateConfirm(name, null, creatingIn.type)}
+                    onCancel={() => setCreatingIn(null)} />
+                )}
+                {visibleTree.length === 0 && (
+                  <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
+                    No results found
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Normal mode — Folders + Files sections */
+              <>
+                {/* Folders section */}
+                <div className="sb-section">
+                  <div className="sb-section-header">
+                    <button className="sb-section-toggle" onClick={() => setFoldersOpen(p => !p)}>
+                      <span className={`sb-section-chevron${foldersOpen ? ' open' : ''}`}>
+                        <SidebarIcon n="chevR" s={10} />
+                      </span>
+                      <span>Folders</span>
+                    </button>
+                    <button className="sb-section-add" title="New Folder" onClick={() => handleRootCreate('folder')}>
+                      <SidebarIcon n="newFolder" s={13} />
+                    </button>
+                  </div>
+                  {foldersOpen && (
+                    <div className="sb-section-body">
+                      {visibleFolders.map(node => (
+                        <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
+                          onSelect={(id) => { onSelectNote(id); if (window.innerWidth < 768) onToggleCollapse(); }}
+                          onDelete={(id) => onDeleteNote(id)}
+                          onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
+                          expanded={expanded} toggleExpand={toggleExpand}
+                          creatingIn={creatingIn} setCreatingIn={setCreatingIn}
+                          onCreateConfirm={handleCreateConfirm} />
+                      ))}
+                      {creatingIn?.parentId === null && creatingIn.type === 'folder' && (
+                        <InlineCreator depth={0} type="folder"
+                          onConfirm={(name) => handleCreateConfirm(name, null, 'folder')}
+                          onCancel={() => setCreatingIn(null)} />
+                      )}
+                    </div>
+                  )}
+                </div>
 
-            {visibleTree.length === 0 && searchQuery.trim() && (
-              <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">
-                No results found
-              </div>
+                {/* Files section */}
+                <div className="sb-section">
+                  <div className="sb-section-header">
+                    <button className="sb-section-toggle" onClick={() => setFilesOpen(p => !p)}>
+                      <span className={`sb-section-chevron${filesOpen ? ' open' : ''}`}>
+                        <SidebarIcon n="chevR" s={10} />
+                      </span>
+                      <span>Files</span>
+                    </button>
+                    <button className="sb-section-add" title="New File" onClick={() => handleRootCreate('file')}>
+                      <SidebarIcon n="newFile" s={13} />
+                    </button>
+                  </div>
+                  {filesOpen && (
+                    <div className="sb-section-body">
+                      {visibleFiles.map(node => (
+                        <TreeNode key={node.id} node={node} depth={0} activeId={activeNoteId}
+                          onSelect={(id) => { onSelectNote(id); if (window.innerWidth < 768) onToggleCollapse(); }}
+                          onDelete={(id) => onDeleteNote(id)}
+                          onRename={(id, name) => setTree(prev => renameNode(prev, id, name))}
+                          expanded={expanded} toggleExpand={toggleExpand}
+                          creatingIn={creatingIn} setCreatingIn={setCreatingIn}
+                          onCreateConfirm={handleCreateConfirm} />
+                      ))}
+                      {creatingIn?.parentId === null && creatingIn.type === 'file' && (
+                        <InlineCreator depth={0} type="file"
+                          onConfirm={(name) => handleCreateConfirm(name, null, 'file')}
+                          onCancel={() => setCreatingIn(null)} />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
             )}
-          </div>
-
-          {/* Sync status footer */}
-          <div className="sb-footer">
-            <SyncBadge syncing={syncing} syncStatus={syncStatus} />
           </div>
         </div>
 
