@@ -476,17 +476,17 @@ export default function Sidebar({
         onClick={onToggleCollapse}
       />
 
+      {/* On mobile this element is always 0-wide in the flex row; the aside is position:fixed and slides over the content */}
       <aside
-        className={`sidebar-vs fixed inset-y-0 left-0 z-40 h-[100dvh] shrink-0 overflow-hidden
-          max-md:w-[60vw] max-md:transition-transform max-md:duration-300 max-md:ease-out
-          md:relative md:z-auto md:transition-[width] md:duration-300 md:ease-out
-          ${collapsed ? 'max-md:-translate-x-full' : 'max-md:translate-x-0'}`}
+        className={`sidebar-vs
+          max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:h-[100dvh] max-md:w-[60vw]
+          max-md:transition-transform max-md:duration-300 max-md:ease-out
+          ${collapsed ? 'max-md:-translate-x-full' : 'max-md:translate-x-0'}
+          md:relative md:z-auto md:h-[100dvh] md:shrink-0 md:transition-[width] md:duration-300 md:ease-out`}
         style={{
-          // Desktop only: drive the width animation in the flex row.
-          // On mobile the aside is position:fixed so it's out of flow — no inline width needed.
-          ...(typeof window !== 'undefined' && window.innerWidth >= 768
-            ? { width: collapsed ? 0 : width }
-            : {}),
+          // Mobile: no inline width — position:fixed removes it from flow entirely.
+          // Desktop: animate width in the flex row.
+          width: typeof window !== 'undefined' && window.innerWidth < 768 ? undefined : (collapsed ? 0 : width),
         }}
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
