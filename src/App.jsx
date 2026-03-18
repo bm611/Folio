@@ -37,6 +37,7 @@ import { docToMarkdown } from './editor/markdown/markdownConversion'
 import { ACCENT_COLORS } from './config/accents'
 
 const TREE_STORAGE_KEY_PREFIX = 'canvas-tree:'
+const PENDING_UPSERT_STORAGE_KEY_PREFIX = 'canvas-pending-upserts:'
 const PENDING_DELETE_STORAGE_KEY_PREFIX = 'canvas-pending-delete:'
 
 const FONT_OPTIONS = [
@@ -59,6 +60,10 @@ function getTreeStorageKey(userId) {
 
 function getPendingDeleteStorageKey(userId) {
   return `${PENDING_DELETE_STORAGE_KEY_PREFIX}${userId}`
+}
+
+function getPendingUpsertsStorageKey(userId) {
+  return `${PENDING_UPSERT_STORAGE_KEY_PREFIX}${userId}`
 }
 
 function loadTree(userId) {
@@ -113,6 +118,40 @@ function savePendingDeleteIds(userId, ids) {
   }
 
   localStorage.setItem(getPendingDeleteStorageKey(userId), JSON.stringify(ids))
+}
+
+function loadPendingUpserts(userId) {
+  if (!userId) {
+    return {}
+  }
+
+  try {
+    const raw = localStorage.getItem(getPendingUpsertsStorageKey(userId))
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+    }
+  } catch {
+    return {}
+  }
+
+  return {}
+}
+
+function savePendingUpserts(userId, pendingUpserts) {
+  if (!userId) {
+    return
+  }
+
+  localStorage.setItem(getPendingUpsertsStorageKey(userId), JSON.stringify(pendingUpserts))
+}
+
+function clearPendingUpserts(userId) {
+  if (!userId) {
+    return
+  }
+
+  localStorage.removeItem(getPendingUpsertsStorageKey(userId))
 }
 
 function clearPendingDeleteIds(userId) {
@@ -265,19 +304,6 @@ function ensureDailyFolder(tree) {
   return [dailyFolder, ...otherItems]
 }
 
-function getComparableTimestamp(value) {
-  const parsed = Date.parse(value || '')
-  return Number.isNaN(parsed) ? 0 : parsed
-}
-
-function getNoteChangeTimestamp(note) {
-  return Math.max(
-    getComparableTimestamp(note?.localCheckpointAt),
-    getComparableTimestamp(note?.updatedAt),
-    getComparableTimestamp(note?.createdAt)
-  )
-}
-
 function isSyntheticDailyFolder(node) {
   return node?.type === 'folder' && node.id === 'folder-daily'
 }
@@ -303,91 +329,24 @@ function findSyncableItem(tree, id) {
   return getSyncableTreeItems(tree).find((node) => node.id === id) ?? null
 }
 
-function itemsHaveDifferentContent(localNote, cloudNote) {
-  if (localNote.type === 'folder' || cloudNote.type === 'folder') {
-    return (
-      (localNote.type || 'file') !== (cloudNote.type || 'file') ||
-      (localNote.name || '') !== (cloudNote.name || '') ||
-      (localNote.title || '') !== (cloudNote.title || '') ||
-      getPersistedParentId(localNote, localNote.parentId) !== getPersistedParentId(cloudNote, cloudNote.parentId)
-    )
-  }
-
-  return (
-    (localNote.title || '') !== (cloudNote.title || '') ||
-    (localNote.content || '') !== (cloudNote.content || '') ||
-    JSON.stringify(localNote.contentDoc || null) !== JSON.stringify(cloudNote.contentDoc || null) ||
-    JSON.stringify(localNote.tags || []) !== JSON.stringify(cloudNote.tags || []) ||
-    (localNote.wordGoal || null) !== (cloudNote.wordGoal || null)
-  )
-}
-
-function shouldPreferLocalNote(localNote, cloudNote) {
-  const localChangedAt = getNoteChangeTimestamp(localNote)
-  const cloudChangedAt = getNoteChangeTimestamp(cloudNote)
-  const lastSyncedAt = getComparableTimestamp(localNote.lastSyncedAt)
-
-  if (lastSyncedAt && localChangedAt > lastSyncedAt) {
-    return true
-  }
-
-  return itemsHaveDifferentContent(localNote, cloudNote) && localChangedAt >= cloudChangedAt
-}
-
-function mergeLocalChangesIntoCloud(localTree, cloudNotes, pendingDeleteIds = []) {
-  const localNotes = getSyncableTreeItems(localTree).map(normalizeNote)
-  const visibleCloudNotes = cloudNotes.filter((note) => !pendingDeleteIds.includes(note.id))
-  const cloudById = new Map(visibleCloudNotes.map(normalizeNote).map((n) => [n.id, n]))
-  const localById = new Map(localNotes.map((n) => [n.id, n]))
-  const notesToUploadById = new Map()
-
-  // Determine the winning version of each note and track what needs uploading
+function buildTreeFromCloudAndPending(cloudNotes, pendingUpserts = {}, pendingDeleteIds = []) {
+  const pendingDeleteSet = new Set(pendingDeleteIds)
   const resolvedById = new Map()
 
-  for (const localNote of localNotes) {
-    const cloudNote = cloudById.get(localNote.id)
-
-    if (!cloudNote) {
-      // Local-only note — needs to be uploaded
-      const mergedNote = { ...localNote, syncError: null }
-      resolvedById.set(localNote.id, mergedNote)
-      notesToUploadById.set(localNote.id, mergedNote)
-    } else if (shouldPreferLocalNote(localNote, cloudNote)) {
-      // Local is newer — use local content, mark for upload
-      const mergedNote = { ...cloudNote, ...localNote, syncError: null }
-      resolvedById.set(localNote.id, mergedNote)
-      notesToUploadById.set(localNote.id, mergedNote)
-    } else {
-      // Cloud is newer or equal — use cloud content
-      resolvedById.set(localNote.id, { ...cloudNote, syncError: null })
+  for (const note of cloudNotes) {
+    if (!pendingDeleteSet.has(note.id)) {
+      resolvedById.set(note.id, { ...normalizeNote(note), syncError: null })
     }
   }
 
-  // Include cloud-only items (not present in local tree at all)
-  for (const cloudNote of cloudById.values()) {
-    if (!localById.has(cloudNote.id)) {
-      resolvedById.set(cloudNote.id, { ...cloudNote, syncError: null })
+  for (const pendingNote of Object.values(pendingUpserts)) {
+    const normalizedPendingNote = normalizeNote(pendingNote)
+    if (!pendingDeleteSet.has(normalizedPendingNote.id)) {
+      resolvedById.set(normalizedPendingNote.id, { ...normalizedPendingNote, syncError: null })
     }
   }
 
-  const allResolved = Array.from(resolvedById.values())
-  const mergedTree = rebuildTreeFromFlat(allResolved)
-
-  return {
-    mergedTree: ensureDailyFolder(mergedTree),
-    notesToUpload: Array.from(notesToUploadById.values()),
-  }
-}
-
-function formatImportedChangesMessage(count, didSyncToCloud) {
-  if (count <= 0) {
-    return ''
-  }
-
-  const label = count === 1 ? 'local change' : 'local changes'
-  return didSyncToCloud
-    ? `Imported ${count} ${label} from this device and synced to cloud`
-    : `Imported ${count} ${label} from this device`
+  return ensureDailyFolder(rebuildTreeFromFlat(Array.from(resolvedById.values())))
 }
 
 export default function App() {
@@ -440,6 +399,7 @@ function AppInner() {
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState(null)
   const [failedSyncNoteIds, setFailedSyncNoteIds] = useState([])
+  const [pendingUpserts, setPendingUpserts] = useState({})
   const [pendingDeleteIds, setPendingDeleteIds] = useState([])
   const [isOnline, setIsOnline] = useState(getInitialOnlineState)
   const [syncToast, setSyncToast] = useState(null)
@@ -450,6 +410,9 @@ function AppInner() {
   const editorApiRef = useRef(null)
   const treeRef = useRef(tree)
   const lastUserIdRef = useRef(null)
+  const pendingUpsertsRef = useRef({})
+  const pendingDeleteIdsRef = useRef([])
+  const hydrationInFlightRef = useRef(false)
 
   const hasPendingCloudSaves = useCallback(() => {
     return Object.values(cloudSaveTimers.current).some(Boolean)
@@ -470,6 +433,57 @@ function AppInner() {
     }, 2600)
   }, [])
 
+  const queuePendingUpsert = useCallback((note) => {
+    if (!note?.id) {
+      return
+    }
+
+    const normalizedNote = normalizeNote(note)
+    const nextPendingUpserts = {
+      ...pendingUpsertsRef.current,
+      [normalizedNote.id]: normalizedNote,
+    }
+    const nextPendingDeleteIds = pendingDeleteIdsRef.current.filter((id) => id !== normalizedNote.id)
+
+    pendingUpsertsRef.current = nextPendingUpserts
+    pendingDeleteIdsRef.current = nextPendingDeleteIds
+    setPendingUpserts(nextPendingUpserts)
+    setPendingDeleteIds(nextPendingDeleteIds)
+  }, [])
+
+  const clearPendingUpsert = useCallback((noteId) => {
+    if (!noteId) {
+      return
+    }
+
+    if (!(noteId in pendingUpsertsRef.current)) {
+      return
+    }
+
+    const nextPendingUpserts = { ...pendingUpsertsRef.current }
+    delete nextPendingUpserts[noteId]
+    pendingUpsertsRef.current = nextPendingUpserts
+    setPendingUpserts(nextPendingUpserts)
+  }, [])
+
+  const markPendingDelete = useCallback((nodeIds) => {
+    if (!nodeIds?.length) {
+      return
+    }
+
+    const nextPendingDeleteIds = Array.from(new Set([...pendingDeleteIdsRef.current, ...nodeIds]))
+    const nextPendingUpserts = { ...pendingUpsertsRef.current }
+
+    nodeIds.forEach((id) => {
+      delete nextPendingUpserts[id]
+    })
+
+    pendingDeleteIdsRef.current = nextPendingDeleteIds
+    pendingUpsertsRef.current = nextPendingUpserts
+    setPendingDeleteIds(nextPendingDeleteIds)
+    setPendingUpserts(nextPendingUpserts)
+  }, [])
+
   const syncNoteToCloud = useCallback(async (noteOrId) => {
     if (!user) {
       return false
@@ -477,19 +491,6 @@ function AppInner() {
 
     const noteId = typeof noteOrId === 'string' ? noteOrId : noteOrId?.id
     if (!noteId) {
-      return false
-    }
-
-    if (!navigator.onLine) {
-      const message = 'Offline — changes are saved and will retry when online.'
-      setSyncError(message)
-      setFailedSyncNoteIds((currentIds) => (
-        currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
-      ))
-      setTree((previousTree) => updateFileNode(previousTree, noteId, {
-        syncError: message,
-        localCheckpointAt: new Date().toISOString(),
-      }))
       return false
     }
 
@@ -501,11 +502,27 @@ function AppInner() {
       return false
     }
 
+    if (!navigator.onLine) {
+      const message = 'Offline — changes are saved and will retry when online.'
+      setSyncError(message)
+      queuePendingUpsert(note)
+      setFailedSyncNoteIds((currentIds) => {
+        const nextIds = currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
+        return nextIds
+      })
+      setTree((previousTree) => updateFileNode(previousTree, noteId, {
+        syncError: message,
+        localCheckpointAt: new Date().toISOString(),
+      }))
+      return false
+    }
+
     try {
       const parentId = getPersistedParentId(note, getParentId(treeRef.current, note.id))
       await upsertNote({ ...note, parentId }, user.id)
       const syncedAt = new Date().toISOString()
       setSyncError(null)
+      clearPendingUpsert(noteId)
       setFailedSyncNoteIds((currentIds) => currentIds.filter((id) => id !== noteId))
       setTree((previousTree) => {
         const nextTree = updateFileNode(previousTree, noteId, {
@@ -521,16 +538,17 @@ function AppInner() {
     } catch (err) {
       const message = err?.message || 'Sync failed. Changes will retry when possible.'
       setSyncError(message)
+      queuePendingUpsert(note)
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
       ))
       setTree((previousTree) => updateFileNode(previousTree, noteId, { syncError: message }))
       return false
     }
-  }, [user])
+  }, [clearPendingUpsert, queuePendingUpsert, user])
 
   const retryFailedSyncs = useCallback(async () => {
-    if (!user || failedSyncNoteIds.length === 0) {
+    if (!user || (failedSyncNoteIds.length === 0 && Object.keys(pendingUpsertsRef.current).length === 0 && pendingDeleteIdsRef.current.length === 0)) {
       return
     }
 
@@ -540,28 +558,39 @@ function AppInner() {
     }
 
     setSyncing(true)
-    let successCount = 0
 
     for (const noteId of failedSyncNoteIds) {
       window.clearTimeout(cloudSaveTimers.current[noteId])
       cloudSaveTimers.current[noteId] = null
-
-      const didSync = await syncNoteToCloud(noteId)
-      if (didSync) {
-        successCount += 1
-      }
     }
 
-    finishSyncingIfIdle()
+    const didFlushDeletes = await flushPendingDeletes()
+    const { attempted, succeeded } = await flushPendingUpserts()
 
-    if (successCount === failedSyncNoteIds.length && successCount > 0) {
+    if (didFlushDeletes || (attempted > 0 && attempted === succeeded)) {
       showSyncToast('All changes synced')
     }
-  }, [failedSyncNoteIds, finishSyncingIfIdle, showSyncToast, syncNoteToCloud, user])
+  }, [failedSyncNoteIds, flushPendingDeletes, flushPendingUpserts, showSyncToast, user])
 
   useEffect(() => {
     treeRef.current = tree
   }, [tree])
+
+  useEffect(() => {
+    pendingUpsertsRef.current = pendingUpserts
+  }, [pendingUpserts])
+
+  useEffect(() => {
+    pendingDeleteIdsRef.current = pendingDeleteIds
+  }, [pendingDeleteIds])
+
+  useEffect(() => {
+    if (!user?.id) {
+      return
+    }
+
+    savePendingUpserts(user.id, pendingUpserts)
+  }, [pendingUpserts, user?.id])
 
   useEffect(() => {
     if (!user?.id) {
@@ -585,36 +614,62 @@ function AppInner() {
     }
   }, [])
 
-  useEffect(() => {
-    if (!user || !isOnline || failedSyncNoteIds.length === 0) {
-      return
-    }
+  const flushPendingDeletes = useCallback(async (idsOverride) => {
+    const idsToDelete = idsOverride ?? pendingDeleteIdsRef.current
 
-    retryFailedSyncs()
-  }, [failedSyncNoteIds, isOnline, retryFailedSyncs, user])
-
-  const flushPendingDeletes = useCallback(async () => {
-    if (!user || !navigator.onLine || pendingDeleteIds.length === 0) {
+    if (!user || !navigator.onLine || idsToDelete.length === 0) {
       return false
     }
 
     try {
-      await softDeleteNotes(pendingDeleteIds)
-      setPendingDeleteIds([])
+      await softDeleteNotes(idsToDelete)
+      const nextPendingDeleteIds = pendingDeleteIdsRef.current.filter((id) => !idsToDelete.includes(id))
+      pendingDeleteIdsRef.current = nextPendingDeleteIds
+      setPendingDeleteIds(nextPendingDeleteIds)
       return true
     } catch (err) {
       setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
       return false
     }
-  }, [pendingDeleteIds, user])
+  }, [user])
+
+  const flushPendingUpserts = useCallback(async (pendingUpsertsOverride) => {
+    const pendingMap = pendingUpsertsOverride ?? pendingUpsertsRef.current
+    const pendingNotes = Object.values(pendingMap)
+
+    if (!user || !navigator.onLine || pendingNotes.length === 0) {
+      return { attempted: 0, succeeded: 0 }
+    }
+
+    setSyncing(true)
+    let successCount = 0
+
+    for (const note of pendingNotes) {
+      const didSync = await syncNoteToCloud(note)
+      if (didSync) {
+        successCount += 1
+      }
+    }
+
+    finishSyncingIfIdle()
+    return { attempted: pendingNotes.length, succeeded: successCount }
+  }, [finishSyncingIfIdle, syncNoteToCloud, user])
 
   useEffect(() => {
-    if (!user || !isOnline || pendingDeleteIds.length === 0) {
+    if (!user || !isOnline || hydrationInFlightRef.current || pendingDeleteIds.length === 0) {
       return
     }
 
     flushPendingDeletes().catch(console.error)
   }, [flushPendingDeletes, isOnline, pendingDeleteIds.length, user])
+
+  useEffect(() => {
+    if (!user || !isOnline || hydrationInFlightRef.current || Object.keys(pendingUpserts).length === 0) {
+      return
+    }
+
+    flushPendingUpserts().catch(console.error)
+  }, [flushPendingUpserts, isOnline, pendingUpserts, user])
 
   useEffect(() => {
     const timers = cloudSaveTimers.current
@@ -635,73 +690,41 @@ function AppInner() {
       return
     }
 
-    const { preserveSelection = true, pushLocalChanges = false, localTreeOverride } = options
-    const localTree = localTreeOverride ?? treeRef.current
+    const { preserveSelection = true } = options
 
     if (!navigator.onLine) {
-      setTree(ensureDailyFolder(localTree || []))
+      hydrationInFlightRef.current = false
+      setTree(buildTreeFromCloudAndPending([], pendingUpsertsRef.current, pendingDeleteIdsRef.current))
       setSyncError('Offline — changes are saved and will sync when online.')
       return
     }
 
-    await flushPendingDeletes()
+    hydrationInFlightRef.current = true
 
-    const cloudNotes = await fetchNotes(user.id)
-    const currentPendingDeleteIds = loadPendingDeleteIds(user.id)
-    setPendingDeleteIds(currentPendingDeleteIds)
-
-    const { mergedTree, notesToUpload } = mergeLocalChangesIntoCloud(localTree, cloudNotes, currentPendingDeleteIds)
-    const noteIdsToUpload = notesToUpload.map((note) => note.id)
-    const importedChangesMessage = formatImportedChangesMessage(noteIdsToUpload.length, false)
-
-    if (!navigator.onLine && noteIdsToUpload.length > 0) {
-      const message = 'Offline — changes will sync to cloud when connection returns.'
-      const treeWithPendingSync = noteIdsToUpload.reduce(
-        (currentTree, noteId) => updateFileNode(currentTree, noteId, { syncError: message }),
-        mergedTree
+    try {
+      await flushPendingDeletes()
+      const cloudNotes = await fetchNotes(user.id)
+      const mergedTree = buildTreeFromCloudAndPending(
+        cloudNotes,
+        pendingUpsertsRef.current,
+        pendingDeleteIdsRef.current
       )
 
-      setTree(treeWithPendingSync)
-      setSyncError(message)
-      setFailedSyncNoteIds(noteIdsToUpload)
-      if (pushLocalChanges) {
-        showSyncToast(`${importedChangesMessage}. Will sync when you're back online.`)
-      }
-    } else {
       setTree(mergedTree)
-      setFailedSyncNoteIds([])
+      setFailedSyncNoteIds((currentIds) => currentIds.filter((id) => findNode(mergedTree, id)))
+      setSyncError(null)
+
+      setActiveNoteId((currentId) => {
+        if (!preserveSelection) {
+          return null
+        }
+
+        return currentId && findNode(mergedTree, currentId) ? currentId : null
+      })
+    } finally {
+      hydrationInFlightRef.current = false
     }
-
-    setActiveNoteId((currentId) => {
-      if (!preserveSelection) {
-        return null
-      }
-
-      return currentId && findNode(mergedTree, currentId) ? currentId : null
-    })
-
-    if (!pushLocalChanges || noteIdsToUpload.length === 0 || !navigator.onLine) {
-      return
-    }
-
-    setSyncing(true)
-
-    let successCount = 0
-    for (const note of notesToUpload) {
-      const didSync = await syncNoteToCloud(note)
-      if (didSync) {
-        successCount += 1
-      }
-    }
-
-    finishSyncingIfIdle()
-
-    if (successCount > 0 && successCount === notesToUpload.length) {
-      showSyncToast(formatImportedChangesMessage(successCount, true))
-    } else if (noteIdsToUpload.length > 0) {
-      showSyncToast(importedChangesMessage)
-    }
-  }, [finishSyncingIfIdle, flushPendingDeletes, showSyncToast, syncNoteToCloud, user])
+  }, [flushPendingDeletes, user])
 
   // ── Cloud sync: load notes when user signs in, revert on sign-out ────────
   useEffect(() => {
@@ -715,6 +738,10 @@ function AppInner() {
       setSyncing(false)
       setSyncError(null)
       setFailedSyncNoteIds([])
+      hydrationInFlightRef.current = false
+      pendingUpsertsRef.current = {}
+      pendingDeleteIdsRef.current = []
+      setPendingUpserts({})
       setPendingDeleteIds([])
 
       // Signed out — clear tree and go back to landing page
@@ -724,6 +751,7 @@ function AppInner() {
       setActiveNoteId(null)
       if (previousUserId) {
         clearSavedTree(previousUserId)
+        clearPendingUpserts(previousUserId)
         clearPendingDeleteIds(previousUserId)
       }
       lastUserIdRef.current = null
@@ -731,9 +759,8 @@ function AppInner() {
     }
 
     // Signed in — advance past landing/demo page automatically
-    const wasDemoMode = demoModeRef.current
     const savedTree = loadTree(user.id)
-    const localTree = wasDemoMode ? [] : (savedTree ?? treeRef.current)
+    const cachedPendingUpserts = loadPendingUpserts(user.id)
     const cachedPendingDeleteIds = loadPendingDeleteIds(user.id)
 
     lastUserIdRef.current = user.id
@@ -741,17 +768,16 @@ function AppInner() {
     demoModeRef.current = false
     setAuthModalOpen(false)
     setSyncError(null)
+    pendingUpsertsRef.current = cachedPendingUpserts
+    pendingDeleteIdsRef.current = cachedPendingDeleteIds
+    setPendingUpserts(cachedPendingUpserts)
     setPendingDeleteIds(cachedPendingDeleteIds)
 
-    if (localTree?.length) {
-      setTree(ensureDailyFolder(localTree))
-    }
+    const optimisticTree = buildTreeFromCloudAndPending([], cachedPendingUpserts, cachedPendingDeleteIds)
+    const cachedTree = savedTree ? ensureDailyFolder(savedTree) : []
+    setTree(optimisticTree.length > 0 ? optimisticTree : cachedTree)
 
-    reconcileWithCloud({
-      preserveSelection: false,
-      pushLocalChanges: true,
-      localTreeOverride: localTree,
-    })
+    reconcileWithCloud({ preserveSelection: false })
       .then(() => {
         if (cancelled) {
           return
@@ -766,11 +792,11 @@ function AppInner() {
   }, [user?.id, authLoading])
 
   useEffect(() => {
-    if (!user || !isOnline) {
+    if (!user || !isOnline || hydrationInFlightRef.current) {
       return
     }
 
-    reconcileWithCloud({ preserveSelection: true, pushLocalChanges: false }).catch(console.error)
+    reconcileWithCloud({ preserveSelection: true }).catch(() => {})
   }, [isOnline, reconcileWithCloud, user])
 
   useEffect(() => {
@@ -828,6 +854,7 @@ function AppInner() {
     setTree((previousTree) => insertNode(previousTree, parentId, folder))
 
     if (user) {
+      queuePendingUpsert({ ...folder, parentId })
       setSyncing(true)
       syncNoteToCloud({ ...folder, parentId }).finally(() => {
         finishSyncingIfIdle()
@@ -835,7 +862,7 @@ function AppInner() {
     }
 
     return folder
-  }, [finishSyncingIfIdle, syncNoteToCloud, user])
+  }, [finishSyncingIfIdle, queuePendingUpsert, syncNoteToCloud, user])
 
   const handleRenameNode = useCallback((id, name) => {
     const now = new Date().toISOString()
@@ -851,6 +878,7 @@ function AppInner() {
       updatedAt: now,
       localCheckpointAt: now,
     }
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: getParentId(treeRef.current, id) })
 
     setTree((previousTree) => renameNode(previousTree, id, name))
 
@@ -861,6 +889,7 @@ function AppInner() {
     if (!isOnline) {
       const message = 'Offline — changes are saved and will retry when online.'
       setSyncError(message)
+      queuePendingUpsert(updatedNode)
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(id) ? currentIds : [...currentIds, id]
       ))
@@ -869,6 +898,7 @@ function AppInner() {
     }
 
     setTree((previousTree) => updateFileNode(previousTree, id, updates))
+    queuePendingUpsert(updatedNode)
     setSyncing(true)
     window.clearTimeout(cloudSaveTimers.current[id])
     cloudSaveTimers.current[id] = window.setTimeout(() => {
@@ -877,7 +907,7 @@ function AppInner() {
         finishSyncingIfIdle()
       })
     }, 250)
-  }, [finishSyncingIfIdle, isOnline, syncNoteToCloud, user])
+  }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
   const createNote = useCallback(
     (overrides = {}, options = {}) => {
@@ -898,6 +928,7 @@ function AppInner() {
 
       // Immediately persist to cloud if signed in
       if (user) {
+        queuePendingUpsert({ ...note, parentId })
         setSyncing(true)
         syncNoteToCloud({ ...note, parentId }).finally(() => {
           finishSyncingIfIdle()
@@ -910,7 +941,7 @@ function AppInner() {
 
       return note
     },
-    [finishSyncingIfIdle, syncNoteToCloud, user]
+    [finishSyncingIfIdle, queuePendingUpsert, syncNoteToCloud, user]
   )
 
   const handleNewNote = useCallback(() => {
@@ -989,7 +1020,7 @@ function AppInner() {
       setFailedSyncNoteIds((currentIds) => (
         currentIds.filter((currentId) => !nodeIdsToDelete.includes(currentId))
       ))
-      setPendingDeleteIds((currentIds) => Array.from(new Set([...currentIds, ...nodeIdsToDelete])))
+      markPendingDelete(nodeIdsToDelete)
       finishSyncingIfIdle()
 
       setTree((previousTree) => deleteNode(previousTree, id))
@@ -998,7 +1029,10 @@ function AppInner() {
         setSyncing(true)
         softDeleteNotes(nodeIdsToDelete)
           .then(() => {
-            setPendingDeleteIds((currentIds) => currentIds.filter((currentId) => !nodeIdsToDelete.includes(currentId)))
+            const nextPendingDeleteIds = pendingDeleteIdsRef.current.filter((currentId) => !nodeIdsToDelete.includes(currentId))
+            pendingDeleteIdsRef.current = nextPendingDeleteIds
+            setPendingDeleteIds(nextPendingDeleteIds)
+            reconcileWithCloud({ preserveSelection: true }).catch(() => {})
           })
           .catch((err) => {
             setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
@@ -1031,7 +1065,7 @@ function AppInner() {
         deleteTimerRef.current = null
       }, 5000)
     },
-    [activeNoteId, finishSyncingIfIdle, tree, user]
+    [activeNoteId, finishSyncingIfIdle, markPendingDelete, reconcileWithCloud, tree, user]
   )
 
   const handleUndoDelete = useCallback(() => {
@@ -1041,15 +1075,28 @@ function AppInner() {
       deleteTimerRef.current = null
     }
     setTree((previousTree) => insertNode(previousTree, deletedNote.parentId ?? null, deletedNote.node))
-    setPendingDeleteIds((currentIds) => currentIds.filter((id) => !deletedNote.nodeIds.includes(id)))
+    const nextPendingDeleteIds = pendingDeleteIdsRef.current.filter((id) => !deletedNote.nodeIds.includes(id))
+    pendingDeleteIdsRef.current = nextPendingDeleteIds
+    setPendingDeleteIds(nextPendingDeleteIds)
+    deletedNote.syncableNodes.forEach((node) => {
+      queuePendingUpsert(node)
+    })
 
-      if (user && navigator.onLine) {
-        setSyncing(true)
-        restoreNotes(deletedNote.syncableNodes, user.id)
-          .catch((err) => {
-            setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
-            setPendingDeleteIds((currentIds) => Array.from(new Set([...currentIds, ...deletedNote.nodeIds])))
+    if (user && navigator.onLine) {
+      setSyncing(true)
+      restoreNotes(deletedNote.syncableNodes, user.id)
+        .then(() => {
+          deletedNote.syncableNodes.forEach((node) => {
+            clearPendingUpsert(node.id)
           })
+          reconcileWithCloud({ preserveSelection: true }).catch(() => {})
+        })
+        .catch((err) => {
+          setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
+          const restoredPendingDeleteIds = Array.from(new Set([...pendingDeleteIdsRef.current, ...deletedNote.nodeIds]))
+          pendingDeleteIdsRef.current = restoredPendingDeleteIds
+          setPendingDeleteIds(restoredPendingDeleteIds)
+        })
           .finally(() => {
             finishSyncingIfIdle()
           })
@@ -1059,7 +1106,7 @@ function AppInner() {
 
     setActiveNoteId(deletedNote.node.id)
     setDeletedNote(null)
-  }, [deletedNote, finishSyncingIfIdle, user])
+  }, [clearPendingUpsert, deletedNote, finishSyncingIfIdle, queuePendingUpsert, reconcileWithCloud, user])
 
   useEffect(() => {
     if (!user) {
@@ -1067,12 +1114,16 @@ function AppInner() {
     }
 
     const handleFocusSync = () => {
-      reconcileWithCloud({ preserveSelection: true, pushLocalChanges: false }).catch(console.error)
+      if (hydrationInFlightRef.current) {
+        return
+      }
+
+      reconcileWithCloud({ preserveSelection: true }).catch(() => {})
     }
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        reconcileWithCloud({ preserveSelection: true, pushLocalChanges: false }).catch(console.error)
+      if (document.visibilityState === 'visible' && !hydrationInFlightRef.current) {
+        reconcileWithCloud({ preserveSelection: true }).catch(() => {})
       }
     }
 
@@ -1105,6 +1156,14 @@ function AppInner() {
     if (!isOnline) {
       const message = 'Offline — changes are saved and will retry when online.'
       setSyncError(message)
+      const currentNode = findNode(treeRef.current, id)
+      if (currentNode) {
+        queuePendingUpsert({
+          ...currentNode,
+          ...updatedValues,
+          parentId: getParentId(treeRef.current, id),
+        })
+      }
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(id) ? currentIds : [...currentIds, id]
       ))
@@ -1113,6 +1172,14 @@ function AppInner() {
     }
 
     // Debounced cloud save (1.5s after last keystroke)
+    const currentNode = findNode(treeRef.current, id)
+    if (currentNode) {
+      queuePendingUpsert({
+        ...currentNode,
+        ...updatedValues,
+        parentId: getParentId(treeRef.current, id),
+      })
+    }
     setSyncing(true)
     window.clearTimeout(cloudSaveTimers.current[id])
     cloudSaveTimers.current[id] = window.setTimeout(() => {
@@ -1121,7 +1188,7 @@ function AppInner() {
         finishSyncingIfIdle()
       })
     }, 1500)
-  }, [finishSyncingIfIdle, isOnline, syncNoteToCloud, user])
+  }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
   const toggleTheme = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))

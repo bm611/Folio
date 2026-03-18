@@ -29,6 +29,31 @@ import AccentPicker from './AccentPicker'
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'))
 
+function getComparableTimestamp(value) {
+  const parsed = Date.parse(value || '')
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+function compareRecentNotes(a, b) {
+  const updatedDiff = getComparableTimestamp(b.updatedAt || b.createdAt) - getComparableTimestamp(a.updatedAt || a.createdAt)
+
+  if (updatedDiff !== 0) {
+    return updatedDiff
+  }
+
+  const createdDiff = getComparableTimestamp(b.createdAt) - getComparableTimestamp(a.createdAt)
+  if (createdDiff !== 0) {
+    return createdDiff
+  }
+
+  const titleDiff = getNoteDisplayTitle(a).localeCompare(getNoteDisplayTitle(b))
+  if (titleDiff !== 0) {
+    return titleDiff
+  }
+
+  return a.id.localeCompare(b.id)
+}
+
 function exportNoteAsMarkdown(note) {
   const markdown = note.contentDoc
     ? docToMarkdown(note.contentDoc)
@@ -408,7 +433,7 @@ export default function NoteEditor({
       day: 'numeric',
     })
     const recentNotes = [...(notes || [])]
-      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+      .sort(compareRecentNotes)
       .slice(0, 6)
 
     return (

@@ -68,6 +68,8 @@ function noteToRow(note, userId) {
     tags: note.tags || [],
     parent_id: note.parentId || null,
     type: note.type || 'file',
+    created_at: note.createdAt || null,
+    updated_at: note.updatedAt || note.createdAt || null,
     deleted_at: note.deletedAt || null,
   }
 }
