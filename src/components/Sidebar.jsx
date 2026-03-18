@@ -96,46 +96,39 @@ function SidebarIcon({ n, s = 14 }) {
   return <Icon icon={iconData} size={s} strokeWidth={1.5} style={{ display: 'block' }} />
 }
 
-// ─── Sync Nav Item ────────────────────────────────────────────────────────────
-function SyncNavItem({ syncing, syncStatus }) {
+// ─── Sync Indicator (inline next to app name) ────────────────────────────────
+function SyncIndicator({ syncing, syncStatus }) {
   const { user } = useAuth()
   const state = syncStatus?.state
 
-  let icon, className, label, tooltip
+  let icon, iconColor, tooltip, spin = false
   if (!user) {
     icon = FloppyDiskIcon
-    className = 'sync-nav--local'
-    label = 'Local'
+    iconColor = 'var(--text-muted)'
     tooltip = 'Notes saved locally in your browser'
   } else if (state === 'offline') {
     icon = CloudIcon
-    className = 'sync-nav--offline'
-    label = 'Offline'
+    iconColor = 'var(--warning)'
     tooltip = syncStatus?.message || 'Offline — changes are safe locally'
   } else if (state === 'error') {
     icon = CloudIcon
-    className = 'sync-nav--error'
-    label = 'Sync error'
+    iconColor = 'var(--danger)'
     tooltip = syncStatus?.error || 'Cloud sync failed'
   } else if (syncing || state === 'syncing') {
     icon = Loading01Icon
-    className = 'sync-nav--syncing'
-    label = 'Syncing…'
+    iconColor = 'var(--success)'
     tooltip = 'Saving to cloud…'
+    spin = true
   } else {
     icon = CloudSavingDone01Icon
-    className = 'sync-nav--synced'
-    label = 'Synced'
+    iconColor = 'var(--success)'
     tooltip = `Synced to cloud as ${user.email}`
   }
 
   return (
-    <div className={`sb-nav-item sb-nav-sync ${className}`} title={tooltip}>
-      <span className="sb-nav-icon">
-        <Icon icon={icon} size={16} stroke={1.5} className={syncing || state === 'syncing' ? 'sync-spin' : ''} />
-      </span>
-      <span className="sb-nav-label">{label}</span>
-    </div>
+    <span className="sb-sync-indicator" title={tooltip}>
+      <Icon icon={icon} size={14} strokeWidth={1.5} style={{ color: iconColor }} className={spin ? 'sync-spin' : ''} />
+    </span>
   )
 }
 
@@ -491,9 +484,12 @@ export default function Sidebar({
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
 
-          {/* Header — app name + collapse icon */}
+          {/* Header — app name + sync indicator + collapse icon */}
           <div className="sb-header-wrapper">
-            <span className="sb-app-name">Aura</span>
+            <span className="flex items-center gap-1.5">
+              <span className="sb-app-name">Aura</span>
+              <SyncIndicator syncing={syncing} syncStatus={syncStatus} />
+            </span>
             <button
               type="button"
               onClick={onToggleCollapse}
@@ -558,8 +554,7 @@ export default function Sidebar({
               )}
             </div>
 
-            {/* Sync status — icon only with tooltip */}
-            <SyncNavItem syncing={syncing} syncStatus={syncStatus} />
+
           </div>
 
           {/* Tree list */}

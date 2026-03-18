@@ -70,8 +70,11 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
         aria-haspopup="listbox"
       >
         <span
-          className="h-[14px] w-[14px] rounded-full ring-1 ring-black/10 transition-[background-color] duration-200"
-          style={{ backgroundColor: currentSwatch }}
+          className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200"
+          style={{
+            backgroundColor: currentSwatch,
+            boxShadow: `0 0 0 1.5px var(--bg-primary), 0 0 0 3px ${currentSwatch}55`,
+          }}
         />
       </button>
 

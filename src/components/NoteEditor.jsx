@@ -454,8 +454,8 @@ export default function NoteEditor({
         <div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-24 md:pb-6 overflow-y-auto">
           <div className="animate-fade-in-up flex flex-col items-center">
             <h1
-              className="text-6xl tracking-tight text-[var(--h1-color)] sm:text-7xl"
-              style={{ fontFamily: 'var(--font-logo)', textShadow: '0 4px 24px var(--accent-muted)' }}
+              className="text-6xl tracking-tight sm:text-7xl"
+              style={{ fontFamily: 'var(--font-logo)', color: 'color-mix(in srgb, var(--text-primary) 85%, var(--accent) 15%)', textShadow: '0 4px 24px var(--accent-muted)' }}
             >
               Aura.
             </h1>
@@ -483,11 +483,9 @@ export default function NoteEditor({
               </button>
               <button
                 onClick={() => onCreateDailyNote?.()}
-                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--bg-surface)]/40 backdrop-blur-md border border-[var(--border-subtle)] px-3 py-3 text-[13px] font-semibold text-[var(--text-primary)] transition-all duration-200 hover:border-[var(--accent)]/50 hover:bg-[var(--bg-surface)]/60 hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] active:scale-[0.98] sm:px-6 sm:text-[14px]"
+                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-transparent border border-[var(--accent)]/50 px-3 py-3 text-[13px] font-semibold text-[var(--accent)] transition-all duration-200 hover:bg-[var(--accent)]/8 hover:border-[var(--accent)] hover:shadow-[0_2px_14px_var(--accent)]/20 active:scale-[0.98] sm:px-6 sm:text-[14px]"
               >
-                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)] transition-transform duration-300 group-hover:-translate-y-0.5">
-                  <Icon icon={Calendar01Icon} size={14} strokeWidth={2} />
-                </div>
+                <Icon icon={Calendar01Icon} size={16} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
                 <span className="truncate">Daily Note</span>
               </button>
             </div>
@@ -496,7 +494,7 @@ export default function NoteEditor({
           {recentNotes.length > 0 ? (
             <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-2xl md:mt-16" style={{ fontFamily: '"Outfit", sans-serif' }}>
               <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                <h2 className="text-3xl font-bold tracking-tight text-[var(--text-primary)] md:text-5xl">Recent</h2>
+                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl">Recent</h2>
               </div>
               <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12">
                  <div className="w-28 md:w-24">Date</div>
@@ -504,9 +502,24 @@ export default function NoteEditor({
               </div>
               <div className="flex flex-col">
                 {recentNotes.map((n) => {
-                  const title = getNoteDisplayTitle(n)
+                  const isDaily = n.tags?.includes('daily')
+                  const rawTitle = getNoteDisplayTitle(n)
                   const date = new Date(n.updatedAt || n.createdAt)
                   const formattedDate = date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+
+                  // For daily notes, parse the DD-MM-YYYY title into a readable format
+                  let displayTitle = rawTitle
+                  if (isDaily) {
+                    const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                    if (parts) {
+                      const [, dd, mm, yyyy] = parts
+                      const d = new Date(`${yyyy}-${mm}-${dd}`)
+                      const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                      displayTitle = `Daily \u2014 ${readable}`
+                    } else {
+                      displayTitle = `Daily \u2014 ${rawTitle}`
+                    }
+                  }
 
                   return (
                     <button
@@ -521,8 +534,9 @@ export default function NoteEditor({
                           {formattedDate}
                         </span>
                       </div>
-                      <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[26px]">
-                        {title}
+                      <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[26px] flex items-center gap-2">
+                        {isDaily && <Icon icon={Calendar01Icon} size={16} strokeWidth={1.5} className="shrink-0 opacity-50" />}
+                        {displayTitle}
                       </span>
                     </button>
                   )
