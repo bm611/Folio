@@ -469,16 +469,25 @@ export default function Sidebar({
 
   return (
     <>
-      {!collapsed && (
-        <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden transition-opacity duration-300"
-          onClick={onToggleCollapse}
-        />
-      )}
+      {/* Mobile backdrop — always in DOM so it can fade out */}
+      <div
+        className={`fixed inset-0 z-30 md:hidden transition-[opacity,backdrop-filter] duration-300 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: collapsed ? 'blur(0px)' : 'blur(4px)' }}
+        onClick={onToggleCollapse}
+      />
 
       <aside
-        className={`sidebar-vs ${collapsed ? 'w-0' : 'max-md:!w-full'} fixed inset-y-0 left-0 z-40 md:relative md:z-auto h-[100dvh] shrink-0 overflow-hidden transition-[width] duration-300 ease-out`}
-        style={{ width: collapsed ? 0 : width, maxWidth: '100vw' }}
+        className={`sidebar-vs fixed inset-y-0 left-0 z-40 h-[100dvh] shrink-0 overflow-hidden
+          max-md:w-[60vw] max-md:transition-transform max-md:duration-300 max-md:ease-out
+          md:relative md:z-auto md:transition-[width] md:duration-300 md:ease-out
+          ${collapsed ? 'max-md:-translate-x-full' : 'max-md:translate-x-0'}`}
+        style={{
+          // Desktop only: drive the width animation in the flex row.
+          // On mobile the aside is position:fixed so it's out of flow — no inline width needed.
+          ...(typeof window !== 'undefined' && window.innerWidth >= 768
+            ? { width: collapsed ? 0 : width }
+            : {}),
+        }}
       >
         <div className="flex flex-col h-full w-full min-w-[200px]">
 

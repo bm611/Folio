@@ -40,7 +40,7 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
     ? 'relative flex h-10 w-10 items-center justify-center rounded-full border-none bg-transparent p-0 text-[var(--text-muted)] cursor-pointer after:absolute after:-inset-4 active:scale-90'
     : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
 
-  const dropdownBaseClassName = 'fixed z-[9999] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2.5 animate-ctx-fade-in'
+  const dropdownBaseClassName = `fixed z-[9999] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2.5 ${mobile ? '' : 'animate-ctx-fade-in'}`
 
   const handleOpen = () => {
     if (!open && buttonRef.current) {

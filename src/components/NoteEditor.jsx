@@ -451,7 +451,7 @@ export default function NoteEditor({
         </div>
 
         {/* Welcome content */}
-        <div className="flex flex-1 flex-col items-center px-6 pt-[12vh] md:pt-[5vh] pb-24 md:pb-6 overflow-y-auto">
+        <div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-24 md:pb-6 overflow-y-auto">
           <div className="animate-fade-in-up flex flex-col items-center">
             <h1
               className="text-6xl tracking-tight text-[var(--h1-color)] sm:text-7xl"

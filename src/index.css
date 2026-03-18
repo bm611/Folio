@@ -1148,7 +1148,6 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  position: relative;
   overflow: hidden;
   user-select: none;
   color: var(--text-primary);
