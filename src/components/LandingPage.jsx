@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ArrowRight01Icon, CloudIcon } from '@hugeicons/core-free-icons';
 import Icon from './Icon';
 
-export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
-  const [mounted, setMounted] = useState(false);
+export default function LandingPage({ onStart, onSignIn }) {
+  const wrapperRef = useRef(null);
 
   useEffect(() => {
-    setMounted(true);
+    // Trigger mount animation on next frame so the initial class is applied first
+    const frame = requestAnimationFrame(() => {
+      wrapperRef.current?.classList.add('is-mounted');
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (
-    <div className="relative flex h-[100dvh] w-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)] selection:bg-[var(--accent)]/30">
+    <div ref={wrapperRef} className="relative flex h-[100dvh] w-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)] selection:bg-[var(--accent)]/30">
       {/* Background Ambient SVG */}
       <div className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-screen">
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
@@ -51,14 +55,14 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
       <div className="relative z-20 grid w-full grid-cols-1 lg:grid-cols-2">
         {/* Left Content */}
         <div className="flex flex-col justify-center px-6 sm:px-16 lg:px-24">
-          <div className={`transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+          <div className="translate-y-12 opacity-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] delay-100 [.is-mounted_&]:translate-y-0 [.is-mounted_&]:opacity-100">
 
             <h1 className="mb-6 max-w-2xl text-5xl leading-[1.05] tracking-tight sm:text-7xl lg:text-8xl xl:text-[10rem] text-[var(--accent)]" style={{ fontFamily: 'var(--font-logo)' }}>
               Aura.
             </h1>
 
             <p className="mb-14 max-w-lg text-lg leading-relaxed text-[var(--text-secondary)] sm:text-xl">
-              Your ethereal, local-first workspace for your most important ideas. Fast, private, and beautifully restrained.
+              Your ethereal workspace for your most important ideas. Fast, private, and beautifully restrained.
             </p>
 
             <div className="flex flex-col gap-4">
@@ -81,16 +85,13 @@ export default function LandingPage({ onStart, onCreateNew, onSignIn }) {
                   <span>Sign in to sync</span>
                 </button>
               </div>
-              <span className="text-[12px] text-[var(--text-muted)] tracking-wide ml-1">
-                 Local-first · No account required
-              </span>
             </div>
           </div>
         </div>
 
         {/* Right Abstract Art */}
         <div className="hidden lg:flex items-center justify-center relative pointer-events-none">
-          <div className={`w-full h-full absolute inset-0 transition-opacity duration-[2000ms] ease-out delay-300 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="w-full h-full absolute inset-0 opacity-0 transition-opacity duration-[2000ms] ease-out delay-300 [.is-mounted_&]:opacity-100">
             <svg width="100%" height="100%" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
               <g filter="url(#glow)">
                 <path d="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z" fill="none" stroke="var(--success)" strokeWidth="2" strokeOpacity="0.5">

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Search01Icon,
   SidebarLeftIcon,
@@ -15,67 +15,12 @@ import {
   Cancel01Icon,
   CloudIcon,
   CloudSavingDone01Icon,
-  FloppyDiskIcon,
+  CloudUploadIcon,
   Loading01Icon,
 } from '@hugeicons/core-free-icons';
 import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
-
-// ─── File Tree Helpers ─────────────────────────────────────────────────────────
-
-export function insertNode(tree, parentId, newNode) {
-  if (parentId === null) return [...tree, newNode];
-  return tree.map(n => {
-    if (n.id === parentId) return { ...n, children: [...(n.children || []), newNode] };
-    if (n.children) return { ...n, children: insertNode(n.children, parentId, newNode) };
-    return n;
-  });
-}
-
-export function deleteNode(tree, id) {
-  return tree.filter(n => n.id !== id).map(n => n.children ? { ...n, children: deleteNode(n.children, id) } : n);
-}
-
-export function renameNode(tree, id, name) {
-  return tree.map(n => {
-    if (n.id === id) return { ...n, name, title: name }; // update title for notes too
-    if (n.children) return { ...n, children: renameNode(n.children, id, name) };
-    return n;
-  });
-}
-
-export function updateFileNode(tree, id, updates) {
-  return tree.map(n => {
-    if (n.id === id) return { ...n, ...updates };
-    if (n.children) return { ...n, children: updateFileNode(n.children, id, updates) };
-    return n;
-  });
-}
-
-export function findFile(nodes, id) {
-  for (const n of nodes) {
-    if (n.id === id && n.type === "file") return n;
-    if (n.children) { const f = findFile(n.children, id); if (f) return f; }
-  }
-  return null;
-}
-
-export function findNode(nodes, id) {
-  for (const n of nodes) {
-    if (n.id === id) return n;
-    if (n.children) { const f = findNode(n.children, id); if (f) return f; }
-  }
-  return null;
-}
-
-export function flattenTree(nodes) {
-  let result = [];
-  for (const n of nodes) {
-    if (n.type === 'file') result.push(n);
-    if (n.children) result = result.concat(flattenTree(n.children));
-  }
-  return result;
-}
+import { insertNode, renameNode, getVisibleFiles } from '../utils/tree';
 
 // ─── Icon key → Hugeicons data object map ────────────────────────────────────
 const ICON_MAP = {
@@ -103,13 +48,13 @@ function SyncIndicator({ syncing, syncStatus }) {
 
   let icon, iconColor, tooltip, spin = false
   if (!user) {
-    icon = FloppyDiskIcon
-    iconColor = 'var(--text-muted)'
-    tooltip = 'Notes saved locally in your browser'
+    icon = CloudUploadIcon
+    iconColor = 'var(--warning)'
+    tooltip = 'Sign in to save your notes'
   } else if (state === 'offline') {
     icon = CloudIcon
     iconColor = 'var(--warning)'
-    tooltip = syncStatus?.message || 'Offline — changes are safe locally'
+    tooltip = syncStatus?.message || 'Offline — changes are safe'
   } else if (state === 'error') {
     icon = CloudIcon
     iconColor = 'var(--danger)'
@@ -404,17 +349,6 @@ export default function Sidebar({
   const visibleFiles = useMemo(() => visibleTree.filter(n => n.type === 'file'), [visibleTree]);
   const searchExpanded = searchFocused || searchQuery.length > 0;
 
-  const getVisibleFiles = useCallback((nodes) => {
-    let result = [];
-    for (const node of nodes) {
-      if (node.type === 'file') result.push(node);
-      if (node.type === 'folder' && expanded.has(node.id) && node.children) {
-        result = result.concat(getVisibleFiles(node.children));
-      }
-    }
-    return result;
-  }, [expanded]);
-
   useEffect(() => {
     const handleKeyDown = (e) => {
       const activeEl = document.activeElement;
@@ -428,7 +362,7 @@ export default function Sidebar({
       }
 
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        const files = getVisibleFiles(visibleTree);
+        const files = getVisibleFiles(visibleTree, expanded);
         if (files.length === 0) return;
 
         let currentIndex = files.findIndex(f => f.id === activeNoteId);
@@ -451,7 +385,7 @@ export default function Sidebar({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeNoteId, visibleTree, getVisibleFiles, onSelectNote]);
+  }, [activeNoteId, visibleTree, expanded, onSelectNote]);
 
   useEffect(() => {
     const activeNode = document.querySelector('.tree-node.active');

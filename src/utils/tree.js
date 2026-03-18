@@ -52,6 +52,23 @@ export function updateFileNode(tree, id, updates) {
   })
 }
 
+export function findFile(nodes, id) {
+  for (const node of nodes) {
+    if (node.id === id && node.type === 'file') {
+      return node
+    }
+
+    if (node.children) {
+      const match = findFile(node.children, id)
+      if (match) {
+        return match
+      }
+    }
+  }
+
+  return null
+}
+
 export function findNode(nodes, id) {
   for (const node of nodes) {
     if (node.id === id) {

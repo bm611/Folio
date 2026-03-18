@@ -1,4 +1,5 @@
-import { lazy, Suspense, useRef, useCallback } from 'react'
+import { lazy, Suspense, useRef, useCallback, useEffect, useState } from 'react'
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -8,7 +9,6 @@ import {
   Calendar01Icon,
   CloudSavingDone01Icon,
   CloudOffIcon,
-  FloppyDiskIcon,
   Loading01Icon,
   Moon01Icon,
   Sun01Icon,
@@ -322,10 +322,16 @@ function getSaveBadgeMeta(saveStatus) {
         toneClassName: 'text-[var(--danger)] border-[color-mix(in_srgb,var(--danger)_28%,transparent)] bg-[color-mix(in_srgb,var(--danger)_10%,transparent)]',
         spin: false,
       }
+    case 'demo':
+      return {
+        icon: CloudUploadIcon,
+        toneClassName: 'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
+        spin: false,
+      }
     default:
       return {
-        icon: FloppyDiskIcon,
-        toneClassName: 'text-[var(--text-muted)] border-[color-mix(in_srgb,var(--text-muted)_24%,transparent)] bg-[color-mix(in_srgb,var(--text-muted)_10%,transparent)]',
+        icon: CloudUploadIcon,
+        toneClassName: 'text-[var(--warning)] border-[color-mix(in_srgb,var(--warning)_28%,transparent)] bg-[color-mix(in_srgb,var(--warning)_12%,transparent)]',
         spin: false,
       }
   }
@@ -357,8 +363,18 @@ export default function NoteEditor({
 
 
   // Session word count: capture baseline when a note is first opened
-  const sessionBaseRef = useRef(null)
   const prevNoteIdRef = useRef(null)
+  const [sessionBase, setSessionBase] = useState(null)
+
+  // Reset session baseline whenever the active note changes
+  useEffect(() => {
+    if (!note) return
+    if (note.id !== prevNoteIdRef.current) {
+      prevNoteIdRef.current = note.id
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSessionBase(countBodyWords(note.content))
+    }
+  }, [note])
 
   // Keeps a local reference to the editor API so the title input can focus it
   const editorApiRef = useRef(null)
@@ -576,15 +592,10 @@ export default function NoteEditor({
   const createdAtLabel = formatCreatedAt(note.createdAt)
   const wordCount = countBodyWords(note.content)
   const readTime = estimateReadTime(note.content)
-  // Session baseline: reset whenever the open note changes
-  if (note.id !== prevNoteIdRef.current) {
-    prevNoteIdRef.current = note.id
-    sessionBaseRef.current = wordCount
-  }
-  const sessionDelta = wordCount - (sessionBaseRef.current ?? wordCount)
+  const sessionDelta = wordCount - (sessionBase ?? wordCount)
   const saveBadgeMeta = getSaveBadgeMeta(saveStatus)
-  const saveLabel = saveStatus?.label || 'Local'
-  const saveDetail = saveStatus?.detail || 'Saved in this browser'
+  const saveLabel = saveStatus?.label || 'Not saved'
+  const saveDetail = saveStatus?.detail || 'Sign in to save your notes'
   const saveError = saveStatus?.error
   const lastSavedLabel = formatRelativeSaveTime(lastSavedAt)
 
@@ -787,7 +798,7 @@ export default function NoteEditor({
           </span>
           {(lastSavedLabel || saveStatus?.state === 'offline') && (
             <span className="text-[var(--text-muted)]" title={saveDetail}>
-              Last saved {lastSavedLabel || 'locally'}
+              Last saved {lastSavedLabel || 'just now'}
             </span>
           )}
           {saveStatus?.canRetry && onRetrySync && (

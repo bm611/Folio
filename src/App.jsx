@@ -11,7 +11,8 @@ import {
 } from '@hugeicons/core-free-icons'
 import Icon from './components/Icon'
 
-import Sidebar, { flattenTree, insertNode, deleteNode, updateFileNode, findNode } from './components/Sidebar'
+import Sidebar from './components/Sidebar'
+import { flattenTree, insertNode, deleteNode, updateFileNode, findNode } from './utils/tree'
 import NoteEditor from './components/NoteEditor'
 import CommandPalette from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
@@ -24,7 +25,6 @@ import { fetchNotes, upsertNote, deleteNote as dbDeleteNote } from './lib/notesD
 import { docToMarkdown } from './editor/markdown/markdownConversion'
 import { ACCENT_COLORS } from './config/accents'
 
-const STORAGE_KEY = 'canvas-notes'
 const TREE_STORAGE_KEY = 'canvas-tree'
 
 const FONT_OPTIONS = [
@@ -41,26 +41,20 @@ function generateId() {
   return crypto.randomUUID()
 }
 
-function loadNotes() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {
-    // ignore
-  }
-  return []
-}
-
 function loadTree() {
   try {
     const raw = localStorage.getItem(TREE_STORAGE_KEY)
     if (raw) return JSON.parse(raw)
-  } catch { }
+  } catch { /* corrupt or missing tree – fall through to null */ }
   return null
 }
 
 function saveTree(tree) {
   localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree))
+}
+
+function clearSavedTree() {
+  localStorage.removeItem(TREE_STORAGE_KEY)
 }
 
 function getInitialOnlineState() {
@@ -73,7 +67,7 @@ function getInitialOnlineState() {
 
 const SAMPLE_NOTE = `# ✍️ Welcome to Aura
 
-Aura is a fast, local-first markdown editor designed for speed and clarity. This note is your interactive onboarding guide to help you master the editor.
+Aura is a fast, private markdown editor designed for speed and clarity. This note is your interactive onboarding guide to help you master the editor.
 
 > [!tip] - Pro Tip
 > Press \`Cmd + K\` (or \`Ctrl + K\`) to search notes, change fonts, or switch between Dark/Light mode.
@@ -136,8 +130,8 @@ Aura supports high-visibility callouts for expert organization.
 > - **Quick Delete**: Hover over a callout header to reveal the trash icon.
 > - **Collapsible**: Use \`> [!note]+\` or \`> [!note]-\` to make them foldable.
 
-> [!warning] - Local-First Storage
-> Your notes stay in your browser. Clearing site data will delete your notes unless you **sign in** to sync them to the cloud.
+> [!tip] - Cloud Sync
+> **Sign in** to save your notes to the cloud and access them from any device.
 
 ### Tables
 | Feature | Shortcut | Status |
@@ -320,43 +314,31 @@ export default function App() {
   )
 }
 
+function makeSampleTree() {
+  const now = new Date().toISOString()
+  return [
+    {
+      id: generateId(),
+      type: 'file',
+      name: 'Aura Knowledge Base',
+      title: 'Aura Knowledge Base',
+      content: SAMPLE_NOTE,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]
+}
+
 function AppInner() {
   const { user } = useAuth()
-  const [hasStarted, setHasStartedRaw] = useState(
-    () => localStorage.getItem('canvas-started') === 'true' || loadTree()?.length > 0
-  )
+  const [demoMode, setDemoMode] = useState(false)
+  const demoModeRef = useRef(false)
 
-  const setHasStarted = useCallback((val) => {
-    setHasStartedRaw(val)
-    if (val) localStorage.setItem('canvas-started', 'true')
-  }, [])
   const [tree, setTree] = useState(() => {
+    // On first load, try restoring the authenticated user's tree from cache
     const savedTree = loadTree()
     if (savedTree && savedTree.length > 0) return ensureDailyFolder(savedTree)
-
-    const savedNotes = loadNotes()
-    if (savedNotes.length > 0) {
-      const flatTree = savedNotes.map(n => ({
-        ...normalizeNote(n),
-        type: 'file',
-        name: n.title || 'Untitled'
-      }))
-      return ensureDailyFolder(flatTree)
-    }
-
-    const now = new Date().toISOString()
-    const initialTree = [
-      {
-        id: generateId(),
-        type: 'file',
-        name: 'Aura Knowledge Base',
-        title: 'Aura Knowledge Base',
-        content: SAMPLE_NOTE,
-        createdAt: now,
-        updatedAt: now,
-      },
-    ]
-    return ensureDailyFolder(initialTree)
+    return []
   })
 
   const notes = flattenTree(tree)
@@ -418,7 +400,7 @@ function AppInner() {
     }
 
     if (!navigator.onLine) {
-      const message = 'Offline — changes are saved locally and will retry when online.'
+      const message = 'Offline — changes are saved and will retry when online.'
       setSyncError(message)
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
@@ -446,7 +428,7 @@ function AppInner() {
       }))
       return true
     } catch (err) {
-      const message = err?.message || 'Sync failed. Your changes are still saved locally.'
+      const message = err?.message || 'Sync failed. Changes will retry when possible.'
       setSyncError(message)
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
@@ -462,7 +444,7 @@ function AppInner() {
     }
 
     if (!navigator.onLine) {
-      setSyncError('Offline — changes are saved locally and will retry when online.')
+      setSyncError('Offline — changes are saved and will retry when online.')
       return
     }
 
@@ -513,14 +495,16 @@ function AppInner() {
   }, [failedSyncNoteIds, isOnline, retryFailedSyncs, user])
 
   useEffect(() => {
+    const timers = cloudSaveTimers.current
+    const toastTimer = syncToastTimerRef.current
     return () => {
-      Object.values(cloudSaveTimers.current).forEach((timer) => {
+      Object.values(timers).forEach((timer) => {
         if (timer) {
           window.clearTimeout(timer)
         }
       })
 
-      window.clearTimeout(syncToastTimerRef.current)
+      window.clearTimeout(toastTimer)
     }
   }, [])
 
@@ -533,16 +517,19 @@ function AppInner() {
       setSyncError(null)
       setFailedSyncNoteIds([])
 
-      // Signed out — revert to localStorage tree
-      const savedTree = loadTree()
-      if (savedTree && savedTree.length > 0) {
-        setTree(savedTree)
-      }
+      // Signed out — clear tree and go back to landing page
+      setTree([])
+      setDemoMode(false)
+      demoModeRef.current = false
+      setActiveNoteId(null)
+      clearSavedTree()
       return
     }
 
-    // Signed in — advance past landing page automatically
-    setHasStarted(true)
+    // Signed in — advance past landing/demo page automatically
+    const wasDemoMode = demoModeRef.current
+    setDemoMode(false)
+    demoModeRef.current = false
     setAuthModalOpen(false)
     setSyncError(null)
 
@@ -553,12 +540,14 @@ function AppInner() {
           return
         }
 
-        const { mergedTree, notesToUpload } = mergeLocalChangesIntoCloud(treeRef.current, cloudNotes)
+        // Demo notes are ephemeral — don't merge them into cloud
+        const localTree = wasDemoMode ? [] : treeRef.current
+        const { mergedTree, notesToUpload } = mergeLocalChangesIntoCloud(localTree, cloudNotes)
         const noteIdsToUpload = notesToUpload.map((note) => note.id)
         const importedChangesMessage = formatImportedChangesMessage(noteIdsToUpload.length, false)
 
         if (!navigator.onLine && noteIdsToUpload.length > 0) {
-          const message = 'Offline — local changes will sync to cloud when connection returns.'
+          const message = 'Offline — changes will sync to cloud when connection returns.'
           const treeWithPendingSync = noteIdsToUpload.reduce(
             (currentTree, noteId) => updateFileNode(currentTree, noteId, { syncError: message }),
             mergedTree
@@ -606,8 +595,11 @@ function AppInner() {
   }, [user?.id])
 
   useEffect(() => {
-    saveTree(tree)
-  }, [tree])
+    // Only persist tree to localStorage for authenticated users
+    if (user && tree.length > 0) {
+      saveTree(tree)
+    }
+  }, [tree, user])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -814,7 +806,7 @@ function AppInner() {
     }
 
     if (!isOnline) {
-      const message = 'Offline — changes are saved locally and will retry when online.'
+      const message = 'Offline — changes are saved and will retry when online.'
       setSyncError(message)
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(id) ? currentIds : [...currentIds, id]
@@ -937,9 +929,9 @@ function AppInner() {
     : null
 
   let saveStatus = {
-    state: 'local',
-    label: 'Local',
-    detail: 'Saved in this browser',
+    state: 'demo',
+    label: 'Not saved',
+    detail: 'Sign in to save your notes',
     error: null,
     canRetry: false,
   }
@@ -957,7 +949,7 @@ function AppInner() {
       saveStatus = {
         state: 'offline',
         label: 'Offline',
-        detail: 'Changes stay local until connection returns',
+        detail: 'Changes saved, will sync when connection returns',
         error: null,
         canRetry: false,
       }
@@ -973,7 +965,7 @@ function AppInner() {
       saveStatus = {
         state: 'error',
         label: 'Sync failed',
-        detail: 'Changes are safe locally',
+        detail: 'Changes are safe, will retry sync',
         error: activeNote?.syncError || syncError,
         canRetry: true,
       }
@@ -982,14 +974,14 @@ function AppInner() {
 
   const sidebarSyncStatus = {
     state: !user
-      ? 'local'
+      ? 'demo'
       : (!isOnline
         ? 'offline'
         : (syncing
           ? 'syncing'
           : (failedSyncNoteIds.length > 0 ? 'error' : 'saved'))),
     message: !user
-      ? 'Saved locally'
+      ? 'Not saved'
       : (!isOnline
         ? 'Offline'
         : (syncing
@@ -1085,8 +1077,6 @@ function AppInner() {
     },
   }))
 
-  const paletteItems = [...actionItems, ...fontItems, ...noteItems, ...editorItems]
-
   const exportItems = activeNote ? [
     {
       id: 'action-export-note',
@@ -1112,20 +1102,18 @@ function AppInner() {
   const allPaletteItems = [...actionItems, ...exportItems, ...fontItems, ...noteItems, ...editorItems]
 
   const handleStart = useCallback(() => {
-    setHasStarted(true)
+    // Enter demo mode with the sample note — nothing is persisted
+    setTree(makeSampleTree())
+    setDemoMode(true)
+    demoModeRef.current = true
   }, [])
 
-  const handleStartWithNewNote = useCallback(() => {
-    setHasStarted(true)
-    handleNewNote()
-  }, [handleNewNote])
-
-  if (!hasStarted) {
+  // Show landing page for unauthenticated users who haven't entered demo mode
+  if (!user && !demoMode) {
     return (
       <>
         <LandingPage
           onStart={handleStart}
-          onCreateNew={handleStartWithNewNote}
           onSignIn={() => setAuthModalOpen(true)}
         />
         <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
