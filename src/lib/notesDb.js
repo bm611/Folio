@@ -32,6 +32,7 @@
  * -- Run this migration to add folder support:
  * -- alter table notes add column if not exists parent_id uuid references notes(id) on delete set null;
  * -- alter table notes add column if not exists type text not null default 'file';
+ * -- alter table notes add column if not exists deleted_at timestamptz;
  * ─────────────────────────────────────────────
  */
 
@@ -49,6 +50,7 @@ function rowToNote(row) {
     editorVersion: row.content_doc ? 2 : undefined,
     tags: row.tags || [],
     parentId: row.parent_id || null,
+    deletedAt: row.deleted_at || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     ...(row.type === 'folder' ? { children: [] } : {}),
@@ -66,6 +68,7 @@ function noteToRow(note, userId) {
     tags: note.tags || [],
     parent_id: note.parentId || null,
     type: note.type || 'file',
+    deleted_at: note.deletedAt || null,
   }
 }
 
@@ -75,6 +78,7 @@ export async function fetchNotes(userId) {
     .from('notes')
     .select('*')
     .eq('user_id', userId)
+    .is('deleted_at', null)
     .order('updated_at', { ascending: false })
 
   if (error) throw error
@@ -93,5 +97,35 @@ export async function upsertNote(note, userId) {
 /** Hard-delete a note by id */
 export async function deleteNote(id) {
   const { error } = await supabase.from('notes').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function softDeleteNotes(ids) {
+  if (!ids?.length) {
+    return
+  }
+
+  const { error } = await supabase
+    .from('notes')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (error) throw error
+}
+
+export async function restoreNotes(notes, userId) {
+  if (!notes?.length) {
+    return
+  }
+
+  const rows = notes.map((note) => ({
+    ...noteToRow({ ...note, deletedAt: null }, userId),
+    deleted_at: null,
+  }))
+
+  const { error } = await supabase
+    .from('notes')
+    .upsert(rows, { onConflict: 'id' })
+
   if (error) throw error
 }

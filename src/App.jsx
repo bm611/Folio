@@ -12,7 +12,18 @@ import {
 import Icon from './components/Icon'
 
 import Sidebar from './components/Sidebar'
-import { flattenTree, insertNode, deleteNode, updateFileNode, findNode, getParentId, rebuildTreeFromFlat } from './utils/tree'
+import {
+  collectSubtreeIds,
+  deleteNode,
+  findNode,
+  flattenNodes,
+  flattenTree,
+  getParentId,
+  insertNode,
+  rebuildTreeFromFlat,
+  renameNode,
+  updateFileNode,
+} from './utils/tree'
 import NoteEditor from './components/NoteEditor'
 import CommandPalette from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
@@ -21,11 +32,12 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
-import { fetchNotes, upsertNote, deleteNote as dbDeleteNote } from './lib/notesDb'
+import { fetchNotes, restoreNotes, softDeleteNotes, upsertNote } from './lib/notesDb'
 import { docToMarkdown } from './editor/markdown/markdownConversion'
 import { ACCENT_COLORS } from './config/accents'
 
-const TREE_STORAGE_KEY = 'canvas-tree'
+const TREE_STORAGE_KEY_PREFIX = 'canvas-tree:'
+const PENDING_DELETE_STORAGE_KEY_PREFIX = 'canvas-pending-delete:'
 
 const FONT_OPTIONS = [
   { id: 'outfit', name: 'Outfit', value: '"Outfit", sans-serif' },
@@ -41,20 +53,74 @@ function generateId() {
   return crypto.randomUUID()
 }
 
-function loadTree() {
+function getTreeStorageKey(userId) {
+  return `${TREE_STORAGE_KEY_PREFIX}${userId}`
+}
+
+function getPendingDeleteStorageKey(userId) {
+  return `${PENDING_DELETE_STORAGE_KEY_PREFIX}${userId}`
+}
+
+function loadTree(userId) {
+  if (!userId) {
+    return null
+  }
+
   try {
-    const raw = localStorage.getItem(TREE_STORAGE_KEY)
+    const raw = localStorage.getItem(getTreeStorageKey(userId))
     if (raw) return JSON.parse(raw)
   } catch { /* corrupt or missing tree – fall through to null */ }
   return null
 }
 
-function saveTree(tree) {
-  localStorage.setItem(TREE_STORAGE_KEY, JSON.stringify(tree))
+function saveTree(userId, tree) {
+  if (!userId) {
+    return
+  }
+
+  localStorage.setItem(getTreeStorageKey(userId), JSON.stringify(tree))
 }
 
-function clearSavedTree() {
-  localStorage.removeItem(TREE_STORAGE_KEY)
+function clearSavedTree(userId) {
+  if (!userId) {
+    return
+  }
+
+  localStorage.removeItem(getTreeStorageKey(userId))
+}
+
+function loadPendingDeleteIds(userId) {
+  if (!userId) {
+    return []
+  }
+
+  try {
+    const raw = localStorage.getItem(getPendingDeleteStorageKey(userId))
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    }
+  } catch {
+    return []
+  }
+
+  return []
+}
+
+function savePendingDeleteIds(userId, ids) {
+  if (!userId) {
+    return
+  }
+
+  localStorage.setItem(getPendingDeleteStorageKey(userId), JSON.stringify(ids))
+}
+
+function clearPendingDeleteIds(userId) {
+  if (!userId) {
+    return
+  }
+
+  localStorage.removeItem(getPendingDeleteStorageKey(userId))
 }
 
 function getInitialOnlineState() {
@@ -212,7 +278,41 @@ function getNoteChangeTimestamp(note) {
   )
 }
 
-function notesHaveDifferentContent(localNote, cloudNote) {
+function isSyntheticDailyFolder(node) {
+  return node?.type === 'folder' && node.id === 'folder-daily'
+}
+
+function getPersistedParentId(node, parentId) {
+  if (parentId === 'folder-daily' || node?.tags?.includes('daily')) {
+    return null
+  }
+
+  return parentId ?? null
+}
+
+function getSyncableTreeItems(tree) {
+  return flattenNodes(tree || [])
+    .filter((node) => !isSyntheticDailyFolder(node))
+    .map((node) => ({
+      ...node,
+      parentId: getPersistedParentId(node, node.parentId),
+    }))
+}
+
+function findSyncableItem(tree, id) {
+  return getSyncableTreeItems(tree).find((node) => node.id === id) ?? null
+}
+
+function itemsHaveDifferentContent(localNote, cloudNote) {
+  if (localNote.type === 'folder' || cloudNote.type === 'folder') {
+    return (
+      (localNote.type || 'file') !== (cloudNote.type || 'file') ||
+      (localNote.name || '') !== (cloudNote.name || '') ||
+      (localNote.title || '') !== (cloudNote.title || '') ||
+      getPersistedParentId(localNote, localNote.parentId) !== getPersistedParentId(cloudNote, cloudNote.parentId)
+    )
+  }
+
   return (
     (localNote.title || '') !== (cloudNote.title || '') ||
     (localNote.content || '') !== (cloudNote.content || '') ||
@@ -231,12 +331,13 @@ function shouldPreferLocalNote(localNote, cloudNote) {
     return true
   }
 
-  return notesHaveDifferentContent(localNote, cloudNote) && localChangedAt >= cloudChangedAt
+  return itemsHaveDifferentContent(localNote, cloudNote) && localChangedAt >= cloudChangedAt
 }
 
-function mergeLocalChangesIntoCloud(localTree, cloudNotes) {
-  const localNotes = flattenTree(localTree || []).map(normalizeNote)
-  const cloudById = new Map(cloudNotes.map(normalizeNote).map((n) => [n.id, n]))
+function mergeLocalChangesIntoCloud(localTree, cloudNotes, pendingDeleteIds = []) {
+  const localNotes = getSyncableTreeItems(localTree).map(normalizeNote)
+  const visibleCloudNotes = cloudNotes.filter((note) => !pendingDeleteIds.includes(note.id))
+  const cloudById = new Map(visibleCloudNotes.map(normalizeNote).map((n) => [n.id, n]))
   const localById = new Map(localNotes.map((n) => [n.id, n]))
   const notesToUploadById = new Map()
 
@@ -262,53 +363,13 @@ function mergeLocalChangesIntoCloud(localTree, cloudNotes) {
     }
   }
 
-  const hasLocalTree = (localTree || []).length > 0
-
-  // Collect all local node IDs (files + folders) for duplicate detection
-  const collectIds = (nodes) => {
-    for (const n of nodes) {
-      localById.set(n.id, n)
-      if (n.children) collectIds(n.children)
-    }
-  }
-  if (hasLocalTree) collectIds(localTree)
-
   // Include cloud-only items (not present in local tree at all)
-  const cloudOnlyNotes = []
   for (const cloudNote of cloudById.values()) {
     if (!localById.has(cloudNote.id)) {
       resolvedById.set(cloudNote.id, { ...cloudNote, syncError: null })
-      cloudOnlyNotes.push(resolvedById.get(cloudNote.id))
     }
   }
 
-  if (hasLocalTree) {
-    // Walk localTree preserving folder structure, substituting resolved note content
-    const applyResolved = (nodes) => {
-      return nodes.map((node) => {
-        if (node.type === 'folder') {
-          return { ...node, children: applyResolved(node.children || []) }
-        }
-        // file node — replace with resolved version if available
-        return resolvedById.get(node.id) ?? node
-      })
-    }
-
-    const structuredTree = applyResolved(localTree)
-
-    // Append cloud-only files at root level; skip folders (local tree has the structure)
-    const cloudOnlyFiles = cloudOnlyNotes.filter(n => n.type !== 'folder')
-    const mergedTree = cloudOnlyFiles.length > 0
-      ? [...structuredTree, ...cloudOnlyFiles]
-      : structuredTree
-
-    return {
-      mergedTree: ensureDailyFolder(mergedTree),
-      notesToUpload: Array.from(notesToUploadById.values()),
-    }
-  }
-
-  // No local tree (new device) — rebuild folder structure from cloud parentId
   const allResolved = Array.from(resolvedById.values())
   const mergedTree = rebuildTreeFromFlat(allResolved)
 
@@ -323,7 +384,7 @@ function formatImportedChangesMessage(count, didSyncToCloud) {
     return ''
   }
 
-  const label = count === 1 ? 'local note' : 'local notes'
+  const label = count === 1 ? 'local change' : 'local changes'
   return didSyncToCloud
     ? `Imported ${count} ${label} from this device and synced to cloud`
     : `Imported ${count} ${label} from this device`
@@ -357,12 +418,7 @@ function AppInner() {
   const [demoMode, setDemoMode] = useState(false)
   const demoModeRef = useRef(false)
 
-  const [tree, setTree] = useState(() => {
-    // On first load, try restoring the authenticated user's tree from cache
-    const savedTree = loadTree()
-    if (savedTree && savedTree.length > 0) return ensureDailyFolder(savedTree)
-    return []
-  })
+  const [tree, setTree] = useState([])
 
   const notes = flattenTree(tree)
 
@@ -384,6 +440,7 @@ function AppInner() {
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState(null)
   const [failedSyncNoteIds, setFailedSyncNoteIds] = useState([])
+  const [pendingDeleteIds, setPendingDeleteIds] = useState([])
   const [isOnline, setIsOnline] = useState(getInitialOnlineState)
   const [syncToast, setSyncToast] = useState(null)
   const deleteTimerRef = useRef(null)
@@ -392,6 +449,7 @@ function AppInner() {
   const [sbWidth, setSbWidth] = useState(240)
   const editorApiRef = useRef(null)
   const treeRef = useRef(tree)
+  const lastUserIdRef = useRef(null)
 
   const hasPendingCloudSaves = useCallback(() => {
     return Object.values(cloudSaveTimers.current).some(Boolean)
@@ -428,12 +486,15 @@ function AppInner() {
       setFailedSyncNoteIds((currentIds) => (
         currentIds.includes(noteId) ? currentIds : [...currentIds, noteId]
       ))
-      setTree((previousTree) => updateFileNode(previousTree, noteId, { syncError: message }))
+      setTree((previousTree) => updateFileNode(previousTree, noteId, {
+        syncError: message,
+        localCheckpointAt: new Date().toISOString(),
+      }))
       return false
     }
 
     const note = typeof noteOrId === 'string'
-      ? flattenTree(treeRef.current).find((currentNote) => currentNote.id === noteOrId)
+      ? findSyncableItem(treeRef.current, noteOrId)
       : noteOrId
 
     if (!note) {
@@ -441,15 +502,21 @@ function AppInner() {
     }
 
     try {
-      const parentId = getParentId(treeRef.current, note.id)
+      const parentId = getPersistedParentId(note, getParentId(treeRef.current, note.id))
       await upsertNote({ ...note, parentId }, user.id)
       const syncedAt = new Date().toISOString()
       setSyncError(null)
       setFailedSyncNoteIds((currentIds) => currentIds.filter((id) => id !== noteId))
-      setTree((previousTree) => updateFileNode(previousTree, noteId, {
-        lastSyncedAt: syncedAt,
-        syncError: null,
-      }))
+      setTree((previousTree) => {
+        const nextTree = updateFileNode(previousTree, noteId, {
+          lastSyncedAt: syncedAt,
+          syncError: null,
+        })
+
+        return note.type === 'folder'
+          ? renameNode(nextTree, noteId, note.name || note.title || 'Untitled')
+          : nextTree
+      })
       return true
     } catch (err) {
       const message = err?.message || 'Sync failed. Changes will retry when possible.'
@@ -497,6 +564,14 @@ function AppInner() {
   }, [tree])
 
   useEffect(() => {
+    if (!user?.id) {
+      return
+    }
+
+    savePendingDeleteIds(user.id, pendingDeleteIds)
+  }, [pendingDeleteIds, user?.id])
+
+  useEffect(() => {
     const handleConnectivityChange = () => {
       setIsOnline(navigator.onLine)
     }
@@ -518,6 +593,29 @@ function AppInner() {
     retryFailedSyncs()
   }, [failedSyncNoteIds, isOnline, retryFailedSyncs, user])
 
+  const flushPendingDeletes = useCallback(async () => {
+    if (!user || !navigator.onLine || pendingDeleteIds.length === 0) {
+      return false
+    }
+
+    try {
+      await softDeleteNotes(pendingDeleteIds)
+      setPendingDeleteIds([])
+      return true
+    } catch (err) {
+      setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
+      return false
+    }
+  }, [pendingDeleteIds, user])
+
+  useEffect(() => {
+    if (!user || !isOnline || pendingDeleteIds.length === 0) {
+      return
+    }
+
+    flushPendingDeletes().catch(console.error)
+  }, [flushPendingDeletes, isOnline, pendingDeleteIds.length, user])
+
   useEffect(() => {
     const timers = cloudSaveTimers.current
     const toastTimer = syncToastTimerRef.current
@@ -532,9 +630,83 @@ function AppInner() {
     }
   }, [])
 
+  const reconcileWithCloud = useCallback(async (options = {}) => {
+    if (!user) {
+      return
+    }
+
+    const { preserveSelection = true, pushLocalChanges = false, localTreeOverride } = options
+    const localTree = localTreeOverride ?? treeRef.current
+
+    if (!navigator.onLine) {
+      setTree(ensureDailyFolder(localTree || []))
+      setSyncError('Offline — changes are saved and will sync when online.')
+      return
+    }
+
+    await flushPendingDeletes()
+
+    const cloudNotes = await fetchNotes(user.id)
+    const currentPendingDeleteIds = loadPendingDeleteIds(user.id)
+    setPendingDeleteIds(currentPendingDeleteIds)
+
+    const { mergedTree, notesToUpload } = mergeLocalChangesIntoCloud(localTree, cloudNotes, currentPendingDeleteIds)
+    const noteIdsToUpload = notesToUpload.map((note) => note.id)
+    const importedChangesMessage = formatImportedChangesMessage(noteIdsToUpload.length, false)
+
+    if (!navigator.onLine && noteIdsToUpload.length > 0) {
+      const message = 'Offline — changes will sync to cloud when connection returns.'
+      const treeWithPendingSync = noteIdsToUpload.reduce(
+        (currentTree, noteId) => updateFileNode(currentTree, noteId, { syncError: message }),
+        mergedTree
+      )
+
+      setTree(treeWithPendingSync)
+      setSyncError(message)
+      setFailedSyncNoteIds(noteIdsToUpload)
+      if (pushLocalChanges) {
+        showSyncToast(`${importedChangesMessage}. Will sync when you're back online.`)
+      }
+    } else {
+      setTree(mergedTree)
+      setFailedSyncNoteIds([])
+    }
+
+    setActiveNoteId((currentId) => {
+      if (!preserveSelection) {
+        return null
+      }
+
+      return currentId && findNode(mergedTree, currentId) ? currentId : null
+    })
+
+    if (!pushLocalChanges || noteIdsToUpload.length === 0 || !navigator.onLine) {
+      return
+    }
+
+    setSyncing(true)
+
+    let successCount = 0
+    for (const note of notesToUpload) {
+      const didSync = await syncNoteToCloud(note)
+      if (didSync) {
+        successCount += 1
+      }
+    }
+
+    finishSyncingIfIdle()
+
+    if (successCount > 0 && successCount === notesToUpload.length) {
+      showSyncToast(formatImportedChangesMessage(successCount, true))
+    } else if (noteIdsToUpload.length > 0) {
+      showSyncToast(importedChangesMessage)
+    }
+  }, [finishSyncingIfIdle, flushPendingDeletes, showSyncToast, syncNoteToCloud, user])
+
   // ── Cloud sync: load notes when user signs in, revert on sign-out ────────
   useEffect(() => {
     let cancelled = false
+    const previousUserId = lastUserIdRef.current
 
     if (!user) {
       // Auth still loading — don't clear the tree yet, the user may still be signed in
@@ -543,74 +715,46 @@ function AppInner() {
       setSyncing(false)
       setSyncError(null)
       setFailedSyncNoteIds([])
+      setPendingDeleteIds([])
 
       // Signed out — clear tree and go back to landing page
       setTree([])
       setDemoMode(false)
       demoModeRef.current = false
       setActiveNoteId(null)
-      clearSavedTree()
+      if (previousUserId) {
+        clearSavedTree(previousUserId)
+        clearPendingDeleteIds(previousUserId)
+      }
+      lastUserIdRef.current = null
       return
     }
 
     // Signed in — advance past landing/demo page automatically
     const wasDemoMode = demoModeRef.current
+    const savedTree = loadTree(user.id)
+    const localTree = wasDemoMode ? [] : (savedTree ?? treeRef.current)
+    const cachedPendingDeleteIds = loadPendingDeleteIds(user.id)
+
+    lastUserIdRef.current = user.id
     setDemoMode(false)
     demoModeRef.current = false
     setAuthModalOpen(false)
     setSyncError(null)
+    setPendingDeleteIds(cachedPendingDeleteIds)
 
-    // Load notes from Supabase
-    fetchNotes(user.id)
-      .then(async (cloudNotes) => {
+    if (localTree?.length) {
+      setTree(ensureDailyFolder(localTree))
+    }
+
+    reconcileWithCloud({
+      preserveSelection: false,
+      pushLocalChanges: true,
+      localTreeOverride: localTree,
+    })
+      .then(() => {
         if (cancelled) {
           return
-        }
-
-        // Demo notes are ephemeral — don't merge them into cloud
-        const localTree = wasDemoMode ? [] : treeRef.current
-        const { mergedTree, notesToUpload } = mergeLocalChangesIntoCloud(localTree, cloudNotes)
-        const noteIdsToUpload = notesToUpload.map((note) => note.id)
-        const importedChangesMessage = formatImportedChangesMessage(noteIdsToUpload.length, false)
-
-        if (!navigator.onLine && noteIdsToUpload.length > 0) {
-          const message = 'Offline — changes will sync to cloud when connection returns.'
-          const treeWithPendingSync = noteIdsToUpload.reduce(
-            (currentTree, noteId) => updateFileNode(currentTree, noteId, { syncError: message }),
-            mergedTree
-          )
-
-          setTree(treeWithPendingSync)
-          setSyncError(message)
-          setFailedSyncNoteIds(noteIdsToUpload)
-          showSyncToast(`${importedChangesMessage}. Will sync when you're back online.`)
-        } else {
-          setTree(mergedTree)
-          setFailedSyncNoteIds([])
-        }
-
-        setActiveNoteId((currentId) => (currentId && findNode(mergedTree, currentId) ? currentId : null))
-
-        if (noteIdsToUpload.length === 0 || !navigator.onLine) {
-          return
-        }
-
-        setSyncing(true)
-
-        let successCount = 0
-        for (const note of notesToUpload) {
-          const didSync = await syncNoteToCloud(note)
-          if (didSync) {
-            successCount += 1
-          }
-        }
-
-        finishSyncingIfIdle()
-
-        if (successCount > 0 && successCount === notesToUpload.length) {
-          showSyncToast(formatImportedChangesMessage(successCount, true))
-        } else if (noteIdsToUpload.length > 0) {
-          showSyncToast(importedChangesMessage)
         }
       })
       .catch(console.error)
@@ -622,9 +766,16 @@ function AppInner() {
   }, [user?.id, authLoading])
 
   useEffect(() => {
-    // Only persist tree to localStorage for authenticated users
-    if (user && tree.length > 0) {
-      saveTree(tree)
+    if (!user || !isOnline) {
+      return
+    }
+
+    reconcileWithCloud({ preserveSelection: true, pushLocalChanges: false }).catch(console.error)
+  }, [isOnline, reconcileWithCloud, user])
+
+  useEffect(() => {
+    if (user) {
+      saveTree(user.id, rebuildTreeFromFlat(getSyncableTreeItems(tree)))
     }
   }, [tree, user])
 
@@ -662,24 +813,71 @@ function AppInner() {
     setCommandPaletteQuery('')
   }, [])
 
-  const syncFolderToCloud = useCallback(async (folder, parentId = null) => {
-    if (!user) return
-    try {
-      const now = new Date().toISOString()
-      await upsertNote({
-        id: folder.id,
-        type: 'folder',
-        title: folder.name || '',
-        name: folder.name || '',
-        content: '',
-        parentId,
-        createdAt: folder.createdAt || now,
-        updatedAt: folder.updatedAt || now,
-      }, user.id)
-    } catch (err) {
-      console.error('Failed to sync folder:', err)
+  const createFolder = useCallback((name, parentId = null) => {
+    const now = new Date().toISOString()
+    const folder = normalizeNote({
+      id: generateId(),
+      type: 'folder',
+      name,
+      title: name,
+      children: [],
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    setTree((previousTree) => insertNode(previousTree, parentId, folder))
+
+    if (user) {
+      setSyncing(true)
+      syncNoteToCloud({ ...folder, parentId }).finally(() => {
+        finishSyncingIfIdle()
+      })
     }
-  }, [user])
+
+    return folder
+  }, [finishSyncingIfIdle, syncNoteToCloud, user])
+
+  const handleRenameNode = useCallback((id, name) => {
+    const now = new Date().toISOString()
+    const existingNode = findNode(treeRef.current, id)
+
+    if (!existingNode) {
+      return
+    }
+
+    const updates = {
+      name,
+      title: name,
+      updatedAt: now,
+      localCheckpointAt: now,
+    }
+
+    setTree((previousTree) => renameNode(previousTree, id, name))
+
+    if (!user) {
+      return
+    }
+
+    if (!isOnline) {
+      const message = 'Offline — changes are saved and will retry when online.'
+      setSyncError(message)
+      setFailedSyncNoteIds((currentIds) => (
+        currentIds.includes(id) ? currentIds : [...currentIds, id]
+      ))
+      setTree((previousTree) => updateFileNode(previousTree, id, { syncError: message, ...updates }))
+      return
+    }
+
+    setTree((previousTree) => updateFileNode(previousTree, id, updates))
+    setSyncing(true)
+    window.clearTimeout(cloudSaveTimers.current[id])
+    cloudSaveTimers.current[id] = window.setTimeout(() => {
+      syncNoteToCloud(id).finally(() => {
+        cloudSaveTimers.current[id] = null
+        finishSyncingIfIdle()
+      })
+    }, 250)
+  }, [finishSyncingIfIdle, isOnline, syncNoteToCloud, user])
 
   const createNote = useCallback(
     (overrides = {}, options = {}) => {
@@ -780,40 +978,52 @@ function AppInner() {
         clearTimeout(deleteTimerRef.current)
       }
 
-      const fileIdsToClear = nodeToDelete.type === 'folder'
-        ? flattenTree([nodeToDelete]).map((file) => file.id)
-        : [nodeToDelete.id]
+      const nodeIdsToDelete = collectSubtreeIds(tree, id)
+      const syncableDeletedNodes = getSyncableTreeItems([nodeToDelete])
 
-      fileIdsToClear.forEach((fileId) => {
-        window.clearTimeout(cloudSaveTimers.current[fileId])
-        cloudSaveTimers.current[fileId] = null
+      nodeIdsToDelete.forEach((nodeId) => {
+        window.clearTimeout(cloudSaveTimers.current[nodeId])
+        cloudSaveTimers.current[nodeId] = null
       })
 
       setFailedSyncNoteIds((currentIds) => (
-        currentIds.filter((currentId) => !fileIdsToClear.includes(currentId))
+        currentIds.filter((currentId) => !nodeIdsToDelete.includes(currentId))
       ))
+      setPendingDeleteIds((currentIds) => Array.from(new Set([...currentIds, ...nodeIdsToDelete])))
       finishSyncingIfIdle()
 
       setTree((previousTree) => deleteNode(previousTree, id))
 
-      // Cloud delete immediately when signed in
-      if (user) {
-        const filesToDelete = nodeToDelete.type === 'folder'
-          ? flattenTree([nodeToDelete])
-          : [nodeToDelete]
-        filesToDelete.forEach((f) => dbDeleteNote(f.id).catch(console.error))
+      if (user && navigator.onLine) {
+        setSyncing(true)
+        softDeleteNotes(nodeIdsToDelete)
+          .then(() => {
+            setPendingDeleteIds((currentIds) => currentIds.filter((currentId) => !nodeIdsToDelete.includes(currentId)))
+          })
+          .catch((err) => {
+            setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
+          })
+          .finally(() => {
+            finishSyncingIfIdle()
+          })
+      } else if (user) {
+        setSyncError('Offline — changes are saved and will retry when online.')
       }
 
       if (activeNoteId === id) {
         setActiveNoteId(null)
       } else if (nodeToDelete.type === 'folder') {
-        const deletedFiles = flattenTree([nodeToDelete])
-        if (deletedFiles.find((f) => f.id === activeNoteId)) {
+        if (nodeIdsToDelete.includes(activeNoteId)) {
           setActiveNoteId(null)
         }
       }
 
-      setDeletedNote(nodeToDelete)
+      setDeletedNote({
+        node: nodeToDelete,
+        syncableNodes: syncableDeletedNodes,
+        nodeIds: nodeIdsToDelete,
+        parentId: getParentId(tree, id),
+      })
 
       // Auto-dismiss after 5 seconds
       deleteTimerRef.current = setTimeout(() => {
@@ -830,10 +1040,50 @@ function AppInner() {
       clearTimeout(deleteTimerRef.current)
       deleteTimerRef.current = null
     }
-    setTree((previousTree) => insertNode(previousTree, null, deletedNote))
-    setActiveNoteId(deletedNote.id)
+    setTree((previousTree) => insertNode(previousTree, deletedNote.parentId ?? null, deletedNote.node))
+    setPendingDeleteIds((currentIds) => currentIds.filter((id) => !deletedNote.nodeIds.includes(id)))
+
+      if (user && navigator.onLine) {
+        setSyncing(true)
+        restoreNotes(deletedNote.syncableNodes, user.id)
+          .catch((err) => {
+            setSyncError(err?.message || 'Sync failed. Changes will retry when possible.')
+            setPendingDeleteIds((currentIds) => Array.from(new Set([...currentIds, ...deletedNote.nodeIds])))
+          })
+          .finally(() => {
+            finishSyncingIfIdle()
+          })
+      } else if (user) {
+        setSyncError('Offline — changes are saved and will retry when online.')
+      }
+
+    setActiveNoteId(deletedNote.node.id)
     setDeletedNote(null)
-  }, [deletedNote])
+  }, [deletedNote, finishSyncingIfIdle, user])
+
+  useEffect(() => {
+    if (!user) {
+      return
+    }
+
+    const handleFocusSync = () => {
+      reconcileWithCloud({ preserveSelection: true, pushLocalChanges: false }).catch(console.error)
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        reconcileWithCloud({ preserveSelection: true, pushLocalChanges: false }).catch(console.error)
+      }
+    }
+
+    window.addEventListener('focus', handleFocusSync)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('focus', handleFocusSync)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [reconcileWithCloud, user])
 
   const handleUpdateNote = useCallback((id, updates, options = {}) => {
     const now = new Date().toISOString()
@@ -1173,11 +1423,12 @@ function AppInner() {
       <div className="grain flex h-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)]">
         <Sidebar
           tree={tree}
-          setTree={setTree}
           activeNoteId={activeNoteId}
           onSelectNote={setActiveNoteId}
           onNewNote={createNote}
+          onNewFolder={createFolder}
           onDeleteNote={handleDeleteNote}
+          onRenameNode={handleRenameNode}
           syncing={syncing}
           syncStatus={sidebarSyncStatus}
           collapsed={sidebarCollapsed}
@@ -1186,7 +1437,6 @@ function AppInner() {
           onSearchChange={setSidebarSearch}
           width={sbWidth}
           onResizeStart={onResizeStart}
-          syncFolderToCloud={syncFolderToCloud}
         />
 
         <div className={`flex flex-1 min-w-0 transition-[padding] duration-300 ${focusMode ? 'p-0' : 'p-0 md:p-2 md:pl-0'}`}>
@@ -1236,7 +1486,7 @@ function AppInner() {
           className="fixed bottom-20 md:bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-5 py-3"
           style={{ boxShadow: 'var(--neu-shadow)' }}
         >
-          <span className="text-sm text-[var(--text-secondary)]">Note deleted</span>
+          <span className="text-sm text-[var(--text-secondary)]">{deletedNote.node.type === 'folder' ? 'Folder deleted' : 'Note deleted'}</span>
           <button
             type="button"
             onClick={handleUndoDelete}

@@ -20,7 +20,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
-import { insertNode, renameNode, findNode, getParentId, getVisibleFiles } from '../utils/tree';
+import { getVisibleFiles } from '../utils/tree';
 
 // ─── Icon key → Hugeicons data object map ────────────────────────────────────
 const ICON_MAP = {
@@ -258,11 +258,12 @@ function InlineCreator({ depth, type, onConfirm, onCancel }) {
 
 export default function Sidebar({
   tree,
-  setTree,
   activeNoteId,
   onSelectNote,
   onNewNote,
+  onNewFolder,
   onDeleteNote,
+  onRenameNode,
   collapsed,
   onToggleCollapse,
   searchQuery,
@@ -271,7 +272,6 @@ export default function Sidebar({
   onResizeStart,
   syncing = false,
   syncStatus = null,
-  syncFolderToCloud,
 }) {
   const [expanded, setExpanded] = useState(new Set([1])); // default expand could be empty or root folder if needed
   const [creatingIn, setCreatingIn] = useState(null);
@@ -288,9 +288,7 @@ export default function Sidebar({
 
   const handleCreateConfirm = (name, parentId, type) => {
     if (type === "folder") {
-      const newNode = { id: crypto.randomUUID(), name, type: "folder", children: [] };
-      setTree(prev => insertNode(prev, parentId, newNode));
-      syncFolderToCloud?.(newNode, parentId)
+      onNewFolder?.(name, parentId)
     } else {
       const newNote = onNewNote({ title: name }, { parentId, activate: true })
       if (newNote && window.innerWidth < 768) onToggleCollapse();
@@ -299,14 +297,7 @@ export default function Sidebar({
   };
 
   const handleRename = (id, name) => {
-    setTree(prev => {
-      const node = findNode(prev, id)
-      const updated = renameNode(prev, id, name)
-      if (node?.type === 'folder') {
-        syncFolderToCloud?.({ ...node, name, title: name }, getParentId(prev, id))
-      }
-      return updated
-    })
+    onRenameNode?.(id, name)
   }
 
   const handleRootCreate = (type) => setCreatingIn({ parentId: null, type });

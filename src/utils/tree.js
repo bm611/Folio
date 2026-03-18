@@ -102,6 +102,31 @@ export function flattenTree(nodes) {
   return result
 }
 
+export function flattenNodes(nodes, parentId = null) {
+  let result = []
+
+  for (const node of nodes) {
+    const { children, ...rest } = node
+    result.push({ ...rest, parentId })
+
+    if (children?.length) {
+      result = result.concat(flattenNodes(children, node.id))
+    }
+  }
+
+  return result
+}
+
+export function collectSubtreeIds(nodes, id) {
+  const match = findNode(nodes, id)
+
+  if (!match) {
+    return []
+  }
+
+  return flattenNodes([match]).map((node) => node.id)
+}
+
 export function sortTreeNodes(nodes) {
   return [...nodes]
     .sort((a, b) => {
@@ -192,7 +217,7 @@ export function rebuildTreeFromFlat(flatItems) {
 
   for (const item of flatItems) {
     if (item.type === 'folder') {
-      const { parentId, ...rest } = item
+      const { parentId: _PARENT_ID, ...rest } = item
       folderMap[item.id] = { ...rest, children: [] }
     }
   }

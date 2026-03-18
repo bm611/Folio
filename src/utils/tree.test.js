@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  collectSubtreeIds,
   deleteNode,
   filterTreeNodes,
+  flattenNodes,
   flattenTree,
   getVisibleFiles,
   insertNode,
   renameNode,
+  rebuildTreeFromFlat,
   updateFileNode,
 } from './tree'
 
@@ -81,5 +84,23 @@ describe('tree utilities', () => {
 
     expect(filteredTree[0]).toMatchObject({ id: 'folder-b' })
     expect(filteredTree[0].children[0]).toMatchObject({ id: 'file-c' })
+  })
+
+  it('flattens full node trees with parent ids and rebuilds the same structure', () => {
+    const flattened = flattenNodes(baseTree)
+
+    expect(flattened).toEqual([
+      { id: 'folder-a', type: 'folder', name: 'Projects', parentId: null },
+      { id: 'file-a', type: 'file', name: 'Alpha', title: 'Alpha', content: 'one', parentId: 'folder-a' },
+      { id: 'file-b', type: 'file', name: 'Inbox', title: 'Inbox', content: 'two', parentId: null },
+    ])
+
+    expect(rebuildTreeFromFlat(flattened)).toEqual(baseTree)
+  })
+
+  it('collects ids for folders and all descendants', () => {
+    expect(collectSubtreeIds(baseTree, 'folder-a')).toEqual(['folder-a', 'file-a'])
+    expect(collectSubtreeIds(baseTree, 'file-b')).toEqual(['file-b'])
+    expect(collectSubtreeIds(baseTree, 'missing')).toEqual([])
   })
 })
