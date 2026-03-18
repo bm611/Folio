@@ -330,7 +330,7 @@ function makeSampleTree() {
 }
 
 function AppInner() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [demoMode, setDemoMode] = useState(false)
   const demoModeRef = useRef(false)
 
@@ -513,6 +513,9 @@ function AppInner() {
     let cancelled = false
 
     if (!user) {
+      // Auth still loading — don't clear the tree yet, the user may still be signed in
+      if (authLoading) return
+
       setSyncing(false)
       setSyncError(null)
       setFailedSyncNoteIds([])
@@ -592,7 +595,7 @@ function AppInner() {
       cancelled = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id])
+  }, [user?.id, authLoading])
 
   useEffect(() => {
     // Only persist tree to localStorage for authenticated users
