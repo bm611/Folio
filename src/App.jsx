@@ -402,7 +402,7 @@ function AppInner() {
   const [pendingUpserts, setPendingUpserts] = useState({})
   const [pendingDeleteIds, setPendingDeleteIds] = useState([])
   const [isOnline, setIsOnline] = useState(getInitialOnlineState)
-  const [syncToast, setSyncToast] = useState(null)
+  const [syncToast, setSyncToast] = useState(null) // { message, variant: 'success'|'error'|'info' }
   const deleteTimerRef = useRef(null)
   const cloudSaveTimers = useRef({})
   const syncToastTimerRef = useRef(null)
@@ -424,8 +424,8 @@ function AppInner() {
     }
   }, [hasPendingCloudSaves])
 
-  const showSyncToast = useCallback((message) => {
-    setSyncToast(message)
+  const showSyncToast = useCallback((message, variant = 'success') => {
+    setSyncToast({ message, variant })
     window.clearTimeout(syncToastTimerRef.current)
     syncToastTimerRef.current = window.setTimeout(() => {
       setSyncToast(null)
@@ -667,7 +667,7 @@ function AppInner() {
     const { attempted, succeeded } = await flushPendingUpserts()
 
     if (didFlushDeletes || (attempted > 0 && attempted === succeeded)) {
-      showSyncToast('All changes synced')
+      showSyncToast('All changes synced', 'success')
     }
   }, [failedSyncNoteIds, flushPendingDeletes, flushPendingUpserts, showSyncToast, user])
 
@@ -1533,7 +1533,18 @@ function AppInner() {
             onRetrySync={retryFailedSyncs}
             syncing={syncing}
             syncStatus={sidebarSyncStatus}
-            onSync={reconcileWithCloud}
+            onSync={async () => {
+              if (!navigator.onLine) {
+                showSyncToast('Offline — changes saved locally', 'info')
+                return
+              }
+              try {
+                await reconcileWithCloud()
+                showSyncToast('Synced to cloud', 'success')
+              } catch {
+                showSyncToast('Sync failed — check your connection', 'error')
+              }
+            }}
           />
         </div>
       </div>
@@ -1569,10 +1580,16 @@ function AppInner() {
 
       {syncToast && (
         <div
-          className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[color-mix(in_srgb,var(--success)_14%,var(--bg-elevated))] px-4 py-2 text-xs text-[var(--text-primary)]"
+          className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[var(--border-subtle)] px-4 py-2 text-xs text-[var(--text-primary)] ${
+            syncToast.variant === 'error'
+              ? 'bg-[color-mix(in_srgb,var(--danger)_14%,var(--bg-elevated))]'
+              : syncToast.variant === 'info'
+              ? 'bg-[color-mix(in_srgb,var(--warning)_14%,var(--bg-elevated))]'
+              : 'bg-[color-mix(in_srgb,var(--success)_14%,var(--bg-elevated))]'
+          }`}
           style={{ boxShadow: 'var(--neu-shadow)' }}
         >
-          {syncToast}
+          {syncToast.message}
         </div>
       )}
 
