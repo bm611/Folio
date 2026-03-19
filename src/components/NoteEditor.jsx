@@ -768,30 +768,30 @@ export default function NoteEditor({
               <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
             )}
             {user ? (
-             <div className="flex auth-group">
-               <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
-                 <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-                 <span className="auth-pill__dot" />
-               </div>
-               <button
-                 type="button"
-                 onClick={signOut}
-                 className="auth-signout-btn hidden sm:flex"
-                 title="Sign out"
-               >
-                 <Icon icon={Logout01Icon} size={16} strokeWidth={2} />
-               </button>
-             </div>
+              <div className="flex auth-group">
+                <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
+                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+                  <span className="auth-pill__dot" />
+                </div>
+                <button
+                  type="button"
+                  onClick={signOut}
+                  className="auth-signout-btn"
+                  title="Sign out"
+                >
+                  <Icon icon={Logout01Icon} size={16} strokeWidth={2} />
+                </button>
+              </div>
             ) : (
-             <button
-               type="button"
-               onClick={onOpenAuthModal}
-               className="relative flex auth-pill auth-pill--signed-out"
-               title="Sign in to sync your notes"
-             >
-               <Icon icon={CloudUploadIcon} size={14} strokeWidth={2} />
-               <span>Sign in</span>
-             </button>
+              <button
+                type="button"
+                onClick={onOpenAuthModal}
+                className="relative flex auth-pill auth-pill--signed-out"
+                title="Sign in to sync your notes"
+              >
+                <Icon icon={CloudUploadIcon} size={14} strokeWidth={2} />
+                <span>Sign in</span>
+              </button>
             )}
           </div>
         </div>
