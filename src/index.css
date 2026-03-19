@@ -517,9 +517,20 @@ body {
   margin: 0.5rem 0;
 }
 
+/* Nested task lists get indentation */
+.aura-editor .ProseMirror li[data-type="taskItem"] ul[data-type="taskList"] {
+  padding-left: 1.5rem;
+  margin: 0.15rem 0 0;
+}
+
 .aura-editor .ProseMirror li[data-type="taskItem"] { list-style: none; }
 
-.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content { position: relative; }
+.aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content {
+  position: relative;
+  /* Allow nested lists to render below the text line */
+  display: flex;
+  flex-direction: column;
+}
 
 .aura-editor .ProseMirror li[data-type="taskItem"] .task-item-content p.is-empty::before {
   content: attr(data-placeholder);
