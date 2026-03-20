@@ -637,7 +637,7 @@ export default function NoteEditor({
     const recentNotes = [...(notes || [])]
       .sort(compareRecentNotes)
       .slice(0, 6)
-      
+
     const favoriteNotes = [...(notes || [])]
       .filter(n => n.tags?.includes('favorite') || n.isFavorite)
       .sort(compareRecentNotes)
@@ -759,44 +759,44 @@ export default function NoteEditor({
                   </div>
                   <div className="flex flex-col">
                     {recentNotes.map((n) => {
-                    const isDaily = n.tags?.includes('daily')
-                    const rawTitle = getNoteDisplayTitle(n)
-                    const date = new Date(n.updatedAt || n.createdAt)
-                    const formattedDate = formatRelativeTime(date)
+                      const isDaily = n.tags?.includes('daily')
+                      const rawTitle = getNoteDisplayTitle(n)
+                      const date = new Date(n.updatedAt || n.createdAt)
+                      const formattedDate = formatRelativeTime(date)
 
-                    let displayTitle = rawTitle
-                    if (isDaily) {
-                      const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                      if (parts) {
-                        const [, dd, mm, yyyy] = parts
-                        const d = new Date(`${yyyy}-${mm}-${dd}`)
-                        const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                        displayTitle = `Daily \u2014 ${readable}`
-                      } else {
-                        displayTitle = `Daily \u2014 ${rawTitle}`
+                      let displayTitle = rawTitle
+                      if (isDaily) {
+                        const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                        if (parts) {
+                          const [, dd, mm, yyyy] = parts
+                          const d = new Date(`${yyyy}-${mm}-${dd}`)
+                          const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                          displayTitle = `Daily \u2014 ${readable}`
+                        } else {
+                          displayTitle = `Daily \u2014 ${rawTitle}`
+                        }
                       }
-                    }
 
-                    return (
-                      <button
-                        key={n.id}
-                        type="button"
-                        onClick={() => onSelectNote(n.id)}
-                        className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
-                      >
-                        <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
-                          <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                          <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
-                            {formattedDate}
+                      return (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => onSelectNote(n.id)}
+                          className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                        >
+                          <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
+                            <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
+                            <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
+                              {formattedDate}
+                            </span>
+                          </div>
+                          <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
+                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                            {displayTitle}
                           </span>
-                        </div>
-                        <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
-                          <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
-                          {displayTitle}
-                        </span>
-                      </button>
-                    )
-                  })}
+                        </button>
+                      )
+                    })}
                   </div>
                 </>
               ) : (
@@ -807,68 +807,68 @@ export default function NoteEditor({
             </div>
 
             {/* Favorites Column */}
-              <div className="flex flex-col">
-                <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                  <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-3">
-                    <Icon icon={StarIcon} size={24} strokeWidth={2} className="text-[var(--warning)]" />
-                    Favorites
-                  </h2>
-                </div>
-                {favoriteNotes.length > 0 ? (
-                  <>
-                    <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
-                      <div className="w-24 md:w-32">Last Edited</div>
-                      <div>Name</div>
-                    </div>
-                    <div className="flex flex-col">
-                      {favoriteNotes.map((n) => {
-                        const isDaily = n.tags?.includes('daily')
-                        const rawTitle = getNoteDisplayTitle(n)
-                        const date = new Date(n.updatedAt || n.createdAt)
-                        const formattedDate = formatRelativeTime(date)
-
-                        let displayTitle = rawTitle
-                        if (isDaily) {
-                          const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
-                          if (parts) {
-                            const [, dd, mm, yyyy] = parts
-                            const d = new Date(`${yyyy}-${mm}-${dd}`)
-                            const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                            displayTitle = `Daily \u2014 ${readable}`
-                          } else {
-                            displayTitle = `Daily \u2014 ${rawTitle}`
-                          }
-                        }
-
-                        return (
-                          <button
-                            key={n.id}
-                            type="button"
-                            onClick={() => onSelectNote(n.id)}
-                            className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
-                          >
-                            <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
-                              <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                              <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
-                                {formattedDate}
-                              </span>
-                            </div>
-                            <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
-                              <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
-                              {displayTitle}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex-1 flex flex-col justify-center min-h-[300px]">
-                    <FavoritesEmptyPrompt />
-                  </div>
-                )}
+            <div className="flex flex-col">
+              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
+                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-3">
+                  <Icon icon={StarIcon} size={24} strokeWidth={2} className="text-[var(--warning)]" />
+                  Favorites
+                </h2>
               </div>
+              {favoriteNotes.length > 0 ? (
+                <>
+                  <div className="mb-2 flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 pb-2 text-[12px] font-bold text-[var(--text-muted)] opacity-60 md:mb-4 md:gap-12 md:text-[15px]">
+                    <div className="w-24 md:w-32">Last Edited</div>
+                    <div>Name</div>
+                  </div>
+                  <div className="flex flex-col">
+                    {favoriteNotes.map((n) => {
+                      const isDaily = n.tags?.includes('daily')
+                      const rawTitle = getNoteDisplayTitle(n)
+                      const date = new Date(n.updatedAt || n.createdAt)
+                      const formattedDate = formatRelativeTime(date)
+
+                      let displayTitle = rawTitle
+                      if (isDaily) {
+                        const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/)
+                        if (parts) {
+                          const [, dd, mm, yyyy] = parts
+                          const d = new Date(`${yyyy}-${mm}-${dd}`)
+                          const readable = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+                          displayTitle = `Daily \u2014 ${readable}`
+                        } else {
+                          displayTitle = `Daily \u2014 ${rawTitle}`
+                        }
+                      }
+
+                      return (
+                        <button
+                          key={n.id}
+                          type="button"
+                          onClick={() => onSelectNote(n.id)}
+                          className="group flex items-center gap-4 border-b border-[var(--border-subtle)] px-2 py-2.5 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)] md:gap-6 md:py-4"
+                        >
+                          <div className="flex w-24 shrink-0 items-center gap-3 md:w-32">
+                            <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
+                            <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] md:text-[15px] active:scale-[0.97] transition-transform truncate">
+                              {formattedDate}
+                            </span>
+                          </div>
+                          <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] md:text-[22px] flex items-center gap-3">
+                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                            {displayTitle}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col justify-center min-h-[300px]">
+                  <FavoritesEmptyPrompt />
+                </div>
+              )}
             </div>
+          </div>
         </div>
         {/* Mobile action bar */}
         <div className="mobile-action-bar" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
@@ -910,9 +910,8 @@ export default function NoteEditor({
 
   return (
     <div
-      className={`relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-primary)] transition-[border-radius] duration-300 overflow-hidden ${
-        focusMode ? 'rounded-none' : 'max-md:rounded-none rounded-2xl'
-      }`}
+      className={`relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-primary)] transition-[border-radius] duration-300 overflow-hidden ${focusMode ? 'rounded-none' : 'max-md:rounded-none rounded-2xl'
+        }`}
     >
       {/* Subtle grainy gradient background for the banner area */}
       {!focusMode && (
@@ -1048,9 +1047,8 @@ export default function NoteEditor({
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
         <div
-          className={`mx-auto max-w-3xl px-4 pb-44 md:pb-32 sm:px-6 md:px-10 ${
-            focusMode ? 'pt-[12vh]' : 'pt-6 md:pt-0'
-          }`}
+          className={`mx-auto max-w-3xl px-4 pb-44 md:pb-32 sm:px-6 md:px-10 ${focusMode ? 'pt-[12vh]' : 'pt-6 md:pt-0'
+            }`}
         >
           {/* Title — hidden in focus mode */}
           {!focusMode && (
