@@ -5,6 +5,7 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 import { ReactNodeViewRenderer } from '@tiptap/react'
+import CodeBlockView from '../extensions/CodeBlockView'
 import { AuraTaskItem } from '../extensions/TaskItemNode'
 import TaskList from '@tiptap/extension-task-list'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -47,6 +48,9 @@ const AuraCodeBlockLowlight = CodeBlockLowlight.extend({
         getAttributes: (match) => ({ language: match?.[1] || null }),
       }),
     ]
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(CodeBlockView)
   },
 })
 
