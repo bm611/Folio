@@ -1,3 +1,5 @@
+import { useState, useEffect, useCallback } from 'react'
+
 import type { Editor } from '@tiptap/react'
 import {
   Heading01Icon,
@@ -132,7 +134,48 @@ interface MobileEditorToolbarProps {
   editor: Editor | null
 }
 
+/**
+ * Use the Visual Viewport API to position the toolbar just above the
+ * on-screen keyboard. `window.visualViewport` gives us the portion of
+ * the layout viewport that is actually visible — when the keyboard opens
+ * the visual viewport shrinks upward, so we anchor to its bottom edge.
+ */
+function useKeyboardAwareBottom(): number {
+  const [bottom, setBottom] = useState(16)
+
+  const update = useCallback(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+
+    // Distance from the bottom of the layout viewport to the bottom of
+    // the visible area. When the keyboard is closed this is ~0; when it
+    // is open it equals the keyboard height.
+    const keyboardOffset = window.innerHeight - (vv.offsetTop + vv.height)
+    // 8px breathing room above the keyboard, or the default 16px gap
+    // from the screen bottom when no keyboard is shown.
+    setBottom(keyboardOffset > 0 ? keyboardOffset + 8 : 16)
+  }, [])
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return undefined
+
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    update()
+
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [update])
+
+  return bottom
+}
+
 export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps) {
+  const bottom = useKeyboardAwareBottom()
+
   if (!editor) {
     return null
   }
@@ -140,7 +183,10 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
   return (
     <div
       className="mobile-action-bar mobile-action-bar--editor"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      style={{
+        bottom,
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
     >
       <div className="mobile-action-bar-inner mobile-editor-toolbar-inner">
         {TOOLBAR_ACTIONS.map((item) => (

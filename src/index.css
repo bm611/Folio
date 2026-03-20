@@ -2696,6 +2696,7 @@ body {
   .mobile-action-bar--editor {
     display: flex;
     position: fixed;
+    /* bottom is driven by JS (Visual Viewport API) to stay above the keyboard */
     bottom: 16px;
     left: 12px;
     right: 12px;
@@ -2703,6 +2704,8 @@ body {
     /* Override the centered-pill positioning */
     transform: none;
     width: auto;
+    /* Smooth repositioning when keyboard opens/closes */
+    transition: bottom 100ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .mobile-editor-toolbar-inner {
