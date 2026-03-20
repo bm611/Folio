@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:ai": "node netlify/dev-server.js & vite",
     "build": "tsc --noEmit && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -45,6 +46,7 @@
     "markdown-it-sup": "^2.0.0",
     "markdown-it-table": "^4.1.1",
     "markdown-it-task-lists": "^2.1.1",
+    "openai": "^6.32.0",
     "prosemirror-markdown": "^1.13.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -55,6 +57,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@netlify/functions": "^5.1.5",
     "@tailwindcss/vite": "^4.2.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

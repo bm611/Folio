@@ -123,6 +123,18 @@ export function runAuraEditorCommand(editor: Editor, commandId: string, options:
       return chain.setHorizontalRule().run()
     case 'today':
       return chain.insertContent(formatToday()).run()
+    case 'ai': {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const storage = editor.storage as any
+      const currentNoteId = storage.aiPromptBlock?.currentNoteId ?? ''
+      const currentNoteTitle = storage.aiPromptBlock?.currentNoteTitle ?? ''
+      return chain
+        .insertContent({
+          type: 'aiPromptBlock',
+          attrs: { currentNoteId, currentNoteTitle },
+        })
+        .run()
+    }
     default:
       return false
   }

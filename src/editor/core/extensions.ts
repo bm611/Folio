@@ -15,6 +15,7 @@ import { createLowlight, all } from 'lowlight'
 import { CalloutNode } from '../extensions/CalloutNode'
 import { SlashCommand } from '../extensions/SlashCommand'
 import { MarkdownPaste } from '../extensions/MarkdownPaste'
+import { AiPromptBlock } from '../extensions/AiPromptBlock'
 import TableView from '../extensions/TableView'
 
 const lowlight = createLowlight(all)
@@ -85,5 +86,6 @@ export function createAuraEditorExtensions(): Extensions {
     CalloutNode,
     SlashCommand,
     MarkdownPaste,
+    AiPromptBlock,
   ]
 }

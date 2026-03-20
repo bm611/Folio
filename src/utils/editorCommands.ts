@@ -147,6 +147,12 @@ export const EDITOR_COMMANDS: EditorCommand[] = [
       return createSnippetResult(`${formatToday()}${CURSOR_TOKEN}`)
     },
   },
+  {
+    id: 'ai',
+    title: 'Ask AI',
+    trigger: 'ai',
+    keywords: ['ai', 'ask', 'chat', 'question', 'gpt', 'generate', 'summarize'],
+  },
 ]
 
 export function getEditorCommands(query: string = ''): EditorCommand[] {

@@ -7,6 +7,7 @@ import { createAuraEditorExtensions } from '../editor/core/extensions'
 import { runAuraEditorCommand } from '../editor/core/editorCommands'
 import { docToMarkdown, markdownToDoc } from '../editor/markdown/markdownConversion'
 import TableBubbleMenu from './TableBubbleMenu'
+import type { NoteFile } from '../types'
 
 export interface EditorPayload {
   content: string
@@ -23,6 +24,9 @@ export interface EditorApi {
 interface LiveMarkdownEditorProps {
   value: string
   contentDoc?: JSONContent
+  notes?: NoteFile[]
+  currentNoteId?: string
+  currentNoteTitle?: string
   onChange: (payload: EditorPayload) => void
   onRegisterEditorApi?: (api: EditorApi | null) => void
 }
@@ -38,6 +42,9 @@ function sanitizeDoc(doc: JSONContent | undefined, extensions: ReturnType<typeof
 export default function LiveMarkdownEditor({
   value,
   contentDoc,
+  notes,
+  currentNoteId,
+  currentNoteTitle,
   onChange,
   onRegisterEditorApi,
 }: LiveMarkdownEditorProps) {
@@ -70,6 +77,23 @@ export default function LiveMarkdownEditor({
       },
     },
   })
+
+  // ─── Sync notes + current note info into editor.storage for AiPromptBlock ───
+  useEffect(() => {
+    if (!editor) return
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const storage = editor.storage as any
+    if (storage.aiPromptBlock) {
+      storage.aiPromptBlock.notes = (notes ?? []).map((n) => ({
+        id: n.id,
+        title: n.title || 'Untitled',
+        content: n.content,
+      }))
+      storage.aiPromptBlock.currentNoteId = currentNoteId ?? ''
+      storage.aiPromptBlock.currentNoteTitle = currentNoteTitle ?? ''
+    }
+  }, [editor, notes, currentNoteId, currentNoteTitle])
 
   useEffect(() => {
     if (!editor) {

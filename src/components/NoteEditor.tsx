@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { motion, AnimatePresence } from 'framer-motion'
 import type { IconSvgElement } from '@hugeicons/react'
@@ -640,6 +640,12 @@ export default function NoteEditor({
 }: NoteEditorProps) {
   const { user, signOut } = useAuth()
 
+  // Flat file notes for reuse across home screen and editor
+  const fileNotes = useMemo(
+    () => notes.filter((n): n is NoteFile => n.type === 'file'),
+    [notes],
+  )
+
   // Mobile home tab state (Recent / Favorites)
   const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent')
 
@@ -688,8 +694,6 @@ export default function NoteEditor({
       month: 'long',
       day: 'numeric',
     })
-
-    const fileNotes = notes.filter((n): n is NoteFile => n.type === 'file')
 
     const recentNotes = [...fileNotes]
       .sort(compareRecentNotes)
@@ -1329,6 +1333,9 @@ export default function NoteEditor({
                 key={note.id}
                 value={note.content}
                 contentDoc={note.contentDoc}
+                notes={fileNotes}
+                currentNoteId={note.id}
+                currentNoteTitle={note.title}
                 onChange={(updates) => onUpdateNote(note.id, { ...updates })}
                 onRegisterEditorApi={handleRegisterEditorApi}
               />

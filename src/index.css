@@ -1399,6 +1399,333 @@ body {
 }
 
 /* ═══════════════════════════════════════════════
+   AI Prompt Block (/ai)
+   ═══════════════════════════════════════════════ */
+
+.aura-ai-prompt-wrapper {
+  margin: 0.75rem 0;
+  position: relative;
+}
+
+.aura-ai-prompt-close-floating {
+  position: absolute;
+  top: -1.8rem;
+  right: 0;
+  padding: 0.1rem 0.3rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: background var(--duration-fast), color var(--duration-fast);
+  opacity: 0;
+}
+
+.aura-ai-prompt-wrapper:hover .aura-ai-prompt-close-floating {
+  opacity: 1;
+}
+
+.aura-ai-prompt-close-floating:hover {
+  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+  color: var(--text-primary);
+}
+
+
+
+/* ── Mentions row (floats above input) ── */
+
+.aura-ai-prompt-mentions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.7rem 0.45rem;
+  min-height: auto;
+  margin-bottom: 0.4rem;
+}
+
+.aura-ai-mention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.15em 0.5em;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.aura-ai-mention-at {
+  opacity: 0.4;
+  font-size: 0.88em;
+  margin-right: 0.05em;
+}
+
+.aura-ai-mention-remove {
+  margin-left: 0.2em;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: opacity var(--duration-fast);
+}
+
+.aura-ai-mention-remove:hover {
+  opacity: 0.7;
+}
+
+.aura-ai-mention-add-wrap {
+  position: relative;
+}
+
+.aura-ai-mention-add-btn {
+  padding: 0.15em 0.45em;
+  border: 1px dashed color-mix(in srgb, var(--text-muted) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color var(--duration-fast), color var(--duration-fast);
+}
+
+.aura-ai-mention-add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.aura-ai-mention-search-wrap {
+  position: relative;
+}
+
+.aura-ai-mention-search {
+  width: 10rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-family: var(--body-font);
+  outline: none;
+}
+
+.aura-ai-mention-search:focus {
+  border-color: var(--border-default);
+}
+
+.aura-ai-mention-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 90;
+  min-width: 14rem;
+  max-width: 22rem;
+  max-height: 12rem;
+  overflow-y: auto;
+  margin-top: 0.3rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-elevated) 96%, transparent);
+  box-shadow: var(--neu-shadow);
+  padding: 0.3rem;
+  backdrop-filter: blur(12px);
+}
+
+.aura-ai-mention-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-family: var(--body-font);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aura-ai-mention-dropdown-item.is-active {
+  background: color-mix(in srgb, var(--text-muted) 8%, transparent);
+}
+
+.aura-ai-mention-dropdown-empty {
+  padding: 0.5rem 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* ── Query input row ── */
+
+.aura-ai-prompt-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.7rem 0.6rem;
+}
+
+.aura-ai-prompt-input {
+  flex: 1;
+  padding: 0.45rem 0.6rem;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-family: var(--body-font);
+  outline: none;
+  transition: all var(--duration-fast);
+}
+
+.aura-ai-prompt-input:focus {
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.aura-ai-prompt-input:focus {
+  border-color: var(--accent);
+}
+
+.aura-ai-prompt-input::placeholder {
+  color: var(--text-muted);
+}
+
+.aura-ai-prompt-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--duration-fast);
+}
+
+.aura-ai-prompt-send:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.aura-ai-prompt-send:not(:disabled):hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--text-muted) 5%, transparent);
+}
+
+/* ── Streaming state ── */
+
+.aura-ai-prompt-streaming {
+  padding: 0 0.7rem 0.65rem;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  padding: 0.5rem 0.7rem 0.65rem;
+}
+
+.aura-ai-prompt-streaming-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.aura-ai-pulse {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: ai-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ai-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.aura-ai-prompt-preview {
+  margin: 0;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--bg-elevated) 50%, transparent);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-family: var(--body-font);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+/* ── Error state ── */
+
+.aura-ai-prompt-error {
+  padding: 0.5rem 0.7rem 0.6rem;
+  border: 2px solid var(--danger);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+}
+
+.aura-ai-prompt-error-text {
+  display: block;
+  color: var(--danger, #ef4444);
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.aura-ai-prompt-error-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.aura-ai-prompt-retry {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-family: var(--body-font);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.aura-ai-prompt-retry:hover {
+  background: color-mix(in srgb, var(--text-muted) 5%, transparent);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+/* ═══════════════════════════════════════════════
    Tag Input + Chips
    ═══════════════════════════════════════════════ */
 
@@ -2877,6 +3204,8 @@ input[type='number'] {
     padding: 0.6rem 0.8rem;
     min-height: 44px;
   }
+
+
 
   .obsidian-callout-header {
     font-size: 0.78rem;
