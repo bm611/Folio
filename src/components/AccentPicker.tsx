@@ -16,9 +16,11 @@ interface AccentPickerProps {
   mobile?: boolean
   showLabel?: boolean
   className?: string
+  label?: string
+  hideName?: boolean
 }
 
-export default function AccentPicker({ accentId, onAccentChange, theme, mobile = false, showLabel = false, className = '' }: AccentPickerProps) {
+export default function AccentPicker({ accentId, onAccentChange, theme, mobile = false, showLabel = false, className = '', label = 'Accent', hideName = false }: AccentPickerProps) {
   const [open, setOpen] = useState(false)
   const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -50,12 +52,13 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
     return () => document.removeEventListener('keydown', handler)
   }, [open])
 
-  // Desktop trigger: matches the other top-bar icon buttons
-  // Mobile trigger: explicit 40×40 circle — matches what .mobile-action-bar-inner button CSS produces
+  // showLabel = compact sidebar-style row (inside settings menu)
+  // default  = standalone top-bar icon button
+  // mobile   = 40×40 circle for mobile action bar
   const desktopClasses = showLabel
-    ? 'hidden md:relative md:flex h-9 px-3 gap-2 items-center justify-center rounded-lg border border-transparent text-[13px] font-medium text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
+    ? 'settings-item'
     : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
-    
+
   const triggerClassName = mobile
     ? 'relative flex h-10 w-10 items-center justify-center rounded-full border-none bg-transparent p-0 text-[var(--text-muted)] cursor-pointer after:absolute after:-inset-4 active:scale-90'
     : desktopClasses
@@ -88,15 +91,30 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
         aria-label="Change accent color"
         aria-expanded={open}
         aria-haspopup="listbox"
+        style={showLabel && !mobile ? { fontFamily: '"Outfit", sans-serif' } : undefined}
       >
-        <span
-          className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200 shrink-0"
-          style={{
-            backgroundColor: currentSwatch,
-            boxShadow: `0 0 0 1.5px var(--bg-primary), 0 0 0 3px ${currentSwatch}55`,
-          }}
-        />
-        {showLabel && <span>Accent</span>}
+        {showLabel && !mobile ? (
+          <>
+            <span className="settings-icon-wrap">
+              <span
+                className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200"
+                style={{
+                  backgroundColor: currentSwatch,
+                  boxShadow: `0 0 0 1.5px var(--bg-surface), 0 0 0 3px ${currentSwatch}55`,
+                }}
+              />
+            </span>
+            <span className="settings-item-label">{label}</span>
+          </>
+        ) : (
+          <span
+            className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200 shrink-0"
+            style={{
+              backgroundColor: currentSwatch,
+              boxShadow: `0 0 0 1.5px var(--bg-primary), 0 0 0 3px ${currentSwatch}55`,
+            }}
+          />
+        )}
       </button>
 
       {/* Dropdown panel — portaled to body to escape overflow:hidden ancestors */}
@@ -105,6 +123,7 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
           ref={dropdownRef}
           role="listbox"
           aria-label="Accent color options"
+          data-accent-popover
           className={dropdownBaseClassName}
           style={{
             boxShadow: 'var(--dialog-shadow)',
@@ -148,13 +167,14 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
                         : undefined,
                     }}
                   />
-                  {/* Name */}
-                  <span
-                    className="text-[9px] leading-none transition-colors duration-100"
-                    style={{ color: isActive ? swatch : 'var(--text-muted)' }}
-                  >
-                    {color.label}
-                  </span>
+                  {!hideName && (
+                    <span
+                      className="text-[9px] leading-none transition-colors duration-100"
+                      style={{ color: isActive ? swatch : 'var(--text-muted)' }}
+                    >
+                      {color.label}
+                    </span>
+                  )}
                 </button>
               )
             })}

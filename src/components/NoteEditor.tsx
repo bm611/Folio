@@ -5,8 +5,6 @@ import type { Editor } from '@tiptap/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import { useAuth } from '../contexts/AuthContext'
 import {
-  ArrowShrinkIcon,
-  ArrowExpandIcon,
   AlertCircleIcon,
   Calendar01Icon,
   CloudSavingDone01Icon,
@@ -17,18 +15,19 @@ import {
   SidebarLeftIcon,
   CommandIcon,
   Add01Icon,
-  Download01Icon,
   Logout01Icon,
   CloudUploadIcon,
   ArrowLeft01Icon,
   StarIcon,
+  FireIcon,
   File01Icon,
   Clock01Icon,
-  Home01Icon,
   File01Icon as FileText01Icon,
+  Download01Icon,
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
+import SettingsMenu from './SettingsMenu'
 import { countBodyWords, estimateReadTime, formatCreatedAt, getNoteDisplayTitle } from '../utils/noteMeta'
 import { docToMarkdown } from '../editor/markdown/markdownConversion'
 import TagInput from './TagInput'
@@ -70,8 +69,6 @@ interface NoteEditorProps {
   onAccentChange: (id: string) => void
   sidebarCollapsed: boolean
   onToggleSidebar: () => void
-  focusMode: boolean
-  onToggleFocusMode: () => void
   onOpenCommandPalette?: () => void
   onOpenAuthModal: () => void
   saveStatus: SaveStatus
@@ -80,13 +77,8 @@ interface NoteEditorProps {
   syncing: boolean
   syncStatus: SyncStatus
   onSync: () => void
-}
-
-interface SyncButtonProps {
-  syncing: boolean
-  syncStatus: SyncStatus
-  onSync: () => void
-  showLabel?: boolean
+  fontId: string
+  onFontChange: (id: string) => void
 }
 
 interface SaveBadgeMeta {
@@ -149,7 +141,10 @@ function exportNoteAsMarkdown(note: NoteFile): void {
   const a = document.createElement('a')
   a.href = url
   a.download = fileName
+  a.style.display = 'none'
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
 
@@ -573,109 +568,6 @@ function getSaveBadgeMeta(saveStatus: SaveStatus): SaveBadgeMeta {
   }
 }
 
-function SyncButton({ syncing, syncStatus, onSync, showLabel }: SyncButtonProps) {
-  const state = syncStatus?.state
-  const isSpinning = syncing || state === 'syncing'
-
-  let tooltip = 'Sync with cloud'
-  let iconColor = 'var(--text-muted)'
-  let icon: IconSvgElement = CloudSavingDone01Icon
-  if (state === 'offline') {
-    tooltip = 'Offline — changes are saved locally'
-    iconColor = 'var(--warning)'
-    icon = CloudSavingDone01Icon
-  } else if (state === 'error') {
-    tooltip = syncStatus?.error || 'Sync failed — click to retry'
-    iconColor = 'var(--danger)'
-    icon = AlertCircleIcon
-  } else if (isSpinning) {
-    tooltip = 'Syncing…'
-    iconColor = 'var(--success)'
-    icon = Loading01Icon
-  } else if (state === 'saved') {
-    tooltip = 'Synced — click to sync now'
-    iconColor = 'var(--success)'
-    icon = CloudSavingDone01Icon
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onSync}
-      disabled={isSpinning || state === 'offline'}
-      className={`relative flex h-9 ${showLabel ? 'px-3 gap-2 text-[13px] font-medium' : 'w-9'} items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 text-[var(--text-muted)]`}
-      title={tooltip}
-    >
-      <Icon
-        icon={icon}
-        size={18}
-        strokeWidth={1.5}
-        style={{ color: iconColor }}
-        className={isSpinning ? 'sync-spin shrink-0' : 'shrink-0'}
-      />
-      {showLabel && <span>Sync</span>}
-    </button>
-  )
-}
-
-// ─── Settings Dropdown Component ───────────────────────────────────
-function SettingsDropdown({ theme, onToggleTheme, accentId, onAccentChange }: {
-  theme: string
-  onToggleTheme: () => void
-  accentId: string
-  onAccentChange: (id: string) => void
-}) {
-  const [open, setOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open])
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-        title="Settings (⌘,)"
-      >
-        <Icon icon={ArrowExpandIcon} size={21} strokeWidth={1.5} />
-      </button>
-      
-      {open && (
-        <div className="absolute right-0 top-12 z-50 w-56 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-lg overflow-hidden">
-          <div className="p-4 space-y-4">
-            <div>
-              <div className="text-[12px] font-medium text-[var(--text-muted)] mb-2 uppercase tracking-wider">Theme</div>
-              <button
-                type="button"
-                onClick={() => { onToggleTheme(); setOpen(false) }}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
-              >
-                {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
-                <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-              </button>
-            </div>
-            
-            <div>
-              <div className="text-[12px] font-medium text-[var(--text-muted)] mb-2 uppercase tracking-wider">Accent Color</div>
-              <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function NoteEditor({
   note,
   notes,
@@ -690,8 +582,6 @@ export default function NoteEditor({
   onAccentChange,
   sidebarCollapsed,
   onToggleSidebar,
-  focusMode,
-  onToggleFocusMode,
   onOpenCommandPalette,
   onOpenAuthModal,
   saveStatus,
@@ -700,6 +590,8 @@ export default function NoteEditor({
   syncing,
   syncStatus,
   onSync,
+  fontId,
+  onFontChange,
 }: NoteEditorProps) {
   const { user, signOut } = useAuth()
 
@@ -710,6 +602,8 @@ export default function NoteEditor({
   )
 
   // Calculate writing streak and total words for personalized greeting
+  const [now] = useState(() => Date.now())
+
   const { streak, totalWords } = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -719,7 +613,7 @@ export default function NoteEditor({
     )
     
     let streak = 0
-    let currentDate = new Date(today)
+    const currentDate = new Date(today)
     
     // Check for consecutive days with activity
     for (let i = 0; i < 365; i++) { // Check up to a year
@@ -746,12 +640,12 @@ export default function NoteEditor({
   }, [fileNotes])
 
   // Generate motivational message based on streak and recent activity
-  const getMotivationalMessage = (streak: number, totalWords: number) => {
+  const getMotivationalMessage = (streak: number) => {
     if (streak === 0) return "Ready to start your writing journey?"
     if (streak === 1) return "Great start! Keep the momentum going."
-    if (streak < 7) return `${streak} day streak! You're building a great habit.`
-    if (streak < 30) return `${streak} day streak! Consistency is your superpower.`
-    return `${streak} day streak! You're a writing warrior.`
+    if (streak < 7) return "You're building a great habit."
+    if (streak < 30) return 'Consistency is your superpower.'
+    return "You're a writing warrior."
   }
 
   // Mobile home tab state (Recent / Favorites)
@@ -767,7 +661,6 @@ export default function NoteEditor({
     if (!note) return
     if (note.id !== prevNoteIdRef.current) {
       prevNoteIdRef.current = note.id
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionBase(countBodyWords(note.content))
     }
   }, [note])
@@ -792,16 +685,6 @@ export default function NoteEditor({
   }
 
   if (!note) {
-    // Calculate weekly stats for mobile widget
-    const weeklyNotes = fileNotes.filter(note => {
-      const noteDate = new Date(note.updatedAt || note.createdAt)
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      return noteDate >= weekAgo
-    })
-
-    const weeklyWords = weeklyNotes.reduce((sum, note) => sum + countBodyWords(note.content), 0)
-
     const recentNotes = [...fileNotes]
       .sort(compareRecentNotes)
       .slice(0, 5)
@@ -828,19 +711,17 @@ export default function NoteEditor({
             <div className="hidden md:block w-10" />
           )}
           <div className="ml-auto flex items-center gap-1.5 md:gap-2">
-            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} showLabel />
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-9 px-3 gap-2 items-center justify-center rounded-lg border border-transparent text-[13px] font-medium text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            >
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={2} className="shrink-0" /> : <Icon icon={Moon01Icon} size={18} strokeWidth={2} className="shrink-0" />}
-              <span>Theme</span>
-            </button>
-            {user && (
-              <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} showLabel />
-            )}
+            <SettingsMenu
+              theme={theme}
+              onToggleTheme={onToggleTheme}
+              accentId={accentId}
+              onAccentChange={onAccentChange}
+              syncing={syncing}
+              syncStatus={syncStatus}
+              onSync={onSync}
+              fontId={fontId}
+              onFontChange={onFontChange}
+            />
             {user ? (
               <div className="auth-group">
                 <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
@@ -862,6 +743,7 @@ export default function NoteEditor({
                 onClick={onOpenAuthModal}
                 className="auth-pill auth-pill--signed-out h-10 px-4"
                 title="Sign in to sync your notes"
+                style={{ fontFamily: '"Outfit", sans-serif' }}
               >
                 <Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
                 <span>Sign in</span>
@@ -879,13 +761,13 @@ export default function NoteEditor({
             >
               Aura.
             </h1>
-            <div className="space-y-2 mb-6">
+            <div className="mb-6 space-y-2" style={{ fontFamily: '"Outfit", sans-serif' }}>
               <p className="text-[14px] text-[var(--text-muted)] tracking-wide">
-                {getMotivationalMessage(streak, totalWords)}
+                {getMotivationalMessage(streak)}
               </p>
               <div className="flex items-center justify-center gap-6 text-[13px] text-[var(--text-secondary)]">
                 <div className="flex items-center gap-1.5">
-                  <Icon icon={StarIcon} size={14} strokeWidth={2} className="text-[var(--warning)]" />
+                  <Icon icon={FireIcon} size={14} strokeWidth={2} className="text-[var(--warning)]" />
                   <span>{streak} day streak</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -903,6 +785,7 @@ export default function NoteEditor({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[14px] font-medium text-white shadow-[0_4px_20px_var(--accent)]/30 transition-all duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 sm:px-6 sm:text-[15px]"
+                style={{ fontFamily: '"Outfit", sans-serif' }}
               >
                 <Icon
                   icon={Add01Icon}
@@ -918,6 +801,7 @@ export default function NoteEditor({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
                 className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-all duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 hover:shadow-[0_2px_12px_var(--accent)]/20 sm:px-6 sm:text-[15px]"
+                style={{ fontFamily: '"Outfit", sans-serif' }}
               >
                 <Icon icon={Calendar01Icon} size={20} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
                 <span className="truncate tracking-wide">Daily Note</span>
@@ -1010,9 +894,9 @@ export default function NoteEditor({
                               >
                                 <div className="flex w-24 shrink-0 items-center gap-3">
                                   <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                                    Date.now() - date.getTime() < 86400000 
+                                    now - date.getTime() < 86400000 
                                       ? 'bg-(--success) opacity-90' 
-                                      : Date.now() - date.getTime() < 604800000 
+                                      : now - date.getTime() < 604800000 
                                       ? 'bg-[var(--accent)] opacity-60' 
                                       : 'bg-(--text-muted) opacity-40'
                                   }`} />
@@ -1079,9 +963,9 @@ export default function NoteEditor({
                               >
                                 <div className="flex w-24 shrink-0 items-center gap-3">
                                   <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                                    Date.now() - date.getTime() < 86400000 
+                                    now - date.getTime() < 86400000 
                                       ? 'bg-(--success) opacity-90' 
-                                      : Date.now() - date.getTime() < 604800000 
+                                      : now - date.getTime() < 604800000 
                                       ? 'bg-[var(--accent)] opacity-60' 
                                       : 'bg-(--text-muted) opacity-40'
                                   }`} />
@@ -1160,9 +1044,9 @@ export default function NoteEditor({
                         >
                           <div className="flex w-32 shrink-0 items-center gap-3">
                             <div className={`h-1.5 w-1.5 shrink-0 rounded-full group-hover:scale-125 transition-transform ${
-                              Date.now() - date.getTime() < 86400000 
+                              now - date.getTime() < 86400000 
                                 ? 'bg-(--success) opacity-90' 
-                                : Date.now() - date.getTime() < 604800000 
+                                : now - date.getTime() < 604800000 
                                 ? 'bg-[var(--accent)] opacity-60' 
                                 : 'bg-(--text-muted) opacity-40'
                             }`} />
@@ -1236,9 +1120,9 @@ export default function NoteEditor({
                         >
                           <div className="flex w-32 shrink-0 items-center gap-3">
                             <div className={`h-1.5 w-1.5 shrink-0 rounded-full group-hover:scale-125 transition-transform ${
-                              Date.now() - date.getTime() < 86400000 
+                              now - date.getTime() < 86400000 
                                 ? 'bg-(--success) opacity-90' 
-                                : Date.now() - date.getTime() < 604800000 
+                                : now - date.getTime() < 604800000 
                                 ? 'bg-[var(--accent)] opacity-60' 
                                 : 'bg-(--text-muted) opacity-40'
                             }`} />
@@ -1303,38 +1187,19 @@ export default function NoteEditor({
 
   return (
     <div
-      className={`relative flex flex-1 flex-col min-h-0 min-w-0 w-full bg-[var(--bg-primary)] transition-[border-radius] duration-300 overflow-hidden ${focusMode ? 'rounded-none' : 'max-md:rounded-none rounded-2xl'
-        }`}
+      className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none"
     >
       {/* Subtle grainy gradient background for the banner area */}
-      {!focusMode && (
-        <div
-          className="pointer-events-none absolute left-0 right-0 top-0 h-[35vh] opacity-100 transition-colors duration-700 z-0"
-          style={{
-            backgroundImage: getGradientForNote(note.id),
-            maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
-          }}
-        />
-      )}
+      <div
+        className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[35vh] opacity-100 transition-colors duration-700"
+        style={{
+          backgroundImage: getGradientForNote(note.id),
+          maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
+        }}
+      />
 
-      {/* Zen mode exit button — floats in the top-right corner */}
-      {focusMode && (
-        <button
-          type="button"
-          onClick={onToggleFocusMode}
-          className="absolute top-3 right-3 z-50 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 opacity-20 transition-[opacity,background-color] duration-150 ease-out hover:opacity-80 hover:bg-[var(--bg-hover)] select-none"
-          style={{ color: 'var(--text-muted)', fontSize: '11px' }}
-          title="Exit focus mode (⌘⇧F)"
-        >
-          <Icon icon={ArrowExpandIcon} size={12} strokeWidth={1.5} />
-          <span>Exit</span>
-        </button>
-      )}
-
-      {/* Top bar — hidden in focus mode */}
-      {!focusMode && (
-        <div className="flex items-center justify-between px-4 py-2 md:px-6 relative z-10">
+      <div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-6">
           <div className="flex items-center gap-2">
             {/* Back button — Mobile only */}
             <button
@@ -1376,37 +1241,35 @@ export default function NoteEditor({
                 >
                   <Icon icon={StarIcon} size={21} strokeWidth={1.5} className={(note.tags || []).includes('favorite') ? 'fill-current drop-shadow-sm' : ''} />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => exportNoteAsMarkdown(note)}
-                  className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-                  title="Export as Markdown"
-                >
-                  <Icon icon={Download01Icon} size={21} strokeWidth={1.5} />
-                </button>
               </>
             )}
-            <button
-              type="button"
-              onClick={onToggleFocusMode}
-              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-              title="Focus mode (⌘⇧F)"
-            >
-              <Icon icon={ArrowShrinkIcon} size={21} strokeWidth={1.5} />
-            </button>
-            
-            {/* Consolidated Settings */}
-            <SettingsDropdown 
-              theme={theme} 
-              onToggleTheme={onToggleTheme} 
-              accentId={accentId} 
-              onAccentChange={onAccentChange} 
+
+            <SettingsMenu
+              theme={theme}
+              onToggleTheme={onToggleTheme}
+              accentId={accentId}
+              onAccentChange={onAccentChange}
+              syncing={syncing}
+              syncStatus={syncStatus}
+              onSync={onSync}
+              fontId={fontId}
+              onFontChange={onFontChange}
             />
-            
-            {/* Auth: show sign-in or user menu */}
-            {user && (
-              <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
+
+            {/* Export — direct top-bar button (desktop only) */}
+            {note && (
+              <button
+                type="button"
+                onClick={() => exportNoteAsMarkdown(note)}
+                className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+                title="Export as Markdown"
+                aria-label="Export note as Markdown"
+              >
+                <Icon icon={Download01Icon} size={19} strokeWidth={1.8} />
+              </button>
             )}
+
+            {/* Auth: show sign-in or user menu */}
             {user ? (
               <div className="relative group">
                 <button
@@ -1416,7 +1279,6 @@ export default function NoteEditor({
                 >
                   <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
                   <span className="auth-pill__dot" />
-                  <Icon icon={ArrowExpandIcon} size={12} strokeWidth={2} className="opacity-0 group-hover:opacity-60 transition-opacity" />
                 </button>
                 
                 {/* User dropdown */}
@@ -1449,59 +1311,44 @@ export default function NoteEditor({
             )}
           </div>
         </div>
-      )}
 
       {/* Scrollable content */}
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
         <div
-          className={`mx-auto max-w-3xl px-4 pb-44 md:pb-32 sm:px-6 md:px-10 ${focusMode ? 'pt-[12vh]' : 'pt-6 md:pt-0'
-            }`}
+          className="mx-auto max-w-3xl px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0"
         >
-          {/* Title — hidden in focus mode */}
-          {!focusMode && (
-            <input
-              type="text"
-              value={note.title}
-              onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
-              onKeyDown={handleTitleKeyDown}
-              className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-4xl"
-              style={{ fontFamily: 'var(--font-display)' }}
-              placeholder="Untitled"
+          <input
+            type="text"
+            value={note.title}
+            onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
+            onKeyDown={handleTitleKeyDown}
+            className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-4xl"
+            style={{ fontFamily: 'var(--font-display)' }}
+            placeholder="Untitled"
+          />
+
+          <div className="mt-3 text-[12px] text-[var(--text-muted)]">
+            <span className="inline-flex items-center gap-1.5">
+              <Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
+              {createdAtLabel}
+            </span>
+          </div>
+
+          <div className="mt-3">
+            <TagInput
+              tags={note.tags || []}
+              onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
             />
-          )}
+          </div>
 
-          {/* Metadata — hidden in focus mode */}
-          {!focusMode && (
-            <div
-              className="mt-3 text-[12px] text-[var(--text-muted)]"
-            >
-              <span className="inline-flex items-center gap-1.5">
-                <Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
-                {createdAtLabel}
-              </span>
-            </div>
-          )}
-
-          {/* Tags — hidden in focus mode */}
-          {!focusMode && (
-            <div className="mt-3">
-              <TagInput
-                tags={note.tags || []}
-                onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-              />
-            </div>
-          )}
-
-          {/* Daily Header */}
-          {!focusMode && note.tags?.includes('daily') && (
+          {note.tags?.includes('daily') && (
             <div className="mt-6">
               <DailyHeader note={note} />
             </div>
           )}
 
-          {/* Editor */}
-          <div className={focusMode ? 'mt-0' : 'mt-8'}>
-            <Suspense fallback={<EditorFallback />}>
+          <div className="mt-8">
+            <Suspense fallback={<EditorFallback />}> 
               <LiveMarkdownEditor
                 key={note.id}
                 value={note.content}
@@ -1570,9 +1417,7 @@ export default function NoteEditor({
       </div>
 
       {/* Mobile editor toolbar — floating formatting pill */}
-      {!focusMode && (
-        <MobileEditorToolbar editor={editorInstance} />
-      )}
+      <MobileEditorToolbar editor={editorInstance} />
     </div>
   )
 }

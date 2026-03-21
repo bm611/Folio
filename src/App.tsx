@@ -1,8 +1,6 @@
 import { useEffect, useCallback, useRef, useState } from 'react'
 
 import {
-  ArrowShrinkIcon,
-  ArrowExpandIcon,
   ComputerTerminalIcon,
   Search01Icon,
   Moon01Icon,
@@ -37,16 +35,9 @@ import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
 import { fetchNotes, restoreNotes, softDeleteNotes, upsertNote } from './lib/notesDb'
 import { docToMarkdown } from './editor/markdown/markdownConversion'
 import { ACCENT_COLORS } from './config/accents'
+import { FONT_OPTIONS } from './config/fonts'
 import type { TreeNode, NoteFile, NoteFolder, FlatNode } from './types'
 import type { EditorApi } from './components/LiveMarkdownEditor'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface FontOption {
-  id: string
-  name: string
-  value: string
-}
 
 interface SaveStatus {
   state: 'syncing' | 'saved' | 'offline' | 'error' | 'demo'
@@ -79,16 +70,6 @@ interface DeletedNoteState {
 const TREE_STORAGE_KEY_PREFIX = 'canvas-tree:'
 const PENDING_UPSERT_STORAGE_KEY_PREFIX = 'canvas-pending-upserts:'
 const PENDING_DELETE_STORAGE_KEY_PREFIX = 'canvas-pending-delete:'
-
-const FONT_OPTIONS: FontOption[] = [
-  { id: 'outfit', name: 'Outfit', value: '"Outfit", sans-serif' },
-  { id: 'lora', name: 'Lora', value: '"Lora", "Georgia", serif' },
-  { id: 'fraunces', name: 'Fraunces', value: '"Fraunces", "Georgia", serif' },
-  { id: 'newsreader', name: 'Newsreader', value: '"Newsreader", "Georgia", serif' },
-  { id: 'inter', name: 'Inter', value: '"Inter", sans-serif' },
-  { id: 'dm-sans', name: 'DM Sans', value: '"DM Sans", "Helvetica Neue", sans-serif' },
-  { id: 'ibm-plex', name: 'IBM Plex Sans', value: '"IBM Plex Sans", "Helvetica Neue", sans-serif' },
-]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -456,7 +437,6 @@ function AppInner() {
   const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'rose')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState<DeletedNoteState | null>(null)
-  const [focusMode, setFocusMode] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
@@ -1273,14 +1253,6 @@ function AppInner() {
     setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
   }, [])
 
-  const toggleFocusMode = useCallback(() => {
-    setFocusMode((current) => {
-      const next = !current
-      if (next) setSidebarCollapsed(true)
-      return next
-    })
-  }, [])
-
   const onResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     const startX = e.clientX
@@ -1351,15 +1323,11 @@ function AppInner() {
         openCommandPalette()
       }
 
-      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'f') {
-        event.preventDefault()
-        toggleFocusMode()
-      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleNewNote, openCommandPalette, toggleFocusMode])
+  }, [handleNewNote, openCommandPalette])
 
   const activeNote = (notes.find((note) => note.id === activeNoteId) as NoteFile | undefined) || null
   const activeNoteSyncFailed = activeNote
@@ -1434,13 +1402,6 @@ function AppInner() {
     error: syncError,
   }
 
-  // Exit focus mode automatically if there's no active note to write in
-  useEffect(() => {
-    if (!activeNote && focusMode) {
-      setFocusMode(false)
-    }
-  }, [activeNote, focusMode])
-
   const paletteNoteResults = searchNotes(notes as { id?: string; title?: string; content: string; updatedAt?: string; createdAt?: string }[], commandPaletteQuery).slice(0, 8)
   const paletteCommandResults = editorReady ? getEditorCommands(commandPaletteQuery).slice(0, 6) : []
 
@@ -1471,15 +1432,6 @@ function AppInner() {
       icon: <Icon icon={Search01Icon} size={16} strokeWidth={1.5} />,
       keywords: ['search', 'find', 'sidebar'],
       run: () => setSidebarCollapsed(false),
-    },
-    {
-      id: 'action-focus-mode',
-      section: 'Actions',
-      title: focusMode ? 'Exit focus mode' : 'Focus mode',
-      subtitle: focusMode ? 'Restore the full editor UI' : 'Hide all chrome for distraction-free writing',
-      icon: focusMode ? <Icon icon={ArrowExpandIcon} size={16} strokeWidth={1.5} /> : <Icon icon={ArrowShrinkIcon} size={16} strokeWidth={1.5} />,
-      keywords: ['focus', 'zen', 'distraction', 'write', 'story', 'fullscreen'],
-      run: () => toggleFocusMode(),
     },
   ].filter((item) =>
     matchesQuery(commandPaletteQuery, [item.title, item.subtitle, ...(item.keywords || [])]),
@@ -1590,7 +1542,7 @@ function AppInner() {
           onResizeStart={onResizeStart}
         />
 
-        <div className={`flex flex-1 min-w-0 transition-[padding] duration-300 ${focusMode ? 'p-0' : 'p-0 md:p-2 md:pl-0'}`}>
+        <div className="flex flex-1 min-w-0 transition-[padding] duration-300 p-0 md:p-2 md:pl-0">
           <NoteEditor
             note={activeNote}
             notes={notes}
@@ -1608,8 +1560,6 @@ function AppInner() {
             onAccentChange={setAccentId}
             sidebarCollapsed={sidebarCollapsed}
             onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
-            focusMode={focusMode}
-            onToggleFocusMode={toggleFocusMode}
             onOpenCommandPalette={openCommandPalette}
             onOpenAuthModal={() => setAuthModalOpen(true)}
             saveStatus={saveStatus}
@@ -1629,6 +1579,8 @@ function AppInner() {
                 showSyncToast('Sync failed — check your connection', 'error')
               }
             }}
+            fontId={fontId}
+            onFontChange={setFontId}
           />
         </div>
       </div>
