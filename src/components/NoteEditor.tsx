@@ -24,6 +24,8 @@ import {
   StarIcon,
   File01Icon,
   Clock01Icon,
+  Home01Icon,
+  File01Icon as FileText01Icon,
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
@@ -278,7 +280,7 @@ function FavoritesEmptyPrompt() {
         transition={{ duration: 0.5, delay: 0.8 }}
       >
         <p
-          className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight"
+          className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           No favorites yet.
@@ -463,7 +465,7 @@ function FirstNotePrompt() {
         transition={{ duration: 0.5, delay: 0.8 }}
       >
         <p
-          className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight"
+          className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
           style={{ fontFamily: 'var(--font-display)' }}
         >
           Your canvas is empty.
@@ -616,6 +618,64 @@ function SyncButton({ syncing, syncStatus, onSync, showLabel }: SyncButtonProps)
   )
 }
 
+// ─── Settings Dropdown Component ───────────────────────────────────
+function SettingsDropdown({ theme, onToggleTheme, accentId, onAccentChange }: {
+  theme: string
+  onToggleTheme: () => void
+  accentId: string
+  onAccentChange: (id: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+        title="Settings (⌘,)"
+      >
+        <Icon icon={ArrowExpandIcon} size={21} strokeWidth={1.5} />
+      </button>
+      
+      {open && (
+        <div className="absolute right-0 top-12 z-50 w-56 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-lg overflow-hidden">
+          <div className="p-4 space-y-4">
+            <div>
+              <div className="text-[12px] font-medium text-[var(--text-muted)] mb-2 uppercase tracking-wider">Theme</div>
+              <button
+                type="button"
+                onClick={() => { onToggleTheme(); setOpen(false) }}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
+              >
+                {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />}
+                <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+              </button>
+            </div>
+            
+            <div>
+              <div className="text-[12px] font-medium text-[var(--text-muted)] mb-2 uppercase tracking-wider">Accent Color</div>
+              <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function NoteEditor({
   note,
   notes,
@@ -648,6 +708,51 @@ export default function NoteEditor({
     () => notes.filter((n): n is NoteFile => n.type === 'file'),
     [notes],
   )
+
+  // Calculate writing streak and total words for personalized greeting
+  const { streak, totalWords } = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const sortedNotes = [...fileNotes].sort((a, b) => 
+      new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
+    )
+    
+    let streak = 0
+    let currentDate = new Date(today)
+    
+    // Check for consecutive days with activity
+    for (let i = 0; i < 365; i++) { // Check up to a year
+      const dayStart = new Date(currentDate)
+      const dayEnd = new Date(currentDate)
+      dayEnd.setHours(23, 59, 59, 999)
+      
+      const hasActivityOnDay = sortedNotes.some(note => {
+        const noteDate = new Date(note.updatedAt || note.createdAt)
+        return noteDate >= dayStart && noteDate <= dayEnd
+      })
+      
+      if (hasActivityOnDay) {
+        streak++
+        currentDate.setDate(currentDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    const totalWords = sortedNotes.reduce((sum, note) => sum + countBodyWords(note.content), 0)
+    
+    return { streak, totalWords }
+  }, [fileNotes])
+
+  // Generate motivational message based on streak and recent activity
+  const getMotivationalMessage = (streak: number, totalWords: number) => {
+    if (streak === 0) return "Ready to start your writing journey?"
+    if (streak === 1) return "Great start! Keep the momentum going."
+    if (streak < 7) return `${streak} day streak! You're building a great habit.`
+    if (streak < 30) return `${streak} day streak! Consistency is your superpower.`
+    return `${streak} day streak! You're a writing warrior.`
+  }
 
   // Mobile home tab state (Recent / Favorites)
   const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent')
@@ -687,18 +792,15 @@ export default function NoteEditor({
   }
 
   if (!note) {
-    const today = new Date()
-    const hour = today.getHours()
-    let greeting = 'Good evening'
-    if (hour < 12) greeting = 'Good morning'
-    else if (hour < 18) greeting = 'Good afternoon'
-
-    const dateStr = today.toLocaleDateString(undefined, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    // Calculate weekly stats for mobile widget
+    const weeklyNotes = fileNotes.filter(note => {
+      const noteDate = new Date(note.updatedAt || note.createdAt)
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+      return noteDate >= weekAgo
     })
+
+    const weeklyWords = weeklyNotes.reduce((sum, note) => sum + countBodyWords(note.content), 0)
 
     const recentNotes = [...fileNotes]
       .sort(compareRecentNotes)
@@ -770,18 +872,28 @@ export default function NoteEditor({
 
         {/* Welcome content */}
         <div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-36 md:pb-6 overflow-y-auto">
-          <div className="animate-fade-in-up flex flex-col items-center">
+          <div className="animate-fade-in-up flex flex-col items-center text-center">
             <h1
-              className="text-6xl tracking-tight sm:text-7xl"
+              className="text-6xl tracking-tight sm:text-7xl mb-4"
               style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)' }}
             >
               Aura.
             </h1>
-            <p
-              className="mt-4 text-[16px] text-[var(--text-muted)] tracking-wide"
-            >
-              {greeting}. It&apos;s {dateStr}.
-            </p>
+            <div className="space-y-2 mb-6">
+              <p className="text-[14px] text-[var(--text-muted)] tracking-wide">
+                {getMotivationalMessage(streak, totalWords)}
+              </p>
+              <div className="flex items-center justify-center gap-6 text-[13px] text-[var(--text-secondary)]">
+                <div className="flex items-center gap-1.5">
+                  <Icon icon={StarIcon} size={14} strokeWidth={2} className="text-[var(--warning)]" />
+                  <span>{streak} day streak</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Icon icon={FileText01Icon} size={14} strokeWidth={2} className="text-[var(--accent)]" />
+                  <span>{totalWords.toLocaleString()} words</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
@@ -790,7 +902,7 @@ export default function NoteEditor({
                 onClick={() => onNewNote?.()}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
-                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[14px] font-semibold text-white shadow-[0_4px_20px_var(--accent)]/30 transition-all duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 sm:px-6 sm:text-[15px]"
+                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[14px] font-medium text-white shadow-[0_4px_20px_var(--accent)]/30 transition-all duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 sm:px-6 sm:text-[15px]"
               >
                 <Icon
                   icon={Add01Icon}
@@ -805,7 +917,7 @@ export default function NoteEditor({
                 onClick={() => onCreateDailyNote?.()}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.96 }}
-                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] px-3 py-4 text-[14px] font-semibold text-[var(--text-secondary)] transition-all duration-200 hover:text-[var(--text-primary)] hover:border-[var(--border-default)] hover:shadow-sm sm:px-6 sm:text-[15px]"
+                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-all duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 hover:shadow-[0_2px_12px_var(--accent)]/20 sm:px-6 sm:text-[15px]"
               >
                 <Icon icon={Calendar01Icon} size={20} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
                 <span className="truncate tracking-wide">Daily Note</span>
@@ -820,7 +932,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={() => setHomeTab('recent')}
-                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-semibold tracking-wide transition-colors duration-150"
+                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
                 style={{ color: homeTab === 'recent' ? 'var(--text-primary)' : 'var(--text-muted)' }}
               >
                 <Icon icon={Clock01Icon} size={17} strokeWidth={2} style={{ color: homeTab === 'recent' ? 'var(--accent)' : 'var(--text-muted)', transition: 'color 150ms' }} />
@@ -836,7 +948,7 @@ export default function NoteEditor({
               <button
                 type="button"
                 onClick={() => setHomeTab('favorites')}
-                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-semibold tracking-wide transition-colors duration-150"
+                className="relative flex flex-1 items-center justify-center gap-2 pb-3 pt-1 text-[14px] font-medium tracking-wide transition-colors duration-150"
                 style={{ color: homeTab === 'favorites' ? 'var(--text-primary)' : 'var(--text-muted)' }}
               >
                 <Icon icon={StarIcon} size={17} strokeWidth={2} style={{ color: homeTab === 'favorites' ? 'var(--warning)' : 'var(--text-muted)', transition: 'color 150ms' }} />
@@ -897,13 +1009,19 @@ export default function NoteEditor({
                                 transition={{ duration: 0.25, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
                               >
                                 <div className="flex w-24 shrink-0 items-center gap-3">
-                                  <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                                  <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-transform truncate">
+                                  <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                    Date.now() - date.getTime() < 86400000 
+                                      ? 'bg-(--success) opacity-90' 
+                                      : Date.now() - date.getTime() < 604800000 
+                                      ? 'bg-[var(--accent)] opacity-60' 
+                                      : 'bg-(--text-muted) opacity-40'
+                                  }`} />
+                                  <span className="text-[12px] font-normal tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-secondary)] transition-colors truncate">
                                     {formattedDate}
                                   </span>
                                 </div>
-                                <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
-                                  <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                                <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)] flex items-center gap-3">
+                                  <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-60 transition-opacity" />
                                   {displayTitle}
                                 </span>
                               </motion.button>
@@ -960,13 +1078,19 @@ export default function NoteEditor({
                                 transition={{ duration: 0.25, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
                               >
                                 <div className="flex w-24 shrink-0 items-center gap-3">
-                                  <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                                  <span className="text-[13px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-transform truncate">
+                                  <div className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                                    Date.now() - date.getTime() < 86400000 
+                                      ? 'bg-(--success) opacity-90' 
+                                      : Date.now() - date.getTime() < 604800000 
+                                      ? 'bg-[var(--accent)] opacity-60' 
+                                      : 'bg-(--text-muted) opacity-40'
+                                  }`} />
+                                  <span className="text-[12px] font-normal tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-secondary)] transition-colors truncate">
                                     {formattedDate}
                                   </span>
                                 </div>
-                                <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
-                                  <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                                <span className="truncate text-[16px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)] flex items-center gap-3">
+                                  <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-60 transition-opacity" />
                                   {displayTitle}
                                 </span>
                               </motion.button>
@@ -985,6 +1109,7 @@ export default function NoteEditor({
             </div>
           </div>
 
+          
           {/* ── Desktop Two-Column View ──────────────────────────── */}
           <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-2 gap-16 lg:gap-24 px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
             {/* Recent Column */}
@@ -1034,13 +1159,19 @@ export default function NoteEditor({
                           className="group flex items-center gap-6 rounded-xl px-3 py-3.5 transition-all duration-200 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
                         >
                           <div className="flex w-32 shrink-0 items-center gap-3">
-                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] opacity-80 shrink-0 group-hover:scale-125 transition-transform" />
-                            <span className="text-[14px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-colors truncate">
+                            <div className={`h-1.5 w-1.5 shrink-0 rounded-full group-hover:scale-125 transition-transform ${
+                              Date.now() - date.getTime() < 86400000 
+                                ? 'bg-(--success) opacity-90' 
+                                : Date.now() - date.getTime() < 604800000 
+                                ? 'bg-[var(--accent)] opacity-60' 
+                                : 'bg-(--text-muted) opacity-40'
+                            }`} />
+                            <span className="text-[13px] font-normal tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-secondary)] transition-colors truncate">
                               {formattedDate}
                             </span>
                           </div>
-                          <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
-                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={20} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
+                          <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)] flex items-center gap-3">
+                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={20} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-60 transition-opacity" />
                             {displayTitle}
                           </span>
                         </motion.button>
@@ -1056,8 +1187,10 @@ export default function NoteEditor({
             </div>
 
             {/* Favorites Column */}
-            <div className="flex flex-col rounded-3xl border border-[var(--border-subtle)]/60 bg-[var(--bg-surface)]/30 backdrop-blur-md p-8 shadow-sm">
-              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-6">
+            <div className="flex flex-col rounded-3xl border border-[var(--warning)]/20 bg-[var(--warning)]/5 backdrop-blur-md p-8 shadow-sm relative overflow-hidden">
+              {/* Subtle warm gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[var(--warning)]/8 via-transparent to-[var(--warning)]/3 pointer-events-none" />
+              <div className="relative z-10 mb-2 flex items-baseline gap-3 pb-2 md:mb-6">
                 <h2 className="text-xl font-medium tracking-wide text-[var(--text-primary)] md:text-2xl flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)]">
                     <Icon icon={StarIcon} size={22} strokeWidth={2.5} />
@@ -1102,13 +1235,19 @@ export default function NoteEditor({
                           className="group flex items-center gap-6 rounded-xl px-3 py-3.5 transition-all duration-200 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
                         >
                           <div className="flex w-32 shrink-0 items-center gap-3">
-                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] opacity-80 shrink-0 group-hover:scale-125 transition-transform" />
-                            <span className="text-[14px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-colors truncate">
+                            <div className={`h-1.5 w-1.5 shrink-0 rounded-full group-hover:scale-125 transition-transform ${
+                              Date.now() - date.getTime() < 86400000 
+                                ? 'bg-(--success) opacity-90' 
+                                : Date.now() - date.getTime() < 604800000 
+                                ? 'bg-[var(--accent)] opacity-60' 
+                                : 'bg-(--text-muted) opacity-40'
+                            }`} />
+                            <span className="text-[13px] font-normal tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-secondary)] transition-colors truncate">
                               {formattedDate}
                             </span>
                           </div>
-                          <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
-                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={20} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
+                          <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-200 group-hover:text-[var(--accent)] flex items-center gap-3">
+                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={20} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-60 transition-opacity" />
                             {displayTitle}
                           </span>
                         </motion.button>
@@ -1255,33 +1394,47 @@ export default function NoteEditor({
             >
               <Icon icon={ArrowShrinkIcon} size={21} strokeWidth={1.5} />
             </button>
-            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            >
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={22} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={22} strokeWidth={1.5} />}
-            </button>
-            {/* Auth: show sign-in or user avatar+signout */}
+            
+            {/* Consolidated Settings */}
+            <SettingsDropdown 
+              theme={theme} 
+              onToggleTheme={onToggleTheme} 
+              accentId={accentId} 
+              onAccentChange={onAccentChange} 
+            />
+            
+            {/* Auth: show sign-in or user menu */}
             {user && (
               <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
             )}
             {user ? (
-              <div className="flex auth-group">
-                <div className="auth-pill auth-pill--signed-in" title={`Signed in as ${user.email}`}>
-                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-                  <span className="auth-pill__dot" />
-                </div>
+              <div className="relative group">
                 <button
                   type="button"
-                  onClick={signOut}
-                  className="auth-signout-btn"
-                  title="Sign out"
+                  className="auth-pill auth-pill--signed-in group relative flex items-center gap-2"
+                  title={`Signed in as ${user.email}`}
                 >
-                  <Icon icon={Logout01Icon} size={19} strokeWidth={2} />
+                  <span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+                  <span className="auth-pill__dot" />
+                  <Icon icon={ArrowExpandIcon} size={12} strokeWidth={2} className="opacity-0 group-hover:opacity-60 transition-opacity" />
                 </button>
+                
+                {/* User dropdown */}
+                <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="p-2">
+                    <div className="px-3 py-2 text-[12px] text-[var(--text-muted)] truncate border-b border-[var(--border-subtle)] mb-2">
+                      {user.email}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={signOut}
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-hover)]"
+                    >
+                      <Icon icon={Logout01Icon} size={16} strokeWidth={1.5} />
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <button
