@@ -133,6 +133,9 @@ function TableView({ editor, node, getPos }: NodeViewProps) {
         .table-wrapper table th {
           min-width: 80px;
           padding: 0.5rem 0.75rem;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          white-space: normal;
         }
       `}</style>
     </NodeViewWrapper>
