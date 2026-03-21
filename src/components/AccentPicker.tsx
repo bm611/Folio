@@ -14,10 +14,11 @@ interface AccentPickerProps {
   onAccentChange: (id: string) => void
   theme: string
   mobile?: boolean
+  showLabel?: boolean
   className?: string
 }
 
-export default function AccentPicker({ accentId, onAccentChange, theme, mobile = false, className = '' }: AccentPickerProps) {
+export default function AccentPicker({ accentId, onAccentChange, theme, mobile = false, showLabel = false, className = '' }: AccentPickerProps) {
   const [open, setOpen] = useState(false)
   const [dropdownPos, setDropdownPos] = useState<DropdownPos>({ top: 0, left: 0 })
   const containerRef = useRef<HTMLDivElement>(null)
@@ -51,9 +52,13 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
 
   // Desktop trigger: matches the other top-bar icon buttons
   // Mobile trigger: explicit 40×40 circle — matches what .mobile-action-bar-inner button CSS produces
+  const desktopClasses = showLabel
+    ? 'hidden md:relative md:flex h-9 px-3 gap-2 items-center justify-center rounded-lg border border-transparent text-[13px] font-medium text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
+    : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
+    
   const triggerClassName = mobile
     ? 'relative flex h-10 w-10 items-center justify-center rounded-full border-none bg-transparent p-0 text-[var(--text-muted)] cursor-pointer after:absolute after:-inset-4 active:scale-90'
-    : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]'
+    : desktopClasses
 
   const dropdownBaseClassName = `fixed z-[9999] rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-2.5 ${mobile ? '' : 'animate-ctx-fade-in'}`
 
@@ -85,12 +90,13 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
         aria-haspopup="listbox"
       >
         <span
-          className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200"
+          className="h-[14px] w-[14px] rounded-full transition-[background-color,box-shadow] duration-200 shrink-0"
           style={{
             backgroundColor: currentSwatch,
             boxShadow: `0 0 0 1.5px var(--bg-primary), 0 0 0 3px ${currentSwatch}55`,
           }}
         />
+        {showLabel && <span>Accent</span>}
       </button>
 
       {/* Dropdown panel — portaled to body to escape overflow:hidden ancestors */}

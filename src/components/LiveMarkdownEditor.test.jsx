@@ -4,6 +4,16 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import LiveMarkdownEditor from './LiveMarkdownEditor'
 
 beforeAll(() => {
+  window.matchMedia = vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }))
   if (!Element.prototype.getBoundingClientRect) {
     Element.prototype.getBoundingClientRect = function getBoundingClientRect() {
       return new DOMRect(0, 0, 0, 0)

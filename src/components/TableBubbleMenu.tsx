@@ -59,7 +59,6 @@ export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
 
   useEffect(() => {
     if (!editor) {
-      setIsTableActive(false)
       return undefined
     }
 

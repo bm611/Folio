@@ -1,6 +1,7 @@
 import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { motion, AnimatePresence } from 'framer-motion'
+import type { Editor } from '@tiptap/react'
 import type { IconSvgElement } from '@hugeicons/react'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -83,6 +84,7 @@ interface SyncButtonProps {
   syncing: boolean
   syncStatus: SyncStatus
   onSync: () => void
+  showLabel?: boolean
 }
 
 interface SaveBadgeMeta {
@@ -569,7 +571,7 @@ function getSaveBadgeMeta(saveStatus: SaveStatus): SaveBadgeMeta {
   }
 }
 
-function SyncButton({ syncing, syncStatus, onSync }: SyncButtonProps) {
+function SyncButton({ syncing, syncStatus, onSync, showLabel }: SyncButtonProps) {
   const state = syncStatus?.state
   const isSpinning = syncing || state === 'syncing'
 
@@ -599,7 +601,7 @@ function SyncButton({ syncing, syncStatus, onSync }: SyncButtonProps) {
       type="button"
       onClick={onSync}
       disabled={isSpinning || state === 'offline'}
-      className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
+      className={`relative flex h-9 ${showLabel ? 'px-3 gap-2 text-[13px] font-medium' : 'w-9'} items-center justify-center rounded-lg border border-transparent transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 text-[var(--text-muted)]`}
       title={tooltip}
     >
       <Icon
@@ -607,8 +609,9 @@ function SyncButton({ syncing, syncStatus, onSync }: SyncButtonProps) {
         size={18}
         strokeWidth={1.5}
         style={{ color: iconColor }}
-        className={isSpinning ? 'sync-spin' : ''}
+        className={isSpinning ? 'sync-spin shrink-0' : 'shrink-0'}
       />
+      {showLabel && <span>Sync</span>}
     </button>
   )
 }
@@ -652,6 +655,7 @@ export default function NoteEditor({
   // Session word count: capture baseline when a note is first opened
   const prevNoteIdRef = useRef<string | null>(null)
   const [sessionBase, setSessionBase] = useState<number | null>(null)
+  const [editorInstance, setEditorInstance] = useState<Editor | null>(null)
 
   // Reset session baseline whenever the active note changes
   useEffect(() => {
@@ -669,6 +673,7 @@ export default function NoteEditor({
   const handleRegisterEditorApi = useCallback(
     (api: EditorApi | null) => {
       editorApiRef.current = api
+      setEditorInstance(api?.getEditor() ?? null)
       onRegisterEditorApi?.(api)
     },
     [onRegisterEditorApi],
@@ -720,18 +725,19 @@ export default function NoteEditor({
           ) : (
             <div className="hidden md:block w-10" />
           )}
-          <div className="ml-auto flex items-center gap-1">
-            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} />
+          <div className="ml-auto flex items-center gap-1.5 md:gap-2">
+            <AccentPicker accentId={accentId} onAccentChange={onAccentChange} theme={theme} showLabel />
             <button
               type="button"
               onClick={onToggleTheme}
-              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              className="hidden md:relative md:flex h-9 px-3 gap-2 items-center justify-center rounded-lg border border-transparent text-[13px] font-medium text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
               title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
             >
-              {theme === 'dark' ? <Icon icon={Sun01Icon} size={22} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={22} strokeWidth={1.5} />}
+              {theme === 'dark' ? <Icon icon={Sun01Icon} size={18} strokeWidth={2} className="shrink-0" /> : <Icon icon={Moon01Icon} size={18} strokeWidth={2} className="shrink-0" />}
+              <span>Theme</span>
             </button>
             {user && (
-              <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} />
+              <SyncButton syncing={syncing} syncStatus={syncStatus} onSync={onSync} showLabel />
             )}
             {user ? (
               <div className="auth-group">
@@ -767,7 +773,7 @@ export default function NoteEditor({
           <div className="animate-fade-in-up flex flex-col items-center">
             <h1
               className="text-6xl tracking-tight sm:text-7xl"
-              style={{ fontFamily: 'var(--font-logo)', color: 'color-mix(in srgb, var(--text-primary) 85%, var(--accent) 15%)', textShadow: '0 4px 24px var(--accent-muted)' }}
+              style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)' }}
             >
               Aura.
             </h1>
@@ -779,27 +785,31 @@ export default function NoteEditor({
           </div>
 
           <div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
-            <div className="flex items-center gap-2 w-full justify-center px-2 sm:px-0">
-              <button
+            <div className="flex items-center gap-3 w-full justify-center px-4 sm:px-0">
+              <motion.button
                 onClick={() => onNewNote?.()}
-                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[13px] font-semibold text-white shadow-[0_2px_14px_var(--accent)]/40 transition-all duration-300 hover:brightness-125 hover:shadow-[0_2px_20px_var(--accent)]/55 active:scale-[0.98] sm:px-6 sm:text-[15px]"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                className="neu-btn-primary group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] border border-transparent px-3 py-4 text-[14px] font-semibold text-white shadow-[0_4px_20px_var(--accent)]/30 transition-all duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 sm:px-6 sm:text-[15px]"
               >
                 <Icon
                   icon={Add01Icon}
-                  size={19}
+                  size={20}
                   strokeWidth={2.5}
                   className="shrink-0 transition-transform duration-300 group-hover:rotate-90"
                   style={{ filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.6))' }}
                 />
-                <span className="truncate">New Note</span>
-              </button>
-              <button
+                <span className="truncate tracking-wide">New Note</span>
+              </motion.button>
+              <motion.button
                 onClick={() => onCreateDailyNote?.()}
-                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-xl bg-transparent border border-[var(--accent)]/50 px-3 py-4 text-[13px] font-semibold text-[var(--accent)] transition-all duration-200 hover:bg-[var(--accent)]/8 hover:border-[var(--accent)] hover:shadow-[0_2px_14px_var(--accent)]/20 active:scale-[0.98] sm:px-6 sm:text-[15px]"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                className="group relative flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] px-3 py-4 text-[14px] font-semibold text-[var(--text-secondary)] transition-all duration-200 hover:text-[var(--text-primary)] hover:border-[var(--border-default)] hover:shadow-sm sm:px-6 sm:text-[15px]"
               >
-                <Icon icon={Calendar01Icon} size={19} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
-                <span className="truncate">Daily Note</span>
-              </button>
+                <Icon icon={Calendar01Icon} size={20} strokeWidth={2} className="shrink-0 transition-transform duration-300 group-hover:-translate-y-0.5" />
+                <span className="truncate tracking-wide">Daily Note</span>
+              </motion.button>
             </div>
           </div>
 
@@ -978,21 +988,23 @@ export default function NoteEditor({
           {/* ── Desktop Two-Column View ──────────────────────────── */}
           <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-2 gap-16 lg:gap-24 px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
             {/* Recent Column */}
-            <div className="flex flex-col">
-              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-3">
-                  <Icon icon={Clock01Icon} size={24} strokeWidth={2} className="text-[var(--accent)]" />
+            <div className="flex flex-col rounded-3xl border border-[var(--border-subtle)]/60 bg-[var(--bg-surface)]/30 backdrop-blur-md p-8 shadow-sm">
+              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-6">
+                <h2 className="text-xl font-medium tracking-wide text-[var(--text-primary)] md:text-2xl flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10 text-[var(--accent)]">
+                    <Icon icon={Clock01Icon} size={22} strokeWidth={2.5} />
+                  </div>
                   Recent
                 </h2>
               </div>
               {recentNotes.length > 0 ? (
                 <>
-                  <div className="mb-4 flex items-center gap-12 border-b border-[var(--border-subtle)] px-2 pb-2 text-[15px] font-bold text-[var(--text-muted)] opacity-60">
+                  <div className="mb-4 flex items-center gap-12 border-b border-[var(--border-subtle)] px-2 pb-3 text-[13px] uppercase tracking-wider font-bold text-[var(--text-muted)] opacity-70">
                     <div className="w-32">Last Edited</div>
                     <div>Name</div>
                   </div>
-                  <div className="flex flex-col">
-                    {recentNotes.map((n) => {
+                  <div className="flex flex-col gap-1">
+                    {recentNotes.map((n, i) => {
                       const isDaily = n.tags?.includes('daily')
                       const rawTitle = getNoteDisplayTitle(n)
                       const date = new Date(n.updatedAt || n.createdAt)
@@ -1012,23 +1024,26 @@ export default function NoteEditor({
                       }
 
                       return (
-                        <button
+                        <motion.button
                           key={n.id}
                           type="button"
                           onClick={() => onSelectNote(n.id)}
-                          className="group flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 py-4 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)]"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.05, ease: [0.23, 1, 0.32, 1] }}
+                          className="group flex items-center gap-6 rounded-xl px-3 py-3.5 transition-all duration-200 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
                         >
                           <div className="flex w-32 shrink-0 items-center gap-3">
-                            <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                            <span className="text-[15px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] active:scale-[0.97] transition-transform truncate">
+                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] opacity-80 shrink-0 group-hover:scale-125 transition-transform" />
+                            <span className="text-[14px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-colors truncate">
                               {formattedDate}
                             </span>
                           </div>
-                          <span className="truncate text-[22px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
-                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                          <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
+                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={20} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
                             {displayTitle}
                           </span>
-                        </button>
+                        </motion.button>
                       )
                     })}
                   </div>
@@ -1041,21 +1056,23 @@ export default function NoteEditor({
             </div>
 
             {/* Favorites Column */}
-            <div className="flex flex-col">
-              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-4">
-                <h2 className="text-xl font-medium tracking-wide text-[var(--text-muted)] md:text-2xl flex items-center gap-3">
-                  <Icon icon={StarIcon} size={24} strokeWidth={2} className="text-[var(--warning)]" />
+            <div className="flex flex-col rounded-3xl border border-[var(--border-subtle)]/60 bg-[var(--bg-surface)]/30 backdrop-blur-md p-8 shadow-sm">
+              <div className="mb-2 flex items-baseline gap-3 pb-2 md:mb-6">
+                <h2 className="text-xl font-medium tracking-wide text-[var(--text-primary)] md:text-2xl flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--warning)]/10 text-[var(--warning)]">
+                    <Icon icon={StarIcon} size={22} strokeWidth={2.5} />
+                  </div>
                   Favorites
                 </h2>
               </div>
               {favoriteNotes.length > 0 ? (
                 <>
-                  <div className="mb-4 flex items-center gap-12 border-b border-[var(--border-subtle)] px-2 pb-2 text-[15px] font-bold text-[var(--text-muted)] opacity-60">
+                  <div className="mb-4 flex items-center gap-12 border-b border-[var(--border-subtle)] px-2 pb-3 text-[13px] uppercase tracking-wider font-bold text-[var(--text-muted)] opacity-70">
                     <div className="w-32">Last Edited</div>
                     <div>Name</div>
                   </div>
-                  <div className="flex flex-col">
-                    {favoriteNotes.map((n) => {
+                  <div className="flex flex-col gap-1">
+                    {favoriteNotes.map((n, i) => {
                       const isDaily = n.tags?.includes('daily')
                       const rawTitle = getNoteDisplayTitle(n)
                       const date = new Date(n.updatedAt || n.createdAt)
@@ -1075,23 +1092,26 @@ export default function NoteEditor({
                       }
 
                       return (
-                        <button
+                        <motion.button
                           key={n.id}
                           type="button"
                           onClick={() => onSelectNote(n.id)}
-                          className="group flex items-center gap-6 border-b border-[var(--border-subtle)] px-2 py-4 transition-[background-color] duration-150 ease-out hover:bg-[var(--bg-hover)]"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.05, ease: [0.23, 1, 0.32, 1] }}
+                          className="group flex items-center gap-6 rounded-xl px-3 py-3.5 transition-all duration-200 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
                         >
                           <div className="flex w-32 shrink-0 items-center gap-3">
-                            <div className="h-1.5 w-1.5 bg-[var(--accent)] opacity-80 shrink-0" />
-                            <span className="text-[15px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] active:scale-[0.97] transition-transform truncate">
+                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] opacity-80 shrink-0 group-hover:scale-125 transition-transform" />
+                            <span className="text-[14px] font-medium tracking-tight text-[var(--text-muted)] tabular-nums group-hover:text-[var(--text-primary)] transition-colors truncate">
                               {formattedDate}
                             </span>
                           </div>
-                          <span className="truncate text-[22px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
-                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={21} strokeWidth={1.5} className="shrink-0 opacity-50" />
+                          <span className="truncate text-[18px] font-medium tracking-tight text-[var(--text-secondary)] transition-colors duration-200 group-hover:text-[var(--text-primary)] flex items-center gap-3">
+                            <Icon icon={isDaily ? Calendar01Icon : File01Icon} size={20} strokeWidth={1.5} className="shrink-0 opacity-40 group-hover:opacity-100 transition-opacity" />
                             {displayTitle}
                           </span>
-                        </button>
+                        </motion.button>
                       )
                     })}
                   </div>
@@ -1398,7 +1418,7 @@ export default function NoteEditor({
 
       {/* Mobile editor toolbar — floating formatting pill */}
       {!focusMode && (
-        <MobileEditorToolbar editor={editorApiRef.current?.getEditor() ?? null} />
+        <MobileEditorToolbar editor={editorInstance} />
       )}
     </div>
   )

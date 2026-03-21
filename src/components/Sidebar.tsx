@@ -237,7 +237,11 @@ function TreeNodeComponent({
         onTouchMove={handleTouchMove}
         onClick={(e) => {
           if (!renaming && !contextMenu && !longPressRef.current) {
-            isFolder ? toggleExpand(node.id) : onSelect(node.id)
+            if (isFolder) {
+              toggleExpand(node.id)
+            } else {
+              onSelect(node.id)
+            }
           } else if (contextMenu) {
             e.stopPropagation()
           }
@@ -522,7 +526,7 @@ export default function Sidebar({
         const files = getVisibleFiles(visibleTree, expanded)
         if (files.length === 0) return
 
-        let currentIndex = files.findIndex((f) => f.id === activeNoteId)
+        const currentIndex = files.findIndex((f) => f.id === activeNoteId)
         let nextIndex = currentIndex
 
         if (e.key === 'ArrowUp') {

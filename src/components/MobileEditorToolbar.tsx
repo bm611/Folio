@@ -162,7 +162,6 @@ function useKeyboardAwareBottom(): number {
 
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
-    update()
 
     return () => {
       vv.removeEventListener('resize', update)
