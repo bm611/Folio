@@ -809,6 +809,8 @@ export default function NoteEditor({
 	const heatmapGridWidth = useMemo(() => getHeatmapGridWidth(heatmapWeeks), [heatmapWeeks]);
 
 	useEffect(() => {
+		if (note) return;
+
 		const container = activityHeatmapRef.current;
 		if (!container) return;
 
@@ -819,10 +821,12 @@ export default function NoteEditor({
 			);
 		};
 
-		syncHeatmapWeeks();
+		const frame = requestAnimationFrame(syncHeatmapWeeks);
 
 		if (typeof ResizeObserver === 'undefined') {
-			return;
+			return () => {
+				cancelAnimationFrame(frame);
+			};
 		}
 
 		const observer = new ResizeObserver(() => {
@@ -832,9 +836,10 @@ export default function NoteEditor({
 		observer.observe(container);
 
 		return () => {
+			cancelAnimationFrame(frame);
 			observer.disconnect();
 		};
-	}, []);
+	}, [note]);
 
 	// Generate activity heatmap data: word counts per day over the visible week range
 	const heatmapCells = useMemo(() => {
@@ -1576,27 +1581,37 @@ export default function NoteEditor({
 																return (
 																	<div
 																		key={d}
-																		title={cellTitle}
 																		style={{
-																			width: `${HEATMAP_CELL_SIZE}px`,
-																			height: `${HEATMAP_CELL_SIZE}px`,
-																			borderRadius: '2px',
-																			border:
-																				cell.isFuture || cell.words === 0
-																					? '1px solid var(--border-subtle)'
-																					: 'none',
-																			background: cell.isFuture
-																				? 'transparent'
-																				: cell.words === 0
-																					? 'transparent'
-																					: cell.words < 200
-																						? 'color-mix(in srgb, var(--accent) 30%, transparent)'
-																						: cell.words < 500
-																							? 'color-mix(in srgb, var(--accent) 60%, transparent)'
-																							: 'var(--accent)',
-																			transition: 'background 150ms ease'
+																			position: 'relative'
 																		}}
-																	/>
+																		className="group/cell"
+																		aria-label={cellTitle}
+																	>
+																		<div
+																			style={{
+																				width: `${HEATMAP_CELL_SIZE}px`,
+																				height: `${HEATMAP_CELL_SIZE}px`,
+																				borderRadius: '2px',
+																				border:
+																					cell.isFuture || cell.words === 0
+																						? '1px solid var(--border-subtle)'
+																						: 'none',
+																				background: cell.isFuture
+																					? 'transparent'
+																					: cell.words === 0
+																						? 'transparent'
+																						: cell.words < 200
+																							? 'color-mix(in srgb, var(--accent) 30%, transparent)'
+																							: cell.words < 500
+																								? 'color-mix(in srgb, var(--accent) 60%, transparent)'
+																								: 'var(--accent)',
+																				transition: 'background 150ms ease'
+																			}}
+																		/>
+																		<div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-20 w-max max-w-[180px] -translate-x-1/2 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 py-1.5 text-[10px] leading-tight text-[var(--text-primary)] opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-opacity duration-150 group-hover/cell:opacity-100">
+																			{cellTitle}
+																		</div>
+																	</div>
 																);
 															})}
 														</div>
