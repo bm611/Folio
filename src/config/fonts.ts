@@ -12,4 +12,5 @@ export const FONT_OPTIONS: FontOption[] = [
   { id: 'inter', name: 'Inter', value: '"Inter", sans-serif' },
   { id: 'dm-sans', name: 'DM Sans', value: '"DM Sans", "Helvetica Neue", sans-serif' },
   { id: 'ibm-plex', name: 'IBM Plex Sans', value: '"IBM Plex Sans", "Helvetica Neue", sans-serif' },
+  { id: 'sf-mono', name: 'SFMono', value: '"Liga SFMono Nerd Font", monospace' },
 ]

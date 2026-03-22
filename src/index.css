@@ -1,6 +1,35 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Italiana&family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Mono:wght@400;500&family=Lora:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Outfit:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Semibold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Liga SFMono Nerd Font";
+  src: url("/fonts/SFMono/LigaSFMonoNerdFont-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ═══════════════════════════════════════════════
    Tailwind v4 Theme — Aura Design System
    ═══════════════════════════════════════════════ */
@@ -480,7 +509,7 @@ body {
 .aura-editor {
   position: relative;
   width: 100%;
-  max-width: 44rem;
+  max-width: 60rem;
 }
 
 .aura-editor .ProseMirror {
