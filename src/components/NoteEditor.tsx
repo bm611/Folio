@@ -904,15 +904,13 @@ export default function NoteEditor({
 	if (!note) {
 		const recentNotes = [...fileNotes].sort(compareRecentNotes).slice(0, 6);
 
-		// Keep favorites even (2-col grid) — max 6
+		// Mobile and desktop home surfaces show a short favorites list — max 6
 		const rawFavorites = [...fileNotes]
 			.filter(
 				(n) => n.tags?.includes('favorite') || (n as NoteFile & { isFavorite?: boolean }).isFavorite
 			)
 			.sort(compareRecentNotes);
-		const favoriteNotes = rawFavorites
-			.slice(0, rawFavorites.length % 2 === 0 ? rawFavorites.length : rawFavorites.length - 1)
-			.slice(0, 6);
+		const favoriteNotes = rawFavorites.slice(0, 6);
 
 		return (
 			<div className="flex flex-1 min-w-0 flex-col max-md:rounded-none rounded-2xl bg-[var(--bg-primary)]">
@@ -1210,7 +1208,7 @@ export default function NoteEditor({
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
 										{favoriteNotes.length > 0 ? (
-											<div className="grid grid-cols-2 gap-3">
+											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
 												{favoriteNotes.map((n, i) => {
 													const isDaily = n.tags?.includes('daily');
 													const rawTitle = getNoteDisplayTitle(n);
@@ -1231,42 +1229,51 @@ export default function NoteEditor({
 															displayTitle = `Daily \u2014 ${rawTitle}`;
 														}
 													}
+													const freshness =
+														now - date.getTime() < 86400000
+															? { dot: 'var(--success)', opacity: 0.9 }
+															: now - date.getTime() < 604800000
+																? { dot: 'var(--accent)', opacity: 0.6 }
+																: { dot: 'var(--text-muted)', opacity: 0.35 };
 													return (
 														<motion.button
 															key={n.id}
 															type="button"
 															onClick={() => onSelectNote(n.id)}
-															initial={{ opacity: 0, scale: 0.95 }}
-															animate={{ opacity: 1, scale: 1 }}
+															initial={{ opacity: 0, y: 6 }}
+															animate={{ opacity: 1, y: 0 }}
 															transition={{
-																duration: 0.28,
-																delay: i * 0.06,
+																duration: 0.24,
+																delay: i * 0.04,
 																ease: [0.23, 1, 0.32, 1]
 															}}
-															className="group relative flex items-center gap-2.5 overflow-hidden rounded-xl border border-[var(--border-subtle)]/60 px-3 py-2.5 text-left transition-[transform,border-color] duration-150 ease-out hover:border-[var(--warning)]/40 active:scale-[0.97]"
-															style={{
-																background: getGradientForNote(n.id),
-																backgroundColor: 'var(--bg-surface)',
-																WebkitTapHighlightColor: 'transparent',
-																minHeight: '72px'
-															}}
+															className="group flex items-center gap-3 rounded-xl px-1 py-3 text-left transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.98]"
+															style={{ WebkitTapHighlightColor: 'transparent' }}
 														>
-															<div className="pointer-events-none absolute inset-0 rounded-xl bg-[var(--bg-surface)]/70" />
-															<div className="relative z-10 shrink-0 flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/15">
+															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 																<Icon
-																	icon={isDaily ? Calendar01Icon : StarIcon}
-																	size={13}
-																	strokeWidth={1.8}
+																	icon={isDaily ? Calendar01Icon : File01Icon}
+																	size={15}
+																	strokeWidth={1.5}
 																/>
 															</div>
-															<div className="relative z-10 flex-1 min-w-0">
-																<p className="truncate text-[13px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+															<div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
+																<span className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
 																	{displayTitle}
-																</p>
+																</span>
+																<div className="flex items-center gap-1.5">
+																	<span
+																		className="h-1.5 w-1.5 shrink-0 rounded-full"
+																		style={{
+																			background: freshness.dot,
+																			opacity: freshness.opacity
+																		}}
+																	/>
+																	<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
+																		{formatRelativeTime(date)}
+																	</span>
+																</div>
 															</div>
-															<span className="relative z-10 shrink-0 text-[10px] text-[var(--text-muted)] tabular-nums">
-																{formatRelativeTime(date)}
-															</span>
 														</motion.button>
 													);
 												})}
@@ -1436,19 +1443,15 @@ export default function NoteEditor({
 												initial={{ opacity: 0, scale: 0.95 }}
 												animate={{ opacity: 1, scale: 1 }}
 												transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-												className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-[var(--border-subtle)]/60 px-3.5 py-3 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--warning)]/40 hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--warning)_10%,transparent)] active:scale-[0.97]"
+												className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-[var(--accent)]/20 px-3.5 py-3 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--accent)]/40 hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--accent)_10%,transparent)] active:scale-[0.97]"
 												style={{
-													background: getGradientForNote(n.id),
-													backgroundColor: 'var(--bg-surface)',
+													backgroundColor: 'color-mix(in srgb, var(--accent) 5%, var(--bg-surface))',
 													WebkitTapHighlightColor: 'transparent',
 													minHeight: '84px'
 												}}
 											>
-												{/* Glass overlay */}
-												<div className="pointer-events-none absolute inset-0 rounded-xl bg-[var(--bg-surface)]/70 backdrop-blur-[2px]" />
-
 												{/* Star icon */}
-												<div className="relative z-10 shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)] border border-[var(--warning)]/15 transition-colors duration-150 group-hover:bg-[var(--warning)]/15">
+												<div className="relative z-10 shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/15 transition-colors duration-150 group-hover:bg-[var(--accent)]/15">
 													<Icon
 														icon={isDaily ? Calendar01Icon : StarIcon}
 														size={15}
