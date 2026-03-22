@@ -24,6 +24,7 @@ import {
   Clock01Icon,
   File01Icon as FileText01Icon,
   Download01Icon,
+  Home01Icon,
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
@@ -1023,7 +1024,7 @@ export default function NoteEditor({
 
           
           {/* ── Desktop Two-Column View ──────────────────────────── */}
-          <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-2 gap-10 lg:gap-14 px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
+          <div className="animate-fade-in-up-delay-2 mt-10 w-full max-w-[1200px] md:mt-16 hidden md:grid md:grid-cols-[4fr_5fr] lg:grid-cols-[4fr_6fr] gap-10 lg:gap-14 px-8" style={{ fontFamily: '"Outfit", sans-serif' }}>
 
             {/* ── Recent Column — Sleek list ────────────────────────── */}
             <div className="flex flex-col">
@@ -1269,6 +1270,16 @@ export default function NoteEditor({
             )}
           </div>
           <div className="flex items-center gap-1">
+            {/* Home button — desktop only */}
+            <button
+              type="button"
+              onClick={() => onSelectNote(null)}
+              className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.97]"
+              title="Home"
+            >
+              <Icon icon={Home01Icon} size={20} strokeWidth={1.5} />
+            </button>
+
             {note && (
               <>
                 <button
