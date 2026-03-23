@@ -12,6 +12,7 @@ import {
   FileAddIcon,
   FolderAddIcon,
   MoveToIcon,
+  MoreHorizontalIcon,
   Home01Icon,
   Cancel01Icon,
   CloudIcon,
@@ -97,6 +98,7 @@ const ICON_MAP: Record<string, IconSvgElement> = {
   newFile: FileAddIcon,
   newFolder: FolderAddIcon,
   move: MoveToIcon,
+  more: MoreHorizontalIcon,
 }
 
 function SidebarIcon({ n, s = 16 }: { n: string; s?: number }) {
@@ -235,6 +237,7 @@ function TreeNodeComponent({
         onContextMenu={(e) => {
           e.preventDefault()
           e.stopPropagation()
+          setContextMenu({ x: e.clientX, y: e.clientY })
         }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -278,41 +281,30 @@ function TreeNodeComponent({
         {hover && !renaming && (
           <span className="tn-actions" onClick={(e) => e.stopPropagation()}>
             {isFolder && (
-              <>
-                <button
-                  title="New File"
-                  onClick={() => {
-                    setCreatingIn({ parentId: node.id, type: 'file' })
-                    toggleExpand(node.id, true)
-                  }}
-                >
-                  <SidebarIcon n="newFile" s={14} />
-                </button>
-                <button
-                  title="New Folder"
-                  onClick={() => {
-                    setCreatingIn({ parentId: node.id, type: 'folder' })
-                    toggleExpand(node.id, true)
-                  }}
-                >
-                  <SidebarIcon n="newFolder" s={14} />
-                </button>
-              </>
+              <button
+                title="New File"
+                onClick={() => {
+                  setCreatingIn({ parentId: node.id, type: 'file' })
+                  toggleExpand(node.id, true)
+                }}
+              >
+                <SidebarIcon n="newFile" s={14} />
+              </button>
             )}
-            <button title="Rename" onClick={() => setRenaming(true)}>
-              <SidebarIcon n="edit" s={14} />
-            </button>
-            <button title="Move to..." onClick={() => onMove?.(node.id)}>
-              <SidebarIcon n="move" s={14} />
-            </button>
-            <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger">
-              <SidebarIcon n="trash" s={14} />
+            <button
+              title="More actions"
+              onClick={(e) => {
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                setContextMenu({ x: rect.left, y: rect.bottom + 4 })
+              }}
+            >
+              <SidebarIcon n="more" s={14} />
             </button>
           </span>
         )}
       </div>
 
-      {/* Long-press context menu */}
+      {/* Context menu (⋯ button / long-press) */}
       {contextMenu && (
         <div className="ctx-menu-overlay" onClick={() => setContextMenu(null)}>
           <div
@@ -322,17 +314,6 @@ function TreeNodeComponent({
           >
             {isFolder ? (
               <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setCreatingIn({ parentId: node.id, type: 'file' })
-                    toggleExpand(node.id, true)
-                    setContextMenu(null)
-                  }}
-                >
-                  <SidebarIcon n="newFile" s={16} />
-                  <span>New File</span>
-                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()

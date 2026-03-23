@@ -2940,6 +2940,8 @@ body {
   }
 
   .mobile-action-bar-inner {
+    display: flex;
+    align-items: center;
     gap: 6px;
   }
 
