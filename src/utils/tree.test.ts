@@ -9,6 +9,7 @@ import {
   flattenTree,
   getVisibleFiles,
   insertNode,
+  moveNode,
   renameNode,
   rebuildTreeFromFlat,
   updateFileNode,
@@ -103,5 +104,54 @@ describe('tree utilities', () => {
     expect(collectSubtreeIds(baseTree, 'folder-a')).toEqual(['folder-a', 'file-a'])
     expect(collectSubtreeIds(baseTree, 'file-b')).toEqual(['file-b'])
     expect(collectSubtreeIds(baseTree, 'missing')).toEqual([])
+  })
+
+  it('moves a file to a different folder', () => {
+    const nextTree = moveNode(baseTree, 'file-b', 'folder-a')
+
+    expect(nextTree[0]).toMatchObject({ id: 'folder-a' })
+    const folderChildren = (nextTree[0] as { children: TreeNode[] }).children
+    expect(folderChildren).toHaveLength(2)
+    expect(flattenTree(nextTree).map((n) => n.id)).toEqual(['file-a', 'file-b'])
+  })
+
+  it('moves a file to root', () => {
+    const nestedTree = [
+      {
+        id: 'folder-x',
+        type: 'folder',
+        name: 'Nested',
+        children: [
+          { id: 'file-y', type: 'file', name: 'Deep', title: 'Deep', content: '' },
+        ],
+      },
+    ] as unknown as TreeNode[]
+
+    const nextTree = moveNode(nestedTree, 'file-y', null)
+
+    expect(nextTree).toHaveLength(2)
+    expect(nextTree[1]).toMatchObject({ id: 'file-y', name: 'Deep' })
+  })
+
+  it('prevents moving a folder into its own descendant', () => {
+    const treeWithSubfolder = [
+      {
+        id: 'parent',
+        type: 'folder',
+        name: 'Parent',
+        children: [
+          {
+            id: 'child',
+            type: 'folder',
+            name: 'Child',
+            children: [],
+          },
+        ],
+      },
+    ] as unknown as TreeNode[]
+
+    const nextTree = moveNode(treeWithSubfolder, 'parent', 'child')
+
+    expect(nextTree).toEqual(treeWithSubfolder)
   })
 })

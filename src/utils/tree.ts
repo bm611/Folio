@@ -216,6 +216,20 @@ export function getParentId(tree: TreeNode[], nodeId: string): string | null {
   return null
 }
 
+export function moveNode(tree: TreeNode[], nodeId: string, newParentId: string | null): TreeNode[] {
+  const subtreeIds = new Set(collectSubtreeIds(tree, nodeId))
+
+  if (newParentId !== null && subtreeIds.has(newParentId)) {
+    return tree
+  }
+
+  const nodeToMove = findNode(tree, nodeId)
+  if (!nodeToMove) return tree
+
+  const treeWithoutNode = deleteNode(tree, nodeId)
+  return insertNode(treeWithoutNode, newParentId, { ...nodeToMove, parentId: newParentId })
+}
+
 export function rebuildTreeFromFlat(flatItems: FlatNode[]): TreeNode[] {
   const folderMap: Record<string, TreeNode & { children: TreeNode[] }> = {}
 

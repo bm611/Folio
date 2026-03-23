@@ -11,7 +11,7 @@ import {
   ArrowDown01Icon,
   FileAddIcon,
   FolderAddIcon,
-  MinusSignIcon,
+  MoveToIcon,
   Home01Icon,
   Cancel01Icon,
   CloudIcon,
@@ -23,8 +23,9 @@ import {
 import type { IconSvgElement } from '@hugeicons/react'
 import Icon from './Icon'
 import { useAuth } from '../contexts/AuthContext'
-import { getVisibleFiles } from '../utils/tree'
+import { getVisibleFiles, getParentId } from '../utils/tree'
 import type { TreeNode as TreeNodeType } from '../types'
+import MoveToModal from './MoveToModal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ interface SidebarProps {
   onNewFolder?: (name: string, parentId: string | null) => void
   onDeleteNote: (id: string) => void
   onRenameNode?: (id: string, name: string) => void
+  onMoveNode?: (id: string, newParentId: string | null) => void
   collapsed: boolean
   onToggleCollapse: () => void
   searchQuery: string
@@ -69,6 +71,7 @@ interface TreeNodeComponentProps {
   onSelect: (id: string) => void
   onDelete: (id: string) => void
   onRename: (id: string, name: string) => void
+  onMove?: (id: string) => void
   expanded: Set<string>
   toggleExpand: (id: string, forceOpen?: boolean) => void
   creatingIn: CreatingState | null
@@ -93,7 +96,7 @@ const ICON_MAP: Record<string, IconSvgElement> = {
   chevD: ArrowDown01Icon,
   newFile: FileAddIcon,
   newFolder: FolderAddIcon,
-  minus: MinusSignIcon,
+  move: MoveToIcon,
 }
 
 function SidebarIcon({ n, s = 16 }: { n: string; s?: number }) {
@@ -150,6 +153,7 @@ function TreeNodeComponent({
   onSelect,
   onDelete,
   onRename,
+  onMove,
   expanded,
   toggleExpand,
   creatingIn,
@@ -298,6 +302,9 @@ function TreeNodeComponent({
             <button title="Rename" onClick={() => setRenaming(true)}>
               <SidebarIcon n="edit" s={14} />
             </button>
+            <button title="Move to..." onClick={() => onMove?.(node.id)}>
+              <SidebarIcon n="move" s={14} />
+            </button>
             <button title="Delete" onClick={() => onDelete(node.id)} className="hover-danger">
               <SidebarIcon n="trash" s={14} />
             </button>
@@ -350,6 +357,16 @@ function TreeNodeComponent({
             >
               <SidebarIcon n="edit" s={16} />
               <span>Rename</span>
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onMove?.(node.id)
+                setContextMenu(null)
+              }}
+            >
+              <SidebarIcon n="move" s={16} />
+              <span>Move to...</span>
             </button>
             <button
               className="ctx-danger"
@@ -437,6 +454,7 @@ export default function Sidebar({
   onNewFolder,
   onDeleteNote,
   onRenameNode,
+  onMoveNode,
   collapsed,
   onToggleCollapse,
   searchQuery,
@@ -449,6 +467,7 @@ export default function Sidebar({
   const [searchFocused, setSearchFocused] = useState(false)
   const [foldersOpen, setFoldersOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
+  const [moveToNode, setMoveToNode] = useState<string | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const toggleExpand = (id: string, forceOpen?: boolean) =>
@@ -672,6 +691,7 @@ export default function Sidebar({
                     }}
                     onDelete={(id) => onDeleteNote(id)}
                     onRename={handleRename}
+                    onMove={(id) => setMoveToNode(id)}
                     expanded={expanded}
                     toggleExpand={toggleExpand}
                     creatingIn={creatingIn}
@@ -721,6 +741,7 @@ export default function Sidebar({
                           }}
                           onDelete={(id) => onDeleteNote(id)}
                           onRename={handleRename}
+                          onMove={(id) => setMoveToNode(id)}
                           expanded={expanded}
                           toggleExpand={toggleExpand}
                           creatingIn={creatingIn}
@@ -767,6 +788,7 @@ export default function Sidebar({
                           }}
                           onDelete={(id) => onDeleteNote(id)}
                           onRename={handleRename}
+                          onMove={(id) => setMoveToNode(id)}
                           expanded={expanded}
                           toggleExpand={toggleExpand}
                           creatingIn={creatingIn}
@@ -804,6 +826,20 @@ export default function Sidebar({
 
         {onResizeStart && <div className="resize-handle max-md:hidden" onMouseDown={onResizeStart} />}
       </aside>
+
+      <MoveToModal
+        open={moveToNode !== null}
+        nodeId={moveToNode ?? ''}
+        tree={tree}
+        currentParentId={moveToNode ? getParentId(tree, moveToNode) : null}
+        onConfirm={(newParentId) => {
+          if (moveToNode) {
+            onMoveNode?.(moveToNode, newParentId)
+          }
+          setMoveToNode(null)
+        }}
+        onClose={() => setMoveToNode(null)}
+      />
     </>
   )
 }

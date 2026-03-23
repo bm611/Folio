@@ -19,6 +19,7 @@ import {
   flattenTree,
   getParentId,
   insertNode,
+  moveNode,
   rebuildTreeFromFlat,
   renameNode,
   updateFileNode,
@@ -967,6 +968,59 @@ function AppInner() {
     }, 250)
   }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
+  const handleMoveNode = useCallback(
+    (id: string, newParentId: string | null) => {
+      const existingNode = findNode(treeRef.current, id)
+      if (!existingNode) return
+
+      setTree((previousTree) => moveNode(previousTree, id, newParentId))
+
+      if (!user) return
+
+      const now = new Date().toISOString()
+
+      if (existingNode.type === 'file') {
+        const updatedNode = normalizeNote({
+          ...existingNode,
+          parentId: newParentId,
+          updatedAt: now,
+        } as TreeNode & { parentId: string | null })
+
+        if (!isOnline) {
+          const message = 'Offline — changes are saved and will retry when online.'
+          setSyncError(message)
+          queuePendingUpsert(updatedNode)
+          setFailedSyncNoteIds((currentIds) =>
+            currentIds.includes(id) ? currentIds : [...currentIds, id]
+          )
+          return
+        }
+
+        queuePendingUpsert(updatedNode)
+        setSyncing(true)
+        clearTimeout(cloudSaveTimers.current[id] ?? undefined)
+        cloudSaveTimers.current[id] = setTimeout(() => {
+          syncNoteToCloud(id).finally(() => {
+            cloudSaveTimers.current[id] = null
+            finishSyncingIfIdle()
+          })
+        }, 250)
+      } else {
+        const folderWithParent = { ...existingNode, parentId: newParentId } as TreeNode & { parentId: string | null }
+        if (!isOnline) {
+          queuePendingUpsert(folderWithParent)
+          return
+        }
+        queuePendingUpsert(folderWithParent)
+        setSyncing(true)
+        syncNoteToCloud(folderWithParent).finally(() => {
+          finishSyncingIfIdle()
+        })
+      }
+    },
+    [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user]
+  )
+
   const createNote = useCallback(
     (overrides: Partial<NoteFile> = {}, options: { parentId?: string | null; activate?: boolean } = {}) => {
       const now = new Date().toISOString()
@@ -1532,6 +1586,7 @@ function AppInner() {
           onNewFolder={createFolder}
           onDeleteNote={handleDeleteNote}
           onRenameNode={handleRenameNode}
+          onMoveNode={handleMoveNode}
           syncing={syncing}
           syncStatus={sidebarSyncStatus}
           collapsed={sidebarCollapsed}
