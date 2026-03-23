@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 
 import {
   Search01Icon,
@@ -478,7 +478,7 @@ export default function Sidebar({
       return s
     })
 
-  const handleCreateConfirm = (name: string, parentId: string | null, type: 'file' | 'folder') => {
+  const handleCreateConfirm = useCallback((name: string, parentId: string | null, type: 'file' | 'folder') => {
     if (type === 'folder') {
       onNewFolder?.(name, parentId)
     } else {
@@ -486,13 +486,13 @@ export default function Sidebar({
       if (newNote && window.innerWidth < 768) onToggleCollapse()
     }
     setCreatingIn(null)
-  }
+  }, [onNewFolder, onNewNote, onToggleCollapse])
 
-  const handleRename = (id: string, name: string) => {
+  const handleRename = useCallback((id: string, name: string) => {
     onRenameNode?.(id, name)
-  }
+  }, [onRenameNode])
 
-  const handleRootCreate = (type: 'file' | 'folder') => setCreatingIn({ parentId: null, type })
+  const handleRootCreate = useCallback((type: 'file' | 'folder') => setCreatingIn({ parentId: null, type }), [])
 
   const visibleTree = useMemo(() => {
     const sortNodes = (nodes: TreeNodeType[]): TreeNodeType[] => {

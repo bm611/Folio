@@ -34,7 +34,7 @@ import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
 import { fetchNotes, restoreNotes, softDeleteNotes, upsertNote } from './lib/notesDb'
-import { docToMarkdown } from './editor/markdown/markdownConversion'
+import { exportNoteAsMarkdown } from './utils/exportNote'
 import { ACCENT_COLORS } from './config/accents'
 import { FONT_OPTIONS } from './config/fonts'
 import type { TreeNode, NoteFile, NoteFolder, FlatNode } from './types'
@@ -1534,18 +1534,7 @@ function AppInner() {
       title: 'Export note as Markdown',
       subtitle: 'Download the current note as a .md file',
       keywords: ['export', 'download', 'markdown', 'md'],
-      run: () => {
-        const markdown = activeNote.contentDoc
-          ? docToMarkdown(activeNote.contentDoc)
-          : (activeNote.content || '')
-        const title = activeNote.title?.trim() || 'untitled'
-        const fileName = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.md'
-        const blob = new Blob([markdown], { type: 'text/markdown' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url; a.download = fileName; a.click()
-        URL.revokeObjectURL(url)
-      },
+      run: () => exportNoteAsMarkdown(activeNote),
     },
   ] : []
 
