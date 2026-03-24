@@ -1010,9 +1010,11 @@ body {
   .aura-editor .ProseMirror th,
   .aura-editor .ProseMirror td {
     min-width: 120px;
+    padding: 0.35rem 0.6rem;
     white-space: nowrap;
     overflow-wrap: normal;
     word-break: normal;
+    font-size: 0.85rem;
   }
 }
 
@@ -1303,6 +1305,54 @@ body {
 
 .aura-callout-body.is-collapsed {
   display: none;
+}
+
+@media (max-width: 767px) {
+  .aura-editor .ProseMirror {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .aura-editor .ProseMirror h1 {
+    font-size: clamp(1.4rem, 1.3rem + 0.8vw, 1.8rem);
+    margin: 0.35rem 0 0.15rem;
+  }
+
+  .aura-editor .ProseMirror h2 {
+    font-size: clamp(1.15rem, 1.1rem + 0.4vw, 1.4rem);
+    margin: 1rem 0 0.1rem;
+  }
+
+  .aura-editor .ProseMirror h3 {
+    font-size: 1.05rem;
+    margin: 0.8rem 0 0.05rem;
+  }
+
+  .aura-editor .ProseMirror p,
+  .aura-editor .ProseMirror blockquote,
+  .aura-editor .ProseMirror li {
+    margin: 0.2rem 0;
+  }
+
+  .aura-callout {
+    margin: 0.5rem 0;
+  }
+
+  .aura-callout-header {
+    padding: 0.3rem 0.5rem;
+    gap: 0.4rem;
+  }
+
+  .aura-callout-title {
+    font-size: 0.78rem;
+    padding: 0.2rem 0;
+  }
+
+  .aura-callout-body {
+    padding: 0.2rem 0.6rem 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .aura-callout-tip,
