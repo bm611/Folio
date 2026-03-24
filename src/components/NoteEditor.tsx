@@ -893,6 +893,8 @@ export default function NoteEditor({
 
 	// Mobile home tab state (Recent / Favorites)
 	const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent');
+	const [recentExpanded, setRecentExpanded] = useState(false);
+	const [favExpanded, setFavExpanded] = useState(false);
 
 	// Session word count: capture baseline when a note is first opened
 	const prevNoteIdRef = useRef<string | null>(null);
@@ -1149,8 +1151,9 @@ export default function NoteEditor({
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
 										{recentNotes.length > 0 ? (
+											<>
 											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
-												{recentNotes.map((n, i) => {
+												{(recentExpanded ? recentNotes : recentNotes.slice(0, 4)).map((n, i) => {
 													const isDaily = n.tags?.includes('daily');
 													const rawTitle = getNoteDisplayTitle(n);
 													const date = new Date(n.updatedAt || n.createdAt);
@@ -1219,6 +1222,17 @@ export default function NoteEditor({
 													);
 												})}
 											</div>
+											{recentNotes.length > 4 && (
+												<button
+													type="button"
+													onClick={() => setRecentExpanded((v) => !v)}
+													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.97]"
+													style={{ WebkitTapHighlightColor: 'transparent' }}
+												>
+													{recentExpanded ? 'Show less' : `Show more (${recentNotes.length - 4})`}
+												</button>
+											)}
+											</>
 										) : (
 											<div className="flex flex-col justify-center min-h-[260px]">
 												<FirstNotePrompt />
@@ -1234,8 +1248,9 @@ export default function NoteEditor({
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
 										{favoriteNotes.length > 0 ? (
+											<>
 											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
-												{favoriteNotes.map((n, i) => {
+												{(favExpanded ? favoriteNotes : favoriteNotes.slice(0, 4)).map((n, i) => {
 													const isDaily = n.tags?.includes('daily');
 													const rawTitle = getNoteDisplayTitle(n);
 													const date = new Date(n.updatedAt || n.createdAt);
@@ -1304,6 +1319,17 @@ export default function NoteEditor({
 													);
 												})}
 											</div>
+											{favoriteNotes.length > 4 && (
+												<button
+													type="button"
+													onClick={() => setFavExpanded((v) => !v)}
+													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.97]"
+													style={{ WebkitTapHighlightColor: 'transparent' }}
+												>
+													{favExpanded ? 'Show less' : `Show more (${favoriteNotes.length - 4})`}
+												</button>
+											)}
+											</>
 										) : (
 											<div className="flex flex-col justify-center min-h-[260px]">
 												<FavoritesEmptyPrompt />
