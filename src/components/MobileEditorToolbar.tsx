@@ -15,6 +15,7 @@ import {
   LeftToRightBlockQuoteIcon,
   ListIndentIncreaseIcon,
   ListIndentDecreaseIcon,
+  Delete01Icon,
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
@@ -172,8 +173,48 @@ function useKeyboardAwareBottom(): number {
   return bottom
 }
 
+const TABLE_ACTIONS = [
+  {
+    id: 'delete-row',
+    label: 'Delete Row',
+    command: (editor: Editor) => editor.chain().focus(undefined, { scrollIntoView: false }).deleteRow().run(),
+    canRun: (editor: Editor) => editor.can().deleteRow(),
+  },
+  {
+    id: 'delete-col',
+    label: 'Delete Col',
+    command: (editor: Editor) => editor.chain().focus(undefined, { scrollIntoView: false }).deleteColumn().run(),
+    canRun: (editor: Editor) => editor.can().deleteColumn(),
+  },
+  {
+    id: 'delete-table',
+    label: 'Delete Table',
+    command: (editor: Editor) => editor.chain().focus(undefined, { scrollIntoView: false }).deleteTable().run(),
+    canRun: (editor: Editor) => editor.can().deleteTable(),
+    danger: true,
+  },
+]
+
 export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps) {
   const bottom = useKeyboardAwareBottom()
+  const [isTableActive, setIsTableActive] = useState(false)
+
+  useEffect(() => {
+    if (!editor) return undefined
+
+    const update = () => {
+      setIsTableActive(editor.isEditable && editor.isActive('table'))
+    }
+
+    update()
+    editor.on('selectionUpdate', update)
+    editor.on('transaction', update)
+
+    return () => {
+      editor.off('selectionUpdate', update)
+      editor.off('transaction', update)
+    }
+  }, [editor])
 
   if (!editor) {
     return null
@@ -194,7 +235,6 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
             key={item.id}
             type="button"
             onMouseDown={(e) => {
-              // Prevent stealing focus from the editor
               e.preventDefault()
               item.action(editor)
             }}
@@ -204,6 +244,33 @@ export default function MobileEditorToolbar({ editor }: MobileEditorToolbarProps
             <Icon icon={item.icon} size={18} strokeWidth={1.5} />
           </button>
         ))}
+
+        {isTableActive && (
+          <>
+            <div className="mx-1 h-5 w-px shrink-0 bg-[var(--border-subtle)]" />
+            {TABLE_ACTIONS.map((action) => {
+              const enabled = action.canRun(editor)
+              return (
+                <button
+                  key={action.id}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    if (enabled) action.command(editor)
+                  }}
+                  disabled={!enabled}
+                  className={`mobile-editor-toolbar-btn !w-auto min-w-[4.5rem] rounded-full px-2.5 text-[10px] font-medium ${
+                    action.danger ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]'
+                  } disabled:opacity-40`}
+                  title={action.label}
+                >
+                  <Icon icon={Delete01Icon} size={13} strokeWidth={1.5} className="mr-1 shrink-0" />
+                  {action.label}
+                </button>
+              )
+            })}
+          </>
+        )}
       </div>
       </div>
     </div>

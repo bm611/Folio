@@ -1,6 +1,9 @@
 import type { Editor } from '@tiptap/react'
-import { BubbleMenu } from '@tiptap/react/menus'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+import { Delete01Icon } from '@hugeicons/core-free-icons'
+
+import Icon from './Icon'
 
 interface TableAction {
   id: string
@@ -23,7 +26,7 @@ const TABLE_ACTIONS: TableAction[] = [
   },
   {
     id: 'delete-column',
-    label: 'Delete Col',
+    label: 'Delete Column',
     command: (editor) => editor.chain().focus(undefined, { scrollIntoView: false }).deleteColumn().run(),
     isEnabled: (editor) => editor.can().deleteColumn(),
   },
@@ -37,14 +40,13 @@ const TABLE_ACTIONS: TableAction[] = [
 ]
 
 export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
-  const isVisible = useRef(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isTableActive, setIsTableActive] = useState(false)
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      return undefined
-    }
+    if (typeof window === 'undefined') return undefined
 
     const mediaQuery = window.matchMedia('(max-width: 767px), (pointer: coarse)')
     const update = () => setIsMobile(mediaQuery.matches)
@@ -58,14 +60,10 @@ export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
   }, [])
 
   useEffect(() => {
-    if (!editor) {
-      return undefined
-    }
+    if (!editor) return undefined
 
     const update = () => {
-      const active = editor.isEditable && editor.isActive('table')
-      isVisible.current = active
-      setIsTableActive(active)
+      setIsTableActive(editor.isEditable && editor.isActive('table'))
     }
 
     update()
@@ -82,20 +80,19 @@ export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
     }
   }, [editor])
 
+  // Close context menu when table becomes inactive
+  useEffect(() => {
+    if (!isTableActive) setContextMenu(null)
+  }, [isTableActive])
+
   const enabledActions = useMemo(
     () => TABLE_ACTIONS.map((action) => ({ ...action, enabled: editor ? (action.isEnabled?.(editor) ?? true) : false })),
     [editor, isTableActive]
   )
 
-  const shouldShow = useCallback(({ editor: e }: { editor: Editor }) => {
-    const show = e.isEditable && e.isActive('table')
-    isVisible.current = show
-    setIsTableActive(show)
-    return show
-  }, [])
-
+  // Right-click handler for table cells (desktop only)
   useEffect(() => {
-    if (!editor || !editor.isEditable) return undefined
+    if (!editor || !editor.isEditable || isMobile) return undefined
 
     let editorEl: HTMLElement
     try {
@@ -104,85 +101,104 @@ export default function TableBubbleMenu({ editor }: TableBubbleMenuProps) {
       return undefined
     }
 
-    const suppressNativeMenu = (e: Event) => {
-      if (isVisible.current) {
-        e.preventDefault()
-      }
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const tableEl = target.closest('.table-node-view')
+
+      if (!tableEl) return
+
+      e.preventDefault()
+      setContextMenu({ x: e.clientX, y: e.clientY })
     }
 
-    editorEl.addEventListener('contextmenu', suppressNativeMenu)
+    editorEl.addEventListener('contextmenu', handleContextMenu)
 
     return () => {
-      editorEl.removeEventListener('contextmenu', suppressNativeMenu)
+      editorEl.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [editor])
+  }, [editor, isMobile])
 
-  if (!editor) {
-    return null
-  }
+  // Close context menu on outside click or escape
+  useEffect(() => {
+    if (!contextMenu) return undefined
 
-  if (isMobile) {
-    if (!isTableActive) {
-      return null
+    const close = () => setContextMenu(null)
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close()
     }
 
-    return (
-      <div
-        className="mobile-action-bar mobile-action-bar--editor"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <div className="mobile-bar-inner">
-          <div className="mobile-editor-toolbar-inner">
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [contextMenu])
+
+  // Clamp menu position to viewport
+  useEffect(() => {
+    if (!contextMenu || !menuRef.current) return
+
+    const menu = menuRef.current
+    const rect = menu.getBoundingClientRect()
+    let { x, y } = contextMenu
+    let clamped = false
+
+    if (rect.right > window.innerWidth - 8) {
+      x = window.innerWidth - rect.width - 8
+      clamped = true
+    }
+    if (rect.bottom > window.innerHeight - 8) {
+      y = window.innerHeight - rect.height - 8
+      clamped = true
+    }
+
+    if (clamped) setContextMenu({ x, y })
+  }, [contextMenu])
+
+  const handleAction = useCallback(
+    (action: TableAction & { enabled: boolean }) => {
+      if (!editor || !action.enabled) return
+      action.command(editor)
+      setContextMenu(null)
+    },
+    [editor]
+  )
+
+  if (!editor) return null
+
+  return (
+    <>
+      {/* Desktop: right-click context menu */}
+      {contextMenu && !isMobile && (
+        <>
+          <div
+            className="ctx-menu-overlay"
+            onClick={() => setContextMenu(null)}
+            onContextMenu={(e) => {
+              e.preventDefault()
+              setContextMenu(null)
+            }}
+          />
+          <div
+            ref={menuRef}
+            className="ctx-menu"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
             {enabledActions.map((action) => (
               <button
                 key={action.id}
                 type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault()
-                  action.command(editor)
-                }}
+                className={action.danger ? 'ctx-danger' : ''}
+                onClick={() => handleAction(action)}
                 disabled={!action.enabled}
-                className={`mobile-editor-toolbar-btn min-w-[5.5rem] rounded-full px-3 text-[11px] font-medium ${
-                  action.danger ? 'text-[var(--danger)]' : 'text-[var(--text-secondary)]'
-                } disabled:opacity-45`}
-                title={action.label}
               >
+                <Icon icon={Delete01Icon} size={14} stroke={1.7} />
                 {action.label}
               </button>
             ))}
           </div>
-        </div>
-      </div>
-    )
-  }
+        </>
+      )}
 
-  return (
-    <BubbleMenu
-      editor={editor}
-      shouldShow={shouldShow}
-      options={{ placement: 'top', offset: 10 }}
-    >
-      <div
-        className="flex items-center gap-1 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-1.5"
-        style={{ boxShadow: 'var(--neu-shadow)', WebkitUserSelect: 'none', userSelect: 'none' }}
-        onContextMenu={(e) => e.preventDefault()}
-      >
-        {enabledActions.map((action) => (
-          <button
-            key={action.id}
-            type="button"
-            onClick={() => action.command(editor)}
-            disabled={!action.enabled}
-            className={`rounded-xl px-2.5 py-1.5 text-[11px] transition-colors ${
-              action.danger
-                ? 'text-[var(--danger)] hover:bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] disabled:hover:bg-transparent'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
-            } disabled:cursor-not-allowed disabled:opacity-45`}
-          >
-            {action.label}
-          </button>
-        ))}
-      </div>
-    </BubbleMenu>
+      {/* Mobile table actions are handled by MobileEditorToolbar */}
+    </>
   )
 }
