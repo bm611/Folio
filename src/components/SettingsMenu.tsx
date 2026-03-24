@@ -148,9 +148,9 @@ function FontPopover({ anchorRef, fontId, onFontChange, onClose }: FontPopoverPr
               type="button"
               onClick={() => onFontChange(option.id)}
               className="settings-font-option"
+              data-active={isActive || undefined}
               style={{
                 color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-                backgroundColor: isActive ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent',
                 fontFamily: option.value,
               }}
             >

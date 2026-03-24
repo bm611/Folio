@@ -2731,6 +2731,10 @@ body {
   }
 }
 
+.settings-font-option[data-active] {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
 .settings-font-option:active {
   transform: scale(0.97);
 }
