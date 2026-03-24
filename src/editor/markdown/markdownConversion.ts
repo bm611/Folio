@@ -1,8 +1,5 @@
 import MarkdownIt from 'markdown-it'
 import markdownItTaskLists from 'markdown-it-task-lists'
-// @ts-expect-error -- markdown-it-texmath has no type declarations
-import texmath from 'markdown-it-texmath'
-import katex from 'katex'
 import { generateJSON } from '@tiptap/core'
 import type { Extensions, JSONContent } from '@tiptap/core'
 
@@ -25,13 +22,7 @@ const CALLOUT_TITLE_FALLBACKS: Record<string, string> = {
 }
 
 const CALLOUT_BLOCK_PATTERN = /^> \[!([A-Za-z-]+)\]([+-])?\s*(.*)$/
-const MARKDOWN_PATTERN = /(^#{1,6}\s)|(```)|(^[-*+]\s)|(^\d+\.\s)|(^- \[[ xX]\]\s)|(^> \[!)|(\|.+\|)|(\*\*[^*]+\*\*)|(`[^`]+`)|(\[[^\]]+\]\([^)]+\))|(\$\$.+?\$\$)|(\$[^$\n]+\$)|(\\\(.+?\\\))|(\\\[[\s\S]+?\\\])/m
-
-// Detects bare LaTeX commands like \frac, \lim, \sum etc. (2+ letter commands)
-const BARE_LATEX_COMMAND = /\\[a-zA-Z]{2,}/
-
-// Block: a standalone line that is primarily LaTeX (starts with \ command)
-const BARE_BLOCK_MATH = /^(\\[a-zA-Z]{2,}(?:[^]*?))$/gm
+const MARKDOWN_PATTERN = /(^#{1,6}\s)|(```)|(^[-*+]\s)|(^\d+\.\s)|(^- \[[ xX]\]\s)|(^> \[!)|(\|.+\|)|(\*\*[^*]+\*\*)|(`[^`]+`)|(\[[^\]]+\]\([^)]+\))/m
 
 const markdown = new MarkdownIt({
   html: false,
@@ -40,7 +31,6 @@ const markdown = new MarkdownIt({
 })
 
 markdown.use(markdownItTaskLists, { enabled: true })
-markdown.use(texmath, { engine: katex, delimiters: ['dollars', 'brackets'], katexOptions: { throwOnError: false } })
 
 function escapeAttribute(value: string = ''): string {
   return String(value)
@@ -48,20 +38,6 @@ function escapeAttribute(value: string = ''): string {
     .replaceAll('"', '&quot;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
-}
-
-// Override texmath renderers to emit our custom node markup instead of KaTeX HTML
-markdown.renderer.rules.math_inline = (tokens: { content: string }[], idx: number) => {
-  const latex = escapeAttribute(tokens[idx]!.content)
-  return `<span data-type="mathInline" data-latex="${latex}"></span>`
-}
-markdown.renderer.rules.math_block = (tokens: { content: string }[], idx: number) => {
-  const latex = escapeAttribute(tokens[idx]!.content)
-  return `<div data-type="mathBlock" data-latex="${latex}"></div>`
-}
-markdown.renderer.rules.math_block_eqno = (tokens: { content: string }[], idx: number) => {
-  const latex = escapeAttribute(tokens[idx]!.content)
-  return `<div data-type="mathBlock" data-latex="${latex}"></div>`
 }
 
 function getDefaultCalloutTitle(type: string = 'note'): string {
@@ -128,107 +104,7 @@ function renderCalloutBlock(raw: string = ''): string {
 }
 
 export function looksLikeMarkdown(text: string = ''): boolean {
-  return MARKDOWN_PATTERN.test(text) || BARE_LATEX_COMMAND.test(text)
-}
-
-/**
- * Find matching closing paren for a bare `( \latex... )` span, handling
- * nested parens like `f(x)` inside the expression.
- * Returns the index of the closing `)` or -1 if not found.
- */
-function findClosingParen(text: string, openIndex: number): number {
-  let depth = 1
-  for (let i = openIndex + 1; i < text.length; i++) {
-    if (text[i] === '(') depth++
-    else if (text[i] === ')') {
-      depth--
-      if (depth === 0) return i
-    }
-  }
-  return -1
-}
-
-/**
- * Normalize bare LaTeX patterns (common in ChatGPT plain-text copies) into
- * standard dollar-sign delimiters so markdown-it-texmath can parse them.
- *
- * Handles:
- * - `( \frac{0}{0} )` → `$\frac{0}{0}$`           (inline)
- * - `( \lim_{x \to a} f(x) = 0 )` → `$\lim_{x \to a} f(x) = 0$` (nested parens)
- * - Standalone lines like `\lim_{x} ...` → `$$...$$` (block)
- */
-function normalizeLatexDelimiters(text: string): string {
-  // If text already uses proper \(...\) or \[...\] delimiters, skip
-  // the bare-paren normalization entirely — texmath handles these natively.
-  const hasProperDelimiters = /\\\([\s\S]*?\\\)/.test(text) || /\\\[[\s\S]*?\\\]/.test(text)
-  if (hasProperDelimiters) {
-    return text
-  }
-
-  // Pass 1: Convert inline `( \command... )` to `$\command...$`
-  // We scan for `( ` followed by a LaTeX command `\word` and find the
-  // balanced closing `)` to handle nested parens like f(x).
-  const inlinePattern = /\(\s*(?=\\[a-zA-Z]{2,})/g
-  let result = ''
-  let lastIndex = 0
-  let match: RegExpExecArray | null
-
-  while ((match = inlinePattern.exec(text)) !== null) {
-    const openIndex = match.index
-    const closeIndex = findClosingParen(text, openIndex)
-    if (closeIndex === -1) continue
-
-    const inner = text.slice(openIndex + 1, closeIndex).trim()
-    result += text.slice(lastIndex, openIndex)
-    result += `$${inner}$`
-    lastIndex = closeIndex + 1
-    inlinePattern.lastIndex = closeIndex + 1
-  }
-  result += text.slice(lastIndex)
-
-  // Pass 1b: Handle `( content \command content )` where the LaTeX command
-  // isn't at the start, e.g. `( g'(x) \neq 0 )`. We scan every `(` and check
-  // if the balanced content contains a LaTeX command.
-  const allOpenParens = /\(/g
-  let result2 = ''
-  lastIndex = 0
-
-  while ((match = allOpenParens.exec(result)) !== null) {
-    const openIndex = match.index
-    // Skip if already converted by pass 1 (preceded by $)
-    if (openIndex > 0 && result[openIndex - 1] === '$') continue
-
-    const closeIndex = findClosingParen(result, openIndex)
-    if (closeIndex === -1) continue
-
-    // Skip if it spans multiple lines (not an inline math expression)
-    const segment = result.slice(openIndex, closeIndex + 1)
-    if (segment.includes('\n')) {
-      allOpenParens.lastIndex = openIndex + 1
-      continue
-    }
-
-    const inner = result.slice(openIndex + 1, closeIndex).trim()
-    // Only convert if it contains a LaTeX command and isn't already wrapped
-    if (!BARE_LATEX_COMMAND.test(inner)) continue
-
-    result2 += result.slice(lastIndex, openIndex)
-    result2 += `$${inner}$`
-    lastIndex = closeIndex + 1
-    allOpenParens.lastIndex = closeIndex + 1
-  }
-  result2 += result.slice(lastIndex)
-
-  // Pass 2: Convert standalone lines that are purely LaTeX into $$...$$ blocks.
-  result2 = result2.replace(BARE_BLOCK_MATH, (_match, latex: string) => {
-    const trimmed = latex.trim()
-    if (trimmed.startsWith('$') || trimmed.startsWith('#') || trimmed.startsWith('>') || trimmed.startsWith('-')) {
-      return _match
-    }
-    return `$$${trimmed}$$`
-  })
-
-  return result2
+  return MARKDOWN_PATTERN.test(text)
 }
 
 export function markdownToHTML(content: string = ''): string {
@@ -236,8 +112,7 @@ export function markdownToHTML(content: string = ''): string {
     return '<p></p>'
   }
 
-  const normalized = normalizeLatexDelimiters(content)
-  const lines = normalized.split('\n')
+  const lines = content.split('\n')
   const rendered: string[] = []
   const chunk: string[] = []
 
@@ -492,10 +367,6 @@ function renderNode(node: DocNode, depth: number = 0): string {
         .join('')
       return `\`\`\`${language}\n${code}\n\`\`\``
     }
-    case 'mathInline':
-      return `$${(node.attrs?.latex as string) || ''}$`
-    case 'mathBlock':
-      return `$$\n${(node.attrs?.latex as string) || ''}\n$$`
     case 'horizontalRule':
       return '---'
     case 'table':

@@ -123,20 +123,7 @@ export function runFolioEditorCommand(editor: Editor, commandId: string, options
       return chain.setHorizontalRule().run()
     case 'today':
       return chain.insertContent(formatToday()).run()
-    case 'math-inline':
-      return chain
-        .insertContent({
-          type: 'mathInline',
-          attrs: { latex: '' },
-        })
-        .run()
-    case 'math-block':
-      return chain
-        .insertContent({
-          type: 'mathBlock',
-          attrs: { latex: '' },
-        })
-        .run()
+
     case 'ai': {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const storage = editor.storage as any

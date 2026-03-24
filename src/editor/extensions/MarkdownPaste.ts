@@ -2,8 +2,6 @@ import { Extension } from '@tiptap/core'
 import { Plugin } from '@tiptap/pm/state'
 import { looksLikeMarkdown, markdownToDoc } from '../markdown/markdownConversion'
 
-const LATEX_PATTERN = /(\\\(.+?\\\))|(\\\[[\s\S]+?\\\])|(\$\$.+?\$\$)|(\$[^$\n]+\$)|(\(\s*\\[a-zA-Z]{2,})|(^\\[a-zA-Z]{2,})/m
-
 export const MarkdownPaste = Extension.create({
   name: 'markdownPaste',
 
@@ -19,14 +17,7 @@ export const MarkdownPaste = Extension.create({
               return false
             }
 
-            // When HTML is present (e.g. pasting from web), still handle if
-            // the plain text contains LaTeX that the browser HTML won't preserve.
-            // Otherwise, require the text to look like markdown.
-            if (html && !LATEX_PATTERN.test(text)) {
-              return false
-            }
-
-            if (!html && !looksLikeMarkdown(text)) {
+            if (html || !looksLikeMarkdown(text)) {
               return false
             }
 
