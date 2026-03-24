@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "lib": ["ES2021"],
+    "noEmit": true,
+    "allowJs": true
+  },
+  "include": ["src", "index.js", "App.tsx"],
+  "references": [
+    { "path": "../../packages/shared" }
+  ]
+}

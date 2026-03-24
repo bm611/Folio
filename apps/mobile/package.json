@@ -1,0 +1,29 @@
+{
+  "name": "@folio/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@folio/shared": "*",
+    "@supabase/supabase-js": "^2.99.1",
+    "expo": "~53.0.0",
+    "expo-status-bar": "~2.2.0",
+    "react": "^19.2.0",
+    "react-native": "^0.79.0",
+    "@react-navigation/native": "^7.0.0",
+    "@react-navigation/native-stack": "^7.0.0",
+    "react-native-screens": "~4.10.0",
+    "react-native-safe-area-context": "~5.4.0",
+    "react-native-mmkv": "^3.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.7",
+    "typescript": "^5.9.3"
+  }
+}

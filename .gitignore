@@ -12,6 +12,20 @@ dist
 dist-ssr
 *.local
 
+# Tauri
+apps/web/src-tauri/target/
+
+# React Native / Expo
+apps/mobile/.expo/
+apps/mobile/ios/
+apps/mobile/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
