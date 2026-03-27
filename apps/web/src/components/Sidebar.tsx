@@ -322,6 +322,17 @@ function TreeNodeComponent({
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
+                    setCreatingIn({ parentId: node.id, type: 'file' })
+                    toggleExpand(node.id, true)
+                    setContextMenu(null)
+                  }}
+                >
+                  <SidebarIcon n="newFile" s={16} />
+                  <span>New File</span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
                     setCreatingIn({ parentId: node.id, type: 'folder' })
                     toggleExpand(node.id, true)
                     setContextMenu(null)
