@@ -9,99 +9,7 @@ export interface AiStreamCallbacks {
   onError: (error: string) => void
 }
 
-// ── Tauri detection ────────────────────────────────────────────────────
-
-function isTauri(): boolean {
-  return '__TAURI_INTERNALS__' in window
-}
-
-// ── Tauri streaming path ───────────────────────────────────────────────
-
-async function streamAiChatTauri(
-  request: AiChatRequest,
-  callbacks: AiStreamCallbacks,
-  signal?: AbortSignal
-): Promise<void> {
-  const { onToken, onDone, onError } = callbacks
-
-  // Dynamically import Tauri APIs to avoid bundling issues on web
-  const { invoke } = await import('@tauri-apps/api/core')
-  const { listen } = await import('@tauri-apps/api/event')
-
-  let unlisten: (() => void) | null = null
-  let settled = false
-
-  const cleanup = () => {
-    if (unlisten) {
-      unlisten()
-      unlisten = null
-    }
-  }
-
-  // Abort handler
-  if (signal) {
-    signal.addEventListener('abort', () => {
-      cleanup()
-      if (!settled) {
-        settled = true
-        // Silently stop — same behaviour as the web path
-      }
-    })
-  }
-
-  try {
-    // Listen to streamed events from the Rust backend
-    unlisten = await listen<{ kind: string; token?: string; error?: string }>(
-      'chat-stream',
-      (event) => {
-        if (settled) return
-
-        const payload = event.payload
-
-        if (payload.kind === 'token' && payload.token) {
-          onToken(payload.token)
-        } else if (payload.kind === 'done') {
-          settled = true
-          cleanup()
-          onDone()
-        } else if (payload.kind === 'error' && payload.error) {
-          settled = true
-          cleanup()
-          onError(payload.error)
-        }
-      }
-    )
-
-    // Invoke the Rust command — this call completes after the stream finishes
-    await invoke('chat_stream', {
-      request: {
-        question: request.question,
-        noteContents: request.noteContents,
-      },
-    })
-
-    // If the stream ended without emitting 'done' (edge case), ensure we call onDone
-    if (!settled) {
-      settled = true
-      cleanup()
-      onDone()
-    }
-  } catch (err) {
-    cleanup()
-    if (!settled) {
-      settled = true
-      const message =
-        typeof err === 'string'
-          ? err
-          : (err as Error)?.message ?? 'Unknown Tauri AI error'
-      onError(message)
-    }
-  }
-}
-
-// ── Web/Netlify streaming path ─────────────────────────────────────────
-
-async function streamAiChatWeb(
+export async function streamAiChat(
   request: AiChatRequest,
   callbacks: AiStreamCallbacks,
   signal?: AbortSignal
@@ -200,17 +108,4 @@ async function streamAiChatWeb(
   } finally {
     reader.releaseLock()
   }
-}
-
-// ── Public API (auto-detects platform) ─────────────────────────────────
-
-export async function streamAiChat(
-  request: AiChatRequest,
-  callbacks: AiStreamCallbacks,
-  signal?: AbortSignal
-): Promise<void> {
-  if (isTauri()) {
-    return streamAiChatTauri(request, callbacks, signal)
-  }
-  return streamAiChatWeb(request, callbacks, signal)
 }

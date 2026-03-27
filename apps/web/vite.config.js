@@ -3,12 +3,14 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const isTauri = !!process.env.TAURI_ENV_PLATFORM
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
+    !isTauri && VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['folio-favicon.svg', 'fonts/**/*'],
       manifest: {
@@ -60,7 +62,7 @@ export default defineConfig({
         ],
       },
     }),
-  ],
+  ].filter(Boolean),
 
   // Tauri expects the dev server on all interfaces so the webview can reach it
   clearScreen: false,

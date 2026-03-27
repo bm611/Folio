@@ -35,7 +35,6 @@ import { searchNotes } from './utils/knowledgeBase'
 import { getNoteDisplayTitle, normalizeNote } from './utils/noteMeta'
 import { fetchNotes, restoreNotes, softDeleteNotes, upsertNote } from './lib/notesDb'
 import { exportNoteAsMarkdown } from './utils/exportNote'
-import { useTauriGlobalShortcut } from './hooks/useTauriGlobalShortcut'
 import { ACCENT_COLORS } from './config/accents'
 import { FONT_OPTIONS } from './config/fonts'
 import type { TreeNode, NoteFile, NoteFolder, FlatNode } from './types'
@@ -1095,8 +1094,6 @@ function AppInner() {
   const handleNewNote = useCallback(() => {
     createNote()
   }, [createNote])
-
-  useTauriGlobalShortcut(handleNewNote)
 
   const handleCreateDailyNote = useCallback(() => {
     const today = new Date()
