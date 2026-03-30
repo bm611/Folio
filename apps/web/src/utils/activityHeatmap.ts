@@ -151,3 +151,52 @@ export function getMonthMarkers(
 		};
 	});
 }
+
+export interface Last30DaysEntry {
+	date: string;
+	words: number;
+	fullDate: string;
+}
+
+export function getLast30DaysData(
+	entries: HeatmapEntry[],
+	todayInput: Date = new Date()
+): Last30DaysEntry[] {
+	const today = new Date(todayInput);
+	today.setHours(0, 0, 0, 0);
+
+	const wordsByDay = new Map<string, number>();
+
+	for (const entry of entries) {
+		const date = new Date(entry.date);
+		date.setHours(0, 0, 0, 0);
+
+		if (date < today && date.getTime() >= today.getTime() - 29 * 24 * 60 * 60 * 1000) {
+			const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+			wordsByDay.set(key, (wordsByDay.get(key) ?? 0) + entry.words);
+		}
+	}
+
+	const result: Last30DaysEntry[] = [];
+
+	for (let i = 29; i >= 0; i--) {
+		const date = new Date(today);
+		date.setDate(today.getDate() - i);
+
+		const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+		const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+		result.push({
+			date: `${dayLabels[date.getDay()]} ${date.getDate()}`,
+			words: wordsByDay.get(key) ?? 0,
+			fullDate: date.toLocaleDateString('en-US', {
+				weekday: 'long',
+				day: 'numeric',
+				month: 'long',
+				year: 'numeric'
+			})
+		});
+	}
+
+	return result;
+}

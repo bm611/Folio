@@ -1,6 +1,7 @@
 import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import type { Editor } from '@tiptap/react';
 import type { IconSvgElement } from '@hugeicons/react';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,16 +38,7 @@ import {
 	getNoteDisplayTitle
 } from '../utils/noteMeta';
 import {
-	HEATMAP_CELL_GAP,
-	HEATMAP_CELL_SIZE,
-	HEATMAP_DAY_LABEL_WIDTH,
-	HEATMAP_MIN_WEEKS,
-	HEATMAP_MONTH_LABEL_MIN_SPACING,
-	HEATMAP_SECTION_GAP,
-	buildHeatmapCells,
-	getHeatmapGridWidth,
-	getHeatmapWeekCount,
-	getMonthMarkers
+	getLast30DaysData
 } from '../utils/activityHeatmap';
 import { exportNoteAsMarkdown } from '../utils/exportNote';
 import TagInput from './TagInput';
@@ -830,57 +822,15 @@ export default function NoteEditor({
 		return { streak, totalWords };
 	}, [fileNotes]);
 
-	const activityHeatmapRef = useRef<HTMLDivElement | null>(null);
-	const [heatmapWeeks, setHeatmapWeeks] = useState(HEATMAP_MIN_WEEKS);
-	const heatmapGridWidth = useMemo(() => getHeatmapGridWidth(heatmapWeeks), [heatmapWeeks]);
-
-	useEffect(() => {
-		if (note) return;
-
-		const container = activityHeatmapRef.current;
-		if (!container) return;
-
-		const syncHeatmapWeeks = () => {
-			const nextWeeks = getHeatmapWeekCount(container.getBoundingClientRect().width);
-			setHeatmapWeeks((currentWeeks) =>
-				currentWeeks === nextWeeks ? currentWeeks : nextWeeks
-			);
-		};
-
-		const frame = requestAnimationFrame(syncHeatmapWeeks);
-
-		if (typeof ResizeObserver === 'undefined') {
-			return () => {
-				cancelAnimationFrame(frame);
-			};
-		}
-
-		const observer = new ResizeObserver(() => {
-			syncHeatmapWeeks();
-		});
-
-		observer.observe(container);
-
-		return () => {
-			cancelAnimationFrame(frame);
-			observer.disconnect();
-		};
-	}, [note]);
-
-	// Generate activity heatmap data: word counts per day over the visible week range
-	const heatmapCells = useMemo(() => {
+	// Generate last 30 days activity data for bar chart
+	const last30DaysData = useMemo(() => {
 		const entries = fileNotes.map((note) => ({
 			date: new Date(note.updatedAt || note.createdAt),
 			words: countBodyWords(note.content)
 		}));
 
-		return buildHeatmapCells(entries, heatmapWeeks);
-	}, [fileNotes, heatmapWeeks]);
-
-	const monthMarkers = useMemo(
-		() => getMonthMarkers(heatmapCells, HEATMAP_MONTH_LABEL_MIN_SPACING),
-		[heatmapCells]
-	);
+		return getLast30DaysData(entries);
+	}, [fileNotes]);
 
 	// Generate motivational message based on streak and recent activity
 	const getMotivationalMessage = (streak: number) => {
@@ -1542,172 +1492,40 @@ export default function NoteEditor({
 										Activity
 									</h2>
 								</div>
-								<div ref={activityHeatmapRef} className="w-full">
-									<div className="mx-auto flex w-fit max-w-full flex-col gap-2">
-										<div className="flex gap-2">
-											{/* Day label column */}
-											<div
-												style={{
-													display: 'flex',
-													flexDirection: 'column',
-													gap: `${HEATMAP_CELL_GAP}px`,
-													paddingTop: '18px',
-													width: `${HEATMAP_DAY_LABEL_WIDTH}px`,
-													flexShrink: 0
-												}}
-											>
-												{(['', 'Mon', '', 'Wed', '', 'Fri', ''] as const).map((day, i) => (
-													<div
-														key={i}
-														style={{
-															height: `${HEATMAP_CELL_SIZE}px`,
-															fontSize: '9px',
-															lineHeight: `${HEATMAP_CELL_SIZE}px`,
-															color: 'var(--text-muted)',
-															textAlign: 'right',
-															opacity: 0.55
-														}}
-													>
-														{day}
-													</div>
-												))}
-											</div>
-
-											{/* Month labels + cell columns */}
-											<div
-												style={{
-													width: `${heatmapGridWidth}px`,
-													minWidth: `${heatmapGridWidth}px`
-												}}
-											>
-												<div
-													style={{
-														position: 'relative',
-														height: '14px',
-														marginBottom: '4px',
-														width: `${heatmapGridWidth}px`
-													}}
-												>
-													{monthMarkers.map((marker) => (
-														<div
-															key={`${marker.label}-${marker.weekIndex}`}
-															style={{
-																position: 'absolute',
-																left: `${marker.left}px`,
-																top: 0,
-																fontSize: '9px',
-																lineHeight: '14px',
-																color: 'var(--text-muted)',
-																whiteSpace: 'nowrap',
-																opacity: 0.65
-															}}
-														>
-															{marker.label}
-														</div>
-													))}
-												</div>
-
-												<div
-													style={{
-														display: 'flex',
-														gap: `${HEATMAP_CELL_GAP}px`
-													}}
-												>
-													{Array.from({ length: heatmapWeeks }, (_, w) => (
-														<div
-															key={w}
-															style={{
-																display: 'flex',
-																flexDirection: 'column',
-																gap: `${HEATMAP_CELL_GAP}px`
-															}}
-														>
-															{heatmapCells.slice(w * 7, w * 7 + 7).map((cell, d) => {
-																const lbl = cell.date.toLocaleDateString('en-US', {
-																	weekday: 'short',
-																	day: 'numeric',
-																	month: 'short',
-																	year: 'numeric'
-																});
-																const cellTitle =
-																	cell.words > 0
-																		? `${cell.words.toLocaleString()} words — ${lbl}`
-																		: lbl;
-																return (
-																	<div
-																		key={d}
-																		style={{
-																			position: 'relative'
-																		}}
-																		className="group/cell"
-																		aria-label={cellTitle}
-																	>
-																		<div
-																			style={{
-																				width: `${HEATMAP_CELL_SIZE}px`,
-																				height: `${HEATMAP_CELL_SIZE}px`,
-																				borderRadius: '2px',
-																				border:
-																					cell.isFuture || cell.words === 0
-																						? '1px solid var(--border-subtle)'
-																						: 'none',
-																				background: cell.isFuture
-																					? 'transparent'
-																					: cell.words === 0
-																						? 'transparent'
-																						: cell.words < 200
-																							? 'color-mix(in srgb, var(--accent) 30%, transparent)'
-																							: cell.words < 500
-																								? 'color-mix(in srgb, var(--accent) 60%, transparent)'
-																								: 'var(--accent)',
-																				transition: 'background 150ms ease'
-																			}}
-																		/>
-																		<div className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-20 w-max max-w-[180px] -translate-x-1/2 rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-2.5 py-1.5 text-[10px] leading-tight text-[var(--text-primary)] opacity-0 shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-opacity duration-150 group-hover/cell:opacity-100">
-																			{cellTitle}
-																		</div>
-																	</div>
-																);
-															})}
-														</div>
-													))}
-												</div>
-											</div>
-										</div>
-
-										<div
-											className="mt-2 flex items-center text-[11px] text-[var(--text-muted)]"
-											style={{
-												paddingLeft: `${HEATMAP_DAY_LABEL_WIDTH + HEATMAP_SECTION_GAP}px`
-											}}
+								<div className="w-full">
+									<ResponsiveContainer width="100%" height={180}>
+										<BarChart
+											data={last30DaysData}
+											margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
 										>
-											<div
-												className="flex items-center gap-1.5"
-												style={{ width: `${heatmapGridWidth}px` }}
-											>
-												<div className="ml-auto flex items-center gap-1.5 opacity-50">
-													<span>Less</span>
-													{([0, 30, 60, 100] as const).map((pct) => (
-														<div
-															key={pct}
-															style={{
-																width: `${HEATMAP_CELL_SIZE}px`,
-																height: `${HEATMAP_CELL_SIZE}px`,
-																borderRadius: '2px',
-																flexShrink: 0,
-																border: pct === 0 ? '1px solid var(--border-subtle)' : 'none',
-																background:
-																	pct === 0
-																		? 'transparent'
-																		: `color-mix(in srgb, var(--accent) ${pct}%, transparent)`
-															}}
-														/>
-													))}
-													<span>More</span>
-												</div>
-											</div>
-										</div>
-									</div>
+											<XAxis
+												dataKey="date"
+												tick={{ fill: 'var(--text-muted)', fontSize: 9 }}
+												axisLine={{ stroke: 'var(--border-subtle)' }}
+												tickLine={false}
+												interval={4}
+											/>
+											<YAxis hide domain={[0, 'dataMax']} />
+											<Tooltip
+												contentStyle={{
+													background: 'var(--bg-surface)',
+													border: '1px solid var(--border-subtle)',
+													borderRadius: '6px',
+													color: 'var(--text-primary)',
+													fontSize: '11px'
+												}}
+												labelStyle={{ color: 'var(--text-primary)', fontWeight: 500 }}
+												formatter={(value) => [`${Number(value).toLocaleString()} words`, 'Words']}
+												labelFormatter={(_, payload) => payload?.[0]?.payload?.fullDate || ''}
+											/>
+											<Bar
+												dataKey="words"
+												fill="var(--accent)"
+												radius={[3, 3, 0, 0]}
+												maxBarSize={14}
+											/>
+										</BarChart>
+									</ResponsiveContainer>
 								</div>
 							</div>
 						</div>
