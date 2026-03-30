@@ -29,6 +29,7 @@ import CommandPalette from './components/CommandPalette'
 import type { PaletteItem } from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
 import AuthModal from './components/AuthModal'
+import TemplateGallery from './components/TemplateGallery'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
@@ -39,6 +40,7 @@ import { ACCENT_COLORS } from './config/accents'
 import { FONT_OPTIONS } from './config/fonts'
 import type { TreeNode, NoteFile, NoteFolder, FlatNode } from './types'
 import type { EditorApi } from './components/LiveMarkdownEditor'
+import type { Template } from './config/templates'
 
 interface SaveStatus {
   state: 'syncing' | 'saved' | 'offline' | 'error' | 'demo'
@@ -454,6 +456,7 @@ function AppInner() {
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState<DeletedNoteState | null>(null)
   const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
   const [failedSyncNoteIds, setFailedSyncNoteIds] = useState<string[]>([])
@@ -1147,6 +1150,34 @@ function AppInner() {
     setActiveNoteId(newNote.id)
   }, [finishSyncingIfIdle, notes, sidebarCollapsed, syncNoteToCloud, user])
 
+  const handleSelectTemplate = useCallback(
+    (template: Template) => {
+      const now = new Date().toISOString()
+      const newNote = normalizeNote({
+        id: generateId(),
+        type: 'file',
+        name: template.name,
+        title: template.name,
+        content: template.content,
+        tags: template.tags,
+        createdAt: now,
+        updatedAt: now,
+      } as NoteFile)
+
+      setTree((prevTree) => insertNode(prevTree, null, newNote))
+
+      if (user) {
+        setSyncing(true)
+        syncNoteToCloud(newNote).finally(() => {
+          finishSyncingIfIdle()
+        })
+      }
+
+      setActiveNoteId(newNote.id)
+    },
+    [finishSyncingIfIdle, syncNoteToCloud, user],
+  )
+
   const handleDeleteNote = useCallback(
     (id: string) => {
       const nodeToDelete = findNode(tree, id)
@@ -1624,6 +1655,7 @@ function AppInner() {
           onSearchChange={setSidebarSearch}
           width={sbWidth}
           onResizeStart={onResizeStart}
+          onOpenTemplateGallery={() => setTemplateGalleryOpen(true)}
         />
 
         <div className="flex flex-1 min-w-0 transition-[padding] duration-300 p-0 md:p-2 md:pl-0">
@@ -1716,6 +1748,11 @@ function AppInner() {
       )}
 
       <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
+      <TemplateGallery
+        open={templateGalleryOpen}
+        onClose={() => setTemplateGalleryOpen(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
     </>
   )
 }

@@ -20,6 +20,7 @@ import {
   CloudSavingDone01Icon,
   CloudUploadIcon,
   Loading01Icon,
+  StickyNoteIcon,
 } from '@hugeicons/core-free-icons'
 
 import type { IconSvgElement } from '@hugeicons/react'
@@ -59,6 +60,7 @@ interface SidebarProps {
   onResizeStart?: (e: React.MouseEvent) => void
   syncing?: boolean
   syncStatus?: SyncStatus
+  onOpenTemplateGallery?: () => void
 }
 
 interface SyncIndicatorProps {
@@ -460,6 +462,7 @@ export default function Sidebar({
   onSearchChange,
   width = 280,
   onResizeStart,
+  onOpenTemplateGallery,
 }: SidebarProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['1']))
   const [creatingIn, setCreatingIn] = useState<CreatingState | null>(null)
@@ -623,6 +626,17 @@ export default function Sidebar({
                 <Icon icon={Home01Icon} size={19} stroke={1.5} />
               </span>
               <span className="sb-nav-label">Home</span>
+            </button>
+
+            {/* Templates */}
+            <button
+              className="sb-nav-item"
+              onClick={onOpenTemplateGallery}
+            >
+              <span className="sb-nav-icon">
+                <Icon icon={StickyNoteIcon} size={19} stroke={1.5} />
+              </span>
+              <span className="sb-nav-label">Templates</span>
             </button>
 
             {/* Search — expands inline on click */}
