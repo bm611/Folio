@@ -234,4 +234,51 @@ describe('AiChatPage mentions', () => {
 
     expect(screen.getByText('Summarize @Alpha note please')).toBeTruthy()
   })
+
+  it('keeps the send button disabled for empty input and enables it once the composer has text', async () => {
+    const { container } = render(<AiChatPage notes={[]} />)
+    const composer = getComposer(container)
+    const sendButton = screen.getByRole('button', { name: 'Send message' }) as HTMLButtonElement
+
+    expect(sendButton.disabled).toBe(true)
+
+    setComposerText(composer, 'Draft a recap')
+
+    await waitFor(() => {
+      expect(sendButton.disabled).toBe(false)
+    })
+  })
+
+  it('opens the note picker from the plus button and inserts a mention at the current caret', async () => {
+    const notes = [
+      createNote({ id: 'alpha', title: 'Alpha note', name: 'alpha-note' }),
+      createNote({ id: 'beta', title: 'Beta summary', name: 'beta-summary' }),
+    ]
+
+    const { container } = render(<AiChatPage notes={notes} />)
+    const composer = getComposer(container)
+
+    setComposerText(composer, 'Review this')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Insert note mention' }))
+
+    const betaButton = await screen.findByText('Beta summary')
+    fireEvent.mouseDown(betaButton.closest('button') as HTMLElement)
+
+    await waitFor(() => {
+      const pill = composer.querySelector('[data-mention-id="beta"]') as HTMLElement | null
+      expect(pill).toBeTruthy()
+    })
+  })
+
+  it('loads a suggested prompt into the composer when clicked', async () => {
+    const { container } = render(<AiChatPage notes={[]} />)
+    const composer = getComposer(container)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Find notes about a topic' }))
+
+    await waitFor(() => {
+      expect(composer.textContent).toBe('Find notes about a topic')
+    })
+  })
 })

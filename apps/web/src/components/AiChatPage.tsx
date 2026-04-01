@@ -9,6 +9,9 @@ import {
   Copy01Icon,
   Tick01Icon,
   ArrowLeft01Icon,
+  Search01Icon,
+  SparklesIcon,
+  PencilEdit01Icon,
 } from '@hugeicons/core-free-icons'
 import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
@@ -34,6 +37,13 @@ interface AiChatPageProps {
   onToggleSidebar?: () => void
   onCloseChat?: () => void
 }
+
+const EMPTY_STATE_PROMPTS = [
+  { id: 'summarize', label: 'Summarize the note I’m looking at', icon: StickyNoteIcon },
+  { id: 'search', label: 'Find notes about a topic', icon: Search01Icon },
+  { id: 'draft', label: 'Turn rough notes into a draft', icon: PencilEdit01Icon },
+  { id: 'brainstorm', label: 'Brainstorm next steps from my notes', icon: SparklesIcon },
+] as const
 
 const MENTION_SELECTOR = '[data-mention-id]'
 const MULTILINE_TAGS = new Set(['DIV', 'P', 'LI'])
@@ -151,6 +161,13 @@ function focusComposerEnd(editor: HTMLElement) {
   range.collapse(false)
   selection.removeAllRanges()
   selection.addRange(range)
+}
+
+function createCollapsedRangeAtComposerEnd(editor: HTMLElement) {
+  const range = document.createRange()
+  range.selectNodeContents(editor)
+  range.collapse(false)
+  return range
 }
 
 function createMentionIconMarkup() {
@@ -312,211 +329,6 @@ function MessageBubble({ message }: { message: Message }) {
   )
 }
 
-function AiChatEmptyPrompt() {
-  return (
-    <div className="flex select-none flex-col items-center justify-center px-4 pb-1 pt-1 md:pb-2 md:pt-2">
-      <div className="relative h-32 w-36 md:h-44 md:w-48">
-        <svg
-          viewBox="0 0 192 176"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full"
-          aria-hidden="true"
-        >
-          {/* Glow backdrop */}
-          <motion.ellipse
-            cx="96"
-            cy="110"
-            rx="64"
-            ry="18"
-            fill="var(--accent)"
-            initial={{ opacity: 0, scaleX: 0.4 }}
-            animate={{ opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-
-          {/* Abstract background card */}
-          <motion.g
-            initial={{ opacity: 0, y: 14, rotate: -6 }}
-            animate={{ opacity: 1, y: 0, rotate: -4 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: '96px 95px' }}
-          >
-            <motion.rect
-              x="56"
-              y="36"
-              width="80"
-              height="100"
-              rx="16"
-              fill="var(--bg-elevated)"
-              stroke="var(--border-subtle)"
-              strokeWidth="1.2"
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
-            />
-          </motion.g>
-
-          {/* Front AI card */}
-          <motion.g
-            initial={{ opacity: 0, y: 20, rotate: 6 }}
-            animate={{ opacity: 1, y: 0, rotate: 3 }}
-            transition={{ duration: 0.65, delay: 0.55, ease: [0.25, 1, 0.5, 1] }}
-            style={{ transformOrigin: '96px 95px' }}
-          >
-            <motion.rect
-              x="44"
-              y="26"
-              width="104"
-              height="104"
-              rx="20"
-              fill="var(--bg-surface)"
-              stroke="var(--border-default)"
-              strokeWidth="1.2"
-              animate={{ y: [0, -5, 0], rotate: [3, 4.5, 3] }}
-              transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-              style={{ transformOrigin: '96px 78px' }}
-            />
-            
-            {/* Top accent bar */}
-            <motion.rect
-              x="44"
-              y="26"
-              width="104"
-              height="24"
-              rx="20"
-              fill="var(--accent)"
-              opacity="0.12"
-              animate={{ opacity: [0.12, 0.2, 0.12] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-            />
-
-            {/* Central Sparkle Group */}
-            <motion.g
-              animate={{ scale: [1, 1.05, 1], rotate: [0, 5, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-              style={{ transformOrigin: '96px 72px' }}
-            >
-              {/* Main big sparkle */}
-              <motion.path
-                d="M96 46C96 46 98.5 63 113 65C98.5 67 96 84 96 84C96 84 93.5 67 79 65C93.5 63 96 46 96 46Z"
-                fill="var(--accent)"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 1, ease: [0.34, 1.56, 0.64, 1] }}
-              />
-              
-              {/* Top right small sparkle */}
-              <motion.path
-                d="M122 36C122 36 123 44 128 45C123 46 122 54 122 54C122 54 121 46 116 45C121 44 122 36 122 36Z"
-                fill="var(--accent)"
-                opacity="0.8"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.8 }}
-                transition={{ duration: 0.5, delay: 1.2, ease: [0.34, 1.56, 0.64, 1] }}
-              />
-              
-              {/* Bottom left small sparkle */}
-              <motion.path
-                d="M74 80C74 80 74.8 86 78.5 86.5C74.8 87 74 93 74 93C74 93 73.2 87 69.5 86.5C73.2 86 74 80 74 80Z"
-                fill="var(--accent)"
-                opacity="0.6"
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 0.6 }}
-                transition={{ duration: 0.5, delay: 1.4, ease: [0.34, 1.56, 0.64, 1] }}
-              />
-            </motion.g>
-
-            {/* AI thinking waveform lines */}
-            <motion.g
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 1.5 }}
-            >
-              {[82, 90, 98, 106].map((x, i) => (
-                <motion.line
-                  key={x}
-                  x1={x}
-                  y1="106"
-                  x2={x}
-                  y2="106"
-                  stroke="var(--border-default)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  animate={{ 
-                    y1: [106, 106 - (i % 2 === 0 ? 6 : 4), 106], 
-                    y2: [106, 106 + (i % 2 === 0 ? 6 : 4), 106] 
-                  }}
-                  transition={{
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                    delay: i * 0.15,
-                  }}
-                />
-              ))}
-            </motion.g>
-          </motion.g>
-
-          {/* Orbiting sparkle ring - matching the theme */}
-          <motion.g
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-            style={{ transformOrigin: '96px 78px' }}
-          >
-            {[0, 72, 144, 216, 288].map((deg, i) => {
-              const rad = (deg * Math.PI) / 180;
-              const r = 66;
-              const cx = 96 + r * Math.cos(rad);
-              const cy = 78 + r * Math.sin(rad);
-              return (
-                <motion.circle
-                  key={deg}
-                  cx={cx}
-                  cy={cy}
-                  r={i % 2 === 0 ? 2.5 : 1.5}
-                  fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
-                  animate={{ opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                    delay: i * 0.4
-                  }}
-                  style={{ transformOrigin: `${cx}px ${cy}px` }}
-                />
-              );
-            })}
-          </motion.g>
-
-          {/* Floating ink drops - matching the theme */}
-          {[
-            { x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
-            { x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
-            { x: 148, y: 128, delay: 2.1, color: 'var(--success)' }
-          ].map(({ x, y, delay, color }, i) => (
-            <motion.circle
-              key={i}
-              cx={x}
-              cy={y}
-              r="3.5"
-              fill={color}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }}
-              transition={{
-                duration: 2.8,
-                delay,
-                repeat: Infinity,
-                repeatDelay: 2,
-                ease: 'easeOut'
-              }}
-            />
-          ))}
-        </svg>
-      </div>
-    </div>
-  )
-}
-
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, onCloseChat }: AiChatPageProps) {
@@ -599,6 +411,11 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
               return title.includes(mentionQuery.toLowerCase())
             })
             .filter((n) => !mentionedNotes.find((m) => m.id === n.id))
+            .sort((a, b) => {
+              const aTime = Date.parse(a.updatedAt || '') || 0
+              const bTime = Date.parse(b.updatedAt || '') || 0
+              return bTime - aTime
+            })
             .slice(0, 8)
         : [],
     [mentionQuery, notes, mentionedNotes]
@@ -827,6 +644,52 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
   )
 
   // ─── Shared input box ─────────────────────────────────────────────────────
+  const hasDraftText = inputValue.trim().length > 0
+
+  const openMentionPicker = useCallback(() => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    editor.focus()
+
+    const selection = window.getSelection()
+    let range: Range | null = null
+
+    if (selection && selection.rangeCount > 0) {
+      const currentRange = selection.getRangeAt(0)
+      const anchorNode = selection.anchorNode
+
+      if (selection.isCollapsed && anchorNode && editor.contains(anchorNode)) {
+        range = currentRange.cloneRange()
+      }
+    }
+
+    if (!range) {
+      range = createCollapsedRangeAtComposerEnd(editor)
+      if (selection) {
+        selection.removeAllRanges()
+        selection.addRange(range)
+      }
+    }
+
+    activeMentionRangeRef.current = range.cloneRange()
+    setMentionQuery('')
+    setHighlightedMention(0)
+  }, [])
+
+  const applyPromptText = useCallback(
+    (text: string) => {
+      const editor = editorRef.current
+      if (!editor) return
+
+      editor.textContent = text
+      closeMentionPicker()
+      syncComposerState()
+      focusComposerEnd(editor)
+    },
+    [closeMentionPicker, syncComposerState]
+  )
+
   const inputBox = (
     <div ref={composerRef} className="relative w-full">
       {/* @ mention dropdown */}
@@ -892,10 +755,16 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
       </AnimatePresence>
 
       <div
-        className="relative rounded-2xl border border-[var(--border-default)] bg-[var(--bg-elevated)] transition-[border-color,box-shadow] duration-200 focus-within:border-[var(--accent)] md:rounded-[1.75rem]"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)' }}
+        className="relative overflow-hidden rounded-[1.9rem] border transition-[border-color,box-shadow,transform] duration-200 focus-within:border-[var(--accent)] md:rounded-[2rem]"
+        style={{
+          borderColor: 'color-mix(in srgb, var(--border-default) 72%, transparent)',
+          background:
+            'linear-gradient(180deg, color-mix(in srgb, var(--bg-elevated) 92%, white 8%), color-mix(in srgb, var(--bg-elevated) 98%, var(--bg-primary) 2%))',
+          boxShadow:
+            '0 1px 0 color-mix(in srgb, white 12%, transparent) inset, 0 18px 36px -28px rgba(15, 23, 42, 0.34), 0 10px 18px -16px rgba(15, 23, 42, 0.24), 0 2px 5px rgba(15, 23, 42, 0.08)',
+        }}
       >
-        <div className="flex items-end gap-2 px-3 py-2.5 md:px-5 md:py-3.5">
+        <div className="px-4 pb-3.5 pt-4 md:px-5 md:pb-4 md:pt-4.5">
           <div
             ref={editorRef}
             contentEditable
@@ -912,23 +781,45 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
               }, 0)
             }}
             onKeyDown={handleKeyDown}
-            data-placeholder="Ask anything..."
-            className="m-0 min-h-[24px] flex-1 resize-none bg-transparent py-0.5 text-[14px] leading-relaxed text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)] empty:before:content-[attr(data-placeholder)] empty:before:text-[var(--text-muted)] empty:before:pointer-events-none"
+            data-placeholder="Ask Aura..."
+            className="m-0 min-h-[28px] w-full resize-none bg-transparent text-[15px] leading-[1.6] text-[var(--text-primary)] outline-none empty:before:pointer-events-none empty:before:content-[attr(data-placeholder)] empty:before:text-[var(--text-muted)] md:text-[15.5px]"
             style={{ maxHeight: '160px', overflowY: 'hidden', opacity: isStreaming ? 0.5 : 1 }}
             autoFocus
           />
+        </div>
+
+        <div className="flex items-center justify-between gap-3 px-3.5 pb-3.5 pt-1 md:px-4 md:pb-4">
+          <button
+            type="button"
+            onClick={openMentionPicker}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[transform,background,color,box-shadow] duration-150 active:scale-[0.96]"
+            style={{
+              background: 'color-mix(in srgb, var(--bg-hover) 60%, transparent)',
+              color: mentionQuery !== null ? 'var(--accent)' : 'var(--text-secondary)',
+              boxShadow: 'inset 0 1px 0 color-mix(in srgb, white 12%, transparent)',
+            }}
+            aria-label="Insert note mention"
+            title="Insert note mention"
+          >
+            <Icon icon={Add01Icon} size={16} strokeWidth={2.1} />
+          </button>
+
           <button
             type="button"
             onClick={() => sendMessage()}
-            disabled={!inputValue.trim() || isStreaming}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-[transform,opacity,background,color] duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!hasDraftText || isStreaming}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[transform,opacity,background,color,box-shadow] duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50"
             style={{
-              background: inputValue.trim() && !isStreaming ? 'var(--accent)' : 'var(--bg-hover)',
-              color: inputValue.trim() && !isStreaming ? 'white' : 'var(--text-muted)',
+              background: hasDraftText && !isStreaming ? 'var(--accent)' : 'var(--bg-hover)',
+              color: hasDraftText && !isStreaming ? 'white' : 'var(--text-muted)',
+              boxShadow:
+                hasDraftText && !isStreaming
+                  ? '0 10px 24px -16px color-mix(in srgb, var(--accent) 70%, transparent)'
+                  : 'inset 0 1px 0 color-mix(in srgb, white 10%, transparent)',
             }}
             aria-label="Send message"
           >
-            <Icon icon={ArrowUp02Icon} size={16} strokeWidth={2} />
+            <Icon icon={ArrowUp02Icon} size={15} strokeWidth={2.2} />
           </button>
         </div>
       </div>
@@ -1007,18 +898,14 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
             >
               {/* Scrollable greeting area — mobile: top-aligned, desktop: vertically centered */}
               <div className="flex flex-1 flex-col overflow-y-auto px-5 md:items-center md:justify-center md:px-6">
-                <div className="mx-auto w-full max-w-[40rem] antialiased">
+                <div className="mx-auto flex min-h-full w-full max-w-[40rem] flex-col antialiased md:min-h-0">
                   {/* Greeting */}
                   <motion.div
                     initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-                    className="mb-6 mt-8 md:mb-5 md:mt-0"
+                    className="order-1 mb-6 mt-8 pl-4 md:mb-5 md:mt-0 md:pl-5"
                   >
-                    <p className="mb-1 flex items-center gap-1.5 text-base text-[var(--text-muted)]">
-                      <span className="hidden md:inline" style={{ color: 'var(--accent)' }}>✦</span>
-                      Hi there
-                    </p>
                     <h2
                       className="text-[1.6rem] font-bold tracking-tight md:text-[2rem]"
                       style={{ color: 'var(--text-primary)' }}
@@ -1027,52 +914,45 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                     </h2>
                   </motion.div>
 
-                  {/* Input inline with greeting on desktop */}
+                  {/* Input — one shared responsive instance */}
                   <motion.div
                     initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     transition={{ duration: 0.35, delay: 0.07, ease: [0.2, 0, 0, 1] }}
-                    className="hidden md:block"
+                    className="order-3 mt-auto pb-4 pt-6 md:order-2 md:mt-0 md:pb-0 md:pt-0"
                   >
                     {inputBox}
                   </motion.div>
 
-                  {/* Suggestion chips */}
+                  {/* Suggested prompts */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: 0.14, ease: [0.2, 0, 0, 1] }}
-                    className="mt-4 flex flex-col gap-2.5 md:mt-4 md:flex-row md:flex-wrap md:gap-2"
+                    className="order-2 mt-5 flex flex-col gap-1.5 pl-4 md:order-3 md:mt-6 md:gap-2 md:pl-5"
                   >
-                    {['📝 Summarize a note', '🔍 Find something', '✍️ Help me write', '💡 Get ideas'].map((label) => (
+                    {EMPTY_STATE_PROMPTS.map((prompt) => (
                       <button
-                        key={label}
+                        key={prompt.id}
                         type="button"
-                        onClick={() => {
-                          const text = label.replace(/^.+?\s/, '')
-                          if (editorRef.current) {
-                            editorRef.current.textContent = text
-                            setInputValue(text)
-                          }
-                        }}
-                        className="w-fit rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-4 py-2.5 text-[13px] font-medium text-[var(--text-secondary)] transition-colors duration-150 hover:bg-[var(--bg-hover)] active:bg-[var(--bg-hover)]"
+                        onClick={() => applyPromptText(prompt.label)}
+                        className="group flex w-fit max-w-full items-center gap-3 rounded-2xl py-1.5 pr-2 text-left text-[15px] font-medium text-[var(--text-secondary)] transition-[transform,color] duration-150 hover:text-[var(--text-primary)] active:scale-[0.985]"
                       >
-                        {label}
+                        <span
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-[background,color] duration-150"
+                          style={{
+                            background: 'color-mix(in srgb, var(--bg-hover) 54%, transparent)',
+                            color: 'var(--accent)',
+                          }}
+                        >
+                          <Icon icon={prompt.icon} size={15} strokeWidth={1.9} />
+                        </span>
+                        <span className="truncate">{prompt.label}</span>
                       </button>
                     ))}
                   </motion.div>
                 </div>
               </div>
-
-              {/* Input pinned at bottom — mobile only */}
-              <motion.div
-                initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 0.35, delay: 0.07, ease: [0.2, 0, 0, 1] }}
-                className="shrink-0 px-4 pt-3 pb-4 md:hidden"
-              >
-                {inputBox}
-              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
