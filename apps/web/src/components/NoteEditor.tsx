@@ -780,8 +780,6 @@ export default function NoteEditor({
 	const fileNotes = useMemo(() => notes.filter((n): n is NoteFile => n.type === 'file'), [notes]);
 
 	// Calculate writing streak and total words for personalized greeting
-	const [now] = useState(() => Date.now());
-
 	const { streak, totalWords } = useMemo(() => {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -1111,12 +1109,6 @@ export default function NoteEditor({
 															displayTitle = `Daily \u2014 ${rawTitle}`;
 														}
 													}
-													const freshness =
-														now - date.getTime() < 86400000
-															? { dot: 'var(--success)', opacity: 0.9 }
-															: now - date.getTime() < 604800000
-																? { dot: 'var(--accent)', opacity: 0.6 }
-																: { dot: 'var(--text-muted)', opacity: 0.35 };
 													return (
 														<motion.button
 															key={n.id}
@@ -1199,12 +1191,6 @@ export default function NoteEditor({
 															displayTitle = `Daily \u2014 ${rawTitle}`;
 														}
 													}
-													const freshness =
-														now - date.getTime() < 86400000
-															? { dot: 'var(--success)', opacity: 0.9 }
-															: now - date.getTime() < 604800000
-																? { dot: 'var(--accent)', opacity: 0.6 }
-																: { dot: 'var(--text-muted)', opacity: 0.35 };
 													return (
 														<motion.button
 															key={n.id}
@@ -1300,13 +1286,6 @@ export default function NoteEditor({
 												displayTitle = `Daily \u2014 ${rawTitle}`;
 											}
 										}
-
-										const freshness =
-											now - date.getTime() < 86400000
-												? { dot: 'var(--success)', opacity: 0.9 }
-												: now - date.getTime() < 604800000
-													? { dot: 'var(--accent)', opacity: 0.6 }
-													: { dot: 'var(--text-muted)', opacity: 0.35 };
 
 										return (
 											<motion.button
