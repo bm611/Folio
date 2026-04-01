@@ -13,7 +13,7 @@ import {
   SparklesIcon,
   PencilEdit01Icon,
 } from '@hugeicons/core-free-icons'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
@@ -326,6 +326,269 @@ function MessageBubble({ message }: { message: Message }) {
         )}
       </div>
     </motion.div>
+  )
+}
+
+function AiChatEmptyPrompt() {
+  const prefersReducedMotion = useReducedMotion()
+
+  return (
+    <div
+      className="flex flex-col items-center justify-center px-4 pb-1 pt-1 select-none"
+      data-testid="ai-chat-empty-illustration"
+    >
+      <div className="relative h-44 w-48 md:h-48 md:w-52">
+        <svg
+          viewBox="0 0 192 176"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-full w-full"
+          aria-hidden="true"
+        >
+          <motion.ellipse
+            cx="96"
+            cy="110"
+            rx="64"
+            ry="18"
+            fill="var(--accent)"
+            initial={{ opacity: 0, scaleX: 0.4 }}
+            animate={
+              prefersReducedMotion
+                ? { opacity: 0.08, scaleX: 0.92 }
+                : { opacity: [0.06, 0.12, 0.06], scaleX: [0.8, 1, 0.8] }
+            }
+            transition={
+              prefersReducedMotion
+                ? { duration: 0.35, ease: [0.22, 1, 0.36, 1] }
+                : { duration: 4, repeat: Infinity, ease: 'easeInOut' }
+            }
+          />
+
+          <motion.g
+            initial={{ opacity: 0, y: 14, rotate: -6 }}
+            animate={{ opacity: 1, y: 0, rotate: -4 }}
+            transition={{ duration: 0.6, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: '96px 95px' }}
+          >
+            <motion.rect
+              x="56"
+              y="36"
+              width="80"
+              height="100"
+              rx="16"
+              fill="var(--bg-elevated)"
+              stroke="var(--border-subtle)"
+              strokeWidth="1.2"
+              animate={prefersReducedMotion ? { y: -1.5 } : { y: [0, -3, 0] }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.4, delay: 0.12, ease: [0.22, 1, 0.36, 1] }
+                  : { duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }
+              }
+            />
+          </motion.g>
+
+          <motion.g
+            initial={{ opacity: 0, y: 20, rotate: 6 }}
+            animate={{ opacity: 1, y: 0, rotate: 3 }}
+            transition={{ duration: 0.65, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: '96px 95px' }}
+          >
+            <motion.rect
+              x="44"
+              y="26"
+              width="104"
+              height="104"
+              rx="20"
+              fill="var(--bg-surface)"
+              stroke="var(--border-default)"
+              strokeWidth="1.2"
+              animate={
+                prefersReducedMotion
+                  ? { y: -2, rotate: 3.4 }
+                  : { y: [0, -5, 0], rotate: [3, 4.5, 3] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.45, delay: 0.2, ease: [0.22, 1, 0.36, 1] }
+                  : { duration: 6, repeat: Infinity, ease: 'easeInOut' }
+              }
+              style={{ transformOrigin: '96px 78px' }}
+            />
+
+            <motion.rect
+              x="44"
+              y="26"
+              width="104"
+              height="24"
+              rx="20"
+              fill="var(--accent)"
+              opacity="0.12"
+              animate={prefersReducedMotion ? { opacity: 0.16 } : { opacity: [0.12, 0.2, 0.12] }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.35, delay: 0.24, ease: [0.22, 1, 0.36, 1] }
+                  : { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }
+              }
+            />
+
+            <motion.g
+              animate={
+                prefersReducedMotion
+                  ? { scale: 1.02, rotate: 1.5 }
+                  : { scale: [1, 1.05, 1], rotate: [0, 5, 0] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.35, delay: 0.32, ease: [0.22, 1, 0.36, 1] }
+                  : { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }
+              }
+              style={{ transformOrigin: '96px 72px' }}
+            >
+              <motion.path
+                d="M96 46C96 46 98.5 63 113 65C98.5 67 96 84 96 84C96 84 93.5 67 79 65C93.5 63 96 46 96 46Z"
+                fill="var(--accent)"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.52, ease: [0.22, 1, 0.36, 1] }}
+              />
+
+              <motion.path
+                d="M122 36C122 36 123 44 128 45C123 46 122 54 122 54C122 54 121 46 116 45C121 44 122 36 122 36Z"
+                fill="var(--accent)"
+                opacity="0.8"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 0.8 }}
+                transition={{ duration: 0.45, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              />
+
+              <motion.path
+                d="M74 80C74 80 74.8 86 78.5 86.5C74.8 87 74 93 74 93C74 93 73.2 87 69.5 86.5C73.2 86 74 80 74 80Z"
+                fill="var(--accent)"
+                opacity="0.6"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 0.6 }}
+                transition={{ duration: 0.45, delay: 0.68, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </motion.g>
+
+            <motion.g
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.45, delay: 0.74 }}
+            >
+              {[82, 90, 98, 106].map((x, i) => (
+                <motion.line
+                  key={x}
+                  x1={x}
+                  y1="106"
+                  x2={x}
+                  y2="106"
+                  stroke="var(--border-default)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  animate={
+                    prefersReducedMotion
+                      ? {
+                          y1: 106 - (i % 2 === 0 ? 4 : 2.5),
+                          y2: 106 + (i % 2 === 0 ? 4 : 2.5),
+                        }
+                      : {
+                          y1: [106, 106 - (i % 2 === 0 ? 6 : 4), 106],
+                          y2: [106, 106 + (i % 2 === 0 ? 6 : 4), 106],
+                        }
+                  }
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0.35, delay: 0.84 + i * 0.04, ease: [0.22, 1, 0.36, 1] }
+                      : {
+                          duration: 1.2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                          delay: i * 0.15,
+                        }
+                  }
+                />
+              ))}
+            </motion.g>
+          </motion.g>
+
+          <motion.g
+            animate={prefersReducedMotion ? { rotate: 24 } : { rotate: 360 }}
+            transition={
+              prefersReducedMotion
+                ? { duration: 0.45, delay: 0.4, ease: [0.22, 1, 0.36, 1] }
+                : { duration: 20, repeat: Infinity, ease: 'linear' }
+            }
+            style={{ transformOrigin: '96px 78px' }}
+          >
+            {[0, 72, 144, 216, 288].map((deg, i) => {
+              const rad = (deg * Math.PI) / 180
+              const r = 66
+              const cx = 96 + r * Math.cos(rad)
+              const cy = 78 + r * Math.sin(rad)
+
+              return (
+                <motion.circle
+                  key={deg}
+                  cx={cx}
+                  cy={cy}
+                  r={i % 2 === 0 ? 2.5 : 1.5}
+                  fill={i % 2 === 0 ? 'var(--accent)' : 'var(--color-h2)'}
+                  animate={
+                    prefersReducedMotion
+                      ? { opacity: 0.48, scale: 1 }
+                      : { opacity: [0.2, 0.7, 0.2], scale: [0.8, 1.2, 0.8] }
+                  }
+                  transition={
+                    prefersReducedMotion
+                      ? { duration: 0.35, delay: 0.5 + i * 0.05, ease: [0.22, 1, 0.36, 1] }
+                      : {
+                          duration: 2.5,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                          delay: i * 0.4,
+                        }
+                  }
+                  style={{ transformOrigin: `${cx}px ${cy}px` }}
+                />
+              )
+            })}
+          </motion.g>
+
+          {[
+            { x: 32, y: 44, delay: 0.8, color: 'var(--accent)' },
+            { x: 158, y: 58, delay: 1.4, color: 'var(--color-h2)' },
+            { x: 148, y: 128, delay: 2.1, color: 'var(--success)' },
+          ].map(({ x, y, delay, color }, index) => (
+            <motion.circle
+              key={index}
+              cx={x}
+              cy={y}
+              r="3.5"
+              fill={color}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 0.38, scale: 1, y: -6 }
+                  : { opacity: [0, 0.6, 0], scale: [0, 1, 0], y: [0, -12, -20] }
+              }
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0.4, delay: 0.88 + index * 0.08, ease: [0.22, 1, 0.36, 1] }
+                  : {
+                      duration: 2.8,
+                      delay,
+                      repeat: Infinity,
+                      repeatDelay: 2,
+                      ease: 'easeOut',
+                    }
+              }
+            />
+          ))}
+        </svg>
+      </div>
+    </div>
   )
 }
 
@@ -896,15 +1159,24 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
               className="flex flex-1 flex-col overflow-hidden"
               style={{ zIndex: 1 }}
             >
-              {/* Scrollable greeting area — mobile: top-aligned, desktop: vertically centered */}
-              <div className="flex flex-1 flex-col overflow-y-auto px-5 md:items-center md:justify-center md:px-6">
-                <div className="mx-auto flex min-h-full w-full max-w-[40rem] flex-col antialiased md:min-h-0">
+              {/* Scrollable greeting area */}
+              <div className="flex flex-1 flex-col overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-6 md:items-center md:px-6 md:pb-0 md:pt-8">
+                <div className="mx-auto flex min-h-full w-full max-w-[40rem] flex-col justify-start antialiased md:min-h-0">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    transition={{ duration: 0.4, delay: 0.04, ease: [0.2, 0, 0, 1] }}
+                    className="order-1"
+                  >
+                    <AiChatEmptyPrompt />
+                  </motion.div>
+
                   {/* Greeting */}
                   <motion.div
                     initial={{ opacity: 0, y: 12, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
-                    className="order-1 mb-6 mt-8 pl-4 md:mb-5 md:mt-0 md:pl-5"
+                    className="order-2 mt-1 text-center"
                   >
                     <h2
                       className="text-[1.6rem] font-bold tracking-tight md:text-[2rem]"
@@ -919,7 +1191,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                     initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     transition={{ duration: 0.35, delay: 0.07, ease: [0.2, 0, 0, 1] }}
-                    className="order-3 mt-auto pb-4 pt-6 md:order-2 md:mt-0 md:pb-0 md:pt-0"
+                    className="order-3 pt-5 md:pt-6"
                   >
                     {inputBox}
                   </motion.div>
@@ -929,7 +1201,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: 0.14, ease: [0.2, 0, 0, 1] }}
-                    className="order-2 mt-5 flex flex-col gap-1.5 pl-4 md:order-3 md:mt-6 md:gap-2 md:pl-5"
+                    className="order-4 mt-6 hidden flex-col gap-2 md:flex md:items-start md:pl-5"
                   >
                     {EMPTY_STATE_PROMPTS.map((prompt) => (
                       <button

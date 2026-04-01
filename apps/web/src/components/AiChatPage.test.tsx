@@ -281,4 +281,10 @@ describe('AiChatPage mentions', () => {
       expect(composer.textContent).toBe('Find notes about a topic')
     })
   })
+
+  it('renders the animated empty-state illustration before a conversation starts', () => {
+    render(<AiChatPage notes={[]} />)
+
+    expect(screen.getByTestId('ai-chat-empty-illustration')).toBeTruthy()
+  })
 })
