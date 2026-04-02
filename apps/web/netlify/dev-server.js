@@ -86,9 +86,17 @@ const server = createServer(async (req, res) => {
 
   const isInline = mode === 'inline'
 
-  const systemPrompt = contextBlock
-    ? `You are Folio AI, a helpful assistant embedded in a note-taking app. The user has referenced the following notes as context for their question. Use these notes to provide an accurate, well-grounded answer. If the notes don't contain enough information to fully answer, say so.${isInline ? inlineRule : ''}\n\n${contextBlock}`
-    : `You are Folio AI, a helpful assistant embedded in a note-taking app. Answer the user's question concisely and helpfully.${isInline ? inlineRule : ''}`
+  let systemPrompt
+
+  if (isInline) {
+    systemPrompt = contextBlock
+      ? `You are Folio AI, a writing assistant embedded in a note-taking app. Generate the content the user asks for. If they referenced notes, use them as context — but always fulfill the request even if the notes don't cover the topic. Never refuse or say you lack information.${inlineRule}\n\n${contextBlock}`
+      : `You are Folio AI, a writing assistant embedded in a note-taking app. Generate whatever content the user asks for. Never refuse or say you lack information.${inlineRule}`
+  } else {
+    systemPrompt = contextBlock
+      ? `You are Folio AI, a helpful assistant embedded in a note-taking app. The user has referenced the following notes as context for their question. Use these notes to provide an accurate, well-grounded answer. If the notes don't contain enough information to fully answer, say so.\n\n${contextBlock}`
+      : `You are Folio AI, a helpful assistant embedded in a note-taking app. Answer the user's question concisely and helpfully.`
+  }
 
   // Call OpenRouter
   let upstream
