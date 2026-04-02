@@ -605,7 +605,10 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
 
   const abortRef = useRef<AbortController | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const editorRef = useRef<HTMLDivElement>(null)
+  const editorRef = useRef<HTMLDivElement | null>(null)
+  const editorCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    editorRef.current = node
+  }, [])
   const composerRef = useRef<HTMLDivElement>(null)
   const activeMentionRangeRef = useRef<Range | null>(null)
 
@@ -1037,7 +1040,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
       >
         <div className="px-4 pb-3.5 pt-4 md:px-5 md:pb-4 md:pt-4.5">
           <div
-            ref={editorRef}
+            ref={editorCallbackRef}
             contentEditable
             suppressContentEditableWarning
             onInput={handleEditorInput}
@@ -1208,16 +1211,6 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                     </h2>
                   </motion.div>
 
-                  {/* Input — one shared responsive instance */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 16, filter: 'blur(4px)' }}
-                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                    transition={{ duration: 0.35, delay: 0.07, ease: [0.2, 0, 0, 1] }}
-                    className="order-3 pt-5 md:pt-6"
-                  >
-                    {inputBox}
-                  </motion.div>
-
                   {/* Suggested prompts */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -1251,7 +1244,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
           )}
         </AnimatePresence>
 
-        {/* ── Conversation view ────────────────────────────────────────────── */}
+        {/* ── Conversation view (messages only, no input) ──────────────────── */}
         <AnimatePresence initial={false}>
           {hasMessages && (
             <motion.div
@@ -1284,19 +1277,19 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                   <div ref={messagesEndRef} />
                 </div>
               </div>
-
-              {/* Input pinned at bottom */}
-              <div className="shrink-0 px-4 pt-3 pb-4 md:px-6 md:pt-4 md:pb-5">
-                <div 
-                  className="mx-auto"
-                  style={{ maxWidth: '860px' }}
-                >
-                  {inputBox}
-                </div>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Persistent input — always mounted, never inside AnimatePresence ─ */}
+        <div className="shrink-0 px-4 pt-3 pb-4 md:px-6 md:pt-4 md:pb-5">
+          <div 
+            className="mx-auto"
+            style={{ maxWidth: hasMessages ? '860px' : '40rem' }}
+          >
+            {inputBox}
+          </div>
+        </div>
 
         {/* ── Error toast ───────────────────────────────────────────────────── */}
         <AnimatePresence>
