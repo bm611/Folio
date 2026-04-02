@@ -1258,7 +1258,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
               <div className="flex-1 overflow-y-auto px-5 py-5 md:px-6">
               <div 
                   className="mx-auto flex flex-col gap-3"
-                  style={{ maxWidth: '860px' }}
+                  style={{ maxWidth: '40rem' }}
                 >
                   {/* Fade blur at bottom */}
                   <div 
@@ -1285,7 +1285,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         <div className="shrink-0 px-4 pt-3 pb-4 md:px-6 md:pt-4 md:pb-5">
           <div 
             className="mx-auto"
-            style={{ maxWidth: hasMessages ? '860px' : '40rem' }}
+            style={{ maxWidth: '40rem' }}
           >
             {inputBox}
           </div>
