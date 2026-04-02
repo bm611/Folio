@@ -1388,33 +1388,34 @@ export default function NoteEditor({
 												initial={{ opacity: 0, scale: 0.95 }}
 												animate={{ opacity: 1, scale: 1 }}
 												transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-												className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-[var(--accent)]/20 px-3.5 py-3 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--accent)]/40 hover:shadow-[0_4px_20px_color-mix(in_srgb,var(--accent)_10%,transparent)] active:scale-[0.96]"
+												className="group relative flex flex-col items-start justify-between overflow-hidden rounded-xl border border-[var(--border-subtle)] px-4 py-3.5 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--border-muted)] hover:shadow-sm active:scale-[0.98]"
 												style={{
-													backgroundColor: 'color-mix(in srgb, var(--accent) 5%, var(--bg-surface))',
+													backgroundColor: 'var(--bg-surface)',
 													WebkitTapHighlightColor: 'transparent',
-													minHeight: '84px'
+													minHeight: '100px'
 												}}
 											>
-												{/* Star icon */}
-												<div className="relative z-10 shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/15 transition-colors duration-150 group-hover:bg-[var(--accent)]/15">
-													<Icon
-														icon={isDaily ? Calendar01Icon : StarIcon}
-														size={15}
-														strokeWidth={1.8}
-													/>
+												<div className="flex w-full items-start justify-between gap-3 mb-2">
+													{/* Star icon */}
+													<div className="relative z-10 shrink-0 flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)] transition-colors duration-150 group-hover:bg-[var(--accent)]/15">
+														<Icon
+															icon={isDaily ? Calendar01Icon : StarIcon}
+															size={14}
+															strokeWidth={2}
+														/>
+													</div>
+													{/* Date */}
+													<span className="relative z-10 shrink-0 text-[11px] text-[var(--text-muted)] font-medium tabular-nums mt-1">
+														{formatRelativeTime(date)}
+													</span>
 												</div>
 
 												{/* Title */}
-												<div className="relative z-10 flex-1 min-w-0">
-													<p className="truncate text-[14px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+												<div className="relative z-10 w-full min-w-0">
+													<p className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--text-primary)]">
 														{displayTitle}
 													</p>
 												</div>
-
-												{/* Date */}
-												<span className="relative z-10 shrink-0 text-[11px] text-[var(--text-muted)] tabular-nums">
-													{formatRelativeTime(date)}
-												</span>
 											</motion.button>
 										);
 									})}
