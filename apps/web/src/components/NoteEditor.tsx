@@ -1738,7 +1738,7 @@ export default function NoteEditor({
 						</div>
 					)}
 
-					<div className="mt-8">
+					<div className="mt-4 md:mt-8">
 						<Suspense fallback={<EditorFallback />}>
 							<LiveMarkdownEditor
 								key={note.id}

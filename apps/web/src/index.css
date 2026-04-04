@@ -551,28 +551,27 @@ body {
 }
 
 .aura-editor .ProseMirror h1 {
-  margin: 0.5rem 0 0.2rem;
+  margin: 2rem 0 0.3rem;
   font-size: clamp(1.8rem, 1.6rem + 1vw, 2.4rem);
   line-height: 1.2;
   color: var(--color-h1);
 }
 
 .aura-editor .ProseMirror h2 {
-  margin: 1.5rem 0 0.15rem;
+  margin: 1.6rem 0 0.2rem;
   font-size: clamp(1.35rem, 1.25rem + 0.5vw, 1.75rem);
   color: var(--color-h2);
 }
 
 .aura-editor .ProseMirror h3 {
-  margin: 1.1rem 0 0.1rem;
+  margin: 1.25rem 0 0.15rem;
   font-size: 1.15rem;
   color: var(--color-h3);
 }
 
 .aura-editor .ProseMirror p,
-.aura-editor .ProseMirror blockquote,
-.aura-editor .ProseMirror li {
-  margin: 0.28rem 0;
+.aura-editor .ProseMirror blockquote {
+  margin: 0.5rem 0;
 }
 
 .aura-editor .ProseMirror a {
@@ -592,13 +591,14 @@ body {
 
 .aura-editor .ProseMirror s {
   color: var(--text-muted);
+  opacity: 0.6;
 }
 
 .aura-editor .ProseMirror code {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xs);
   background: color-mix(in srgb, var(--bg-surface) 80%, transparent);
-  padding: 0.12rem 0.32rem;
+  padding: 0.15rem 0.4rem;
   color: var(--accent-hover);
   font-family: var(--font-mono);
   font-size: 0.85em;
@@ -865,7 +865,7 @@ body {
 }
 
 .aura-editor .ProseMirror blockquote {
-  border-left: 2px solid var(--border-default);
+  border-left: 3px solid color-mix(in srgb, var(--accent) 45%, var(--border-default));
   padding-left: 1rem;
   color: var(--text-secondary);
   font-style: italic;
@@ -878,7 +878,7 @@ body {
 }
 
 .aura-editor .ProseMirror li {
-  margin: 0.35rem 0;
+  margin: 0.45rem 0;
 }
 
 .aura-editor .ProseMirror ul {
