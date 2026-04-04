@@ -958,6 +958,15 @@ export default function NoteEditor({
 							<div className="flex items-center justify-center gap-6 text-[13px] text-[var(--text-secondary)]">
 								<div className="flex items-center gap-1.5">
 									<Icon
+										icon={File01Icon}
+										size={14}
+										strokeWidth={2}
+										className="text-[var(--success)]"
+									/>
+									<span>{fileNotes.length} {fileNotes.length === 1 ? 'note' : 'notes'}</span>
+								</div>
+								<div className="flex items-center gap-1.5">
+									<Icon
 										icon={FireIcon}
 										size={14}
 										strokeWidth={2}
