@@ -1116,6 +1116,13 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
         @media (max-width: 767px) {
           [data-mention-id] {
             background: none !important;
