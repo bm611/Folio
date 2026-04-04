@@ -706,16 +706,19 @@ export default function Sidebar({
 
           {/* Tree list */}
           <div className="sb-tree">
-            {!searchQuery.trim() && (
-              <div className="sb-tree-actions">
-                <button className="sb-tree-action-btn" title="New File" onClick={() => handleRootCreate('file')}>
-                  <SidebarIcon n="newFile" s={15} />
-                </button>
-                <button className="sb-tree-action-btn" title="New Folder" onClick={() => handleRootCreate('folder')}>
-                  <SidebarIcon n="newFolder" s={15} />
-                </button>
-              </div>
-            )}
+            <div className="sb-tree-actions">
+              <span className="text-[13px] font-semibold text-[var(--text-secondary)] select-none" style={{ fontFamily: '"Outfit", var(--body-font)', paddingLeft: 4 }}>Notes</span>
+              {!searchQuery.trim() && (
+                <div className="flex items-center gap-0.5">
+                  <button className="sb-tree-action-btn" title="New File" onClick={() => handleRootCreate('file')}>
+                    <SidebarIcon n="newFile" s={15} />
+                  </button>
+                  <button className="sb-tree-action-btn" title="New Folder" onClick={() => handleRootCreate('folder')}>
+                    <SidebarIcon n="newFolder" s={15} />
+                  </button>
+                </div>
+              )}
+            </div>
             {visibleTree.map((node) => (
               <TreeNodeComponent
                 key={node.id}

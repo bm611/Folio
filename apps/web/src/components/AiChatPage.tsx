@@ -1282,7 +1282,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
         </AnimatePresence>
 
         {/* ── Persistent input — always mounted, never inside AnimatePresence ─ */}
-        <div className="shrink-0 px-4 pt-3 pb-4 md:px-6 md:pt-4 md:pb-5">
+        <div className="shrink-0 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] md:px-6 md:pt-4 md:pb-5">
           <div 
             className="mx-auto"
             style={{ maxWidth: '40rem' }}

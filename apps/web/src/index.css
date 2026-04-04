@@ -2066,7 +2066,7 @@ body {
 .sb-tree-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 2px;
   padding: 0 0 4px;
 }
@@ -3135,9 +3135,9 @@ body {
     display: flex;
     position: fixed;
     /* bottom is driven by JS (Visual Viewport API) to stay above the keyboard */
-    bottom: 16px;
-    left: 12px;
-    right: 12px;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
     z-index: 30;
     /* Override the centered-pill positioning */
     transform: none;
@@ -3147,6 +3147,7 @@ body {
   }
 
   .mobile-action-bar--editor .mobile-bar-inner {
+    --bar-bg: var(--bg-elevated);
     width: 100%;
     overflow: hidden;
     border-radius: 20px;

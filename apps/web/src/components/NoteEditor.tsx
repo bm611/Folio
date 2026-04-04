@@ -1707,7 +1707,7 @@ export default function NoteEditor({
 
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
-				<div className={wideMode ? 'w-full px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-44 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
+				<div className={wideMode ? 'w-full px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
 					<input
 						type="text"
 						value={note.title}

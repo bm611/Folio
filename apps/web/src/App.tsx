@@ -1639,7 +1639,7 @@ function AppInner() {
 
   return (
     <>
-      <div className="grain flex h-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)]">
+      <div className="grain flex h-[100dvh] overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)]">
         <Sidebar
           tree={tree}
           activeNoteId={activeNoteId}

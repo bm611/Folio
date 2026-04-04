@@ -136,25 +136,24 @@ interface MobileEditorToolbarProps {
 }
 
 /**
- * Use the Visual Viewport API to position the toolbar just above the
- * on-screen keyboard. `window.visualViewport` gives us the portion of
- * the layout viewport that is actually visible — when the keyboard opens
- * the visual viewport shrinks upward, so we anchor to its bottom edge.
+ * Detect whether the virtual keyboard is open so the toolbar can stick
+ * to the bottom of the visible area. With `interactive-widget=resizes-content`
+ * the layout viewport already shrinks, so the toolbar just needs a small
+ * bottom offset. We still listen to the Visual Viewport API as a fallback
+ * for browsers that don't support `interactive-widget`.
  */
 function useKeyboardAwareBottom(): number {
-  const [bottom, setBottom] = useState(16)
+  const [bottom, setBottom] = useState(8)
 
   const update = useCallback(() => {
     const vv = window.visualViewport
     if (!vv) return
 
-    // Distance from the bottom of the layout viewport to the bottom of
-    // the visible area. When the keyboard is closed this is ~0; when it
-    // is open it equals the keyboard height.
     const keyboardOffset = window.innerHeight - (vv.offsetTop + vv.height)
-    // 8px breathing room above the keyboard, or the default 16px gap
-    // from the screen bottom when no keyboard is shown.
-    setBottom(keyboardOffset > 0 ? keyboardOffset + 8 : 16)
+    // When interactive-widget=resizes-content is supported, keyboardOffset
+    // stays near 0 because the layout already shrinks. For other browsers
+    // we push the bar up by the keyboard height.
+    setBottom(keyboardOffset > 20 ? keyboardOffset + 4 : 8)
   }, [])
 
   useEffect(() => {
@@ -163,6 +162,7 @@ function useKeyboardAwareBottom(): number {
 
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
+    update()
 
     return () => {
       vv.removeEventListener('resize', update)
