@@ -637,6 +637,14 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
     setHighlightedMention(0)
   }, [closeMentionPicker])
 
+  // ── Auto-focus composer on mount ─────────────────────────────────────────
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      editorRef.current?.focus()
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [])
+
   // ── Auto-scroll ──────────────────────────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -1211,30 +1219,30 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                     </h2>
                   </motion.div>
 
-                  {/* Suggested prompts */}
+                  {/* Suggested prompts — horizontal scroll on mobile, vertical on desktop */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: 0.14, ease: [0.2, 0, 0, 1] }}
-                    className="order-4 mt-6 hidden flex-col gap-2 md:flex md:items-start md:pl-5"
+                    className="order-4 mt-6 flex overflow-x-auto gap-2 pb-2 -mx-5 px-5 scrollbar-none md:mx-0 md:px-0 md:overflow-x-visible md:flex-col md:items-start md:pl-5 md:pb-0"
                   >
                     {EMPTY_STATE_PROMPTS.map((prompt) => (
                       <button
                         key={prompt.id}
                         type="button"
                         onClick={() => applyPromptText(prompt.label)}
-                        className="group flex w-fit max-w-full items-center gap-3 rounded-2xl py-1.5 pr-2 text-left text-[15px] font-medium text-[var(--text-secondary)] transition-[transform,color] duration-150 hover:text-[var(--text-primary)] active:scale-[0.985]"
+                        className="group flex shrink-0 w-fit max-w-full items-center gap-2.5 rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3.5 py-2.5 text-left text-[13px] font-medium text-[var(--text-secondary)] transition-[transform,color,border-color] duration-150 hover:text-[var(--text-primary)] hover:border-[var(--border-default)] active:scale-[0.97] md:border-0 md:bg-transparent md:px-0 md:py-1.5 md:pr-2 md:text-[15px] md:gap-3"
                       >
                         <span
-                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-[background,color] duration-150"
+                          className="flex h-7 w-7 md:h-8 md:w-8 shrink-0 items-center justify-center rounded-full transition-[background,color] duration-150"
                           style={{
                             background: 'color-mix(in srgb, var(--bg-hover) 54%, transparent)',
                             color: 'var(--accent)',
                           }}
                         >
-                          <Icon icon={prompt.icon} size={15} strokeWidth={1.9} />
+                          <Icon icon={prompt.icon} size={14} strokeWidth={1.9} className="md:!w-[15px] md:!h-[15px]" />
                         </span>
-                        <span className="truncate">{prompt.label}</span>
+                        <span className="whitespace-nowrap md:whitespace-normal md:truncate">{prompt.label}</span>
                       </button>
                     ))}
                   </motion.div>

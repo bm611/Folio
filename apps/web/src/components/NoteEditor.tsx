@@ -1520,7 +1520,7 @@ export default function NoteEditor({
 		<div className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden rounded-2xl bg-[var(--bg-primary)] transition-[border-radius] duration-300 max-md:rounded-none">
 			{/* Subtle grainy gradient background for the banner area */}
 			<div
-				className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[35vh] opacity-100 transition-colors duration-700"
+				className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[20vh] md:h-[35vh] opacity-100 transition-colors duration-700"
 				style={{
 					backgroundImage: getGradientForNote(note.id),
 					maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',

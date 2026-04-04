@@ -1758,7 +1758,7 @@ body {
   height: 24px;
   padding: 0 4px;
   font-family: var(--body-font);
-  font-size: 12px;
+  font-size: 16px;
   color: var(--text-muted);
   background: transparent;
   border: none;
@@ -3239,6 +3239,14 @@ input[type='number'] {
   }
 }
 
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* ═══════════════════════════════════════════════
    Mobile Responsive
    ═══════════════════════════════════════════════ */
@@ -3253,8 +3261,8 @@ input[type='number'] {
   }
 
   .tree-node {
-    min-height: 38px;
-    padding: 6px 10px;
+    min-height: 48px;
+    padding: 10px 12px;
   }
 
   .tn-actions {
