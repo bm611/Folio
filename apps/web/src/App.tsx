@@ -1680,6 +1680,7 @@ function AppInner() {
             <NoteEditor
               note={activeNote}
               notes={notes}
+              tree={tree}
               onNewNote={handleNewNote}
               onCreateDailyNote={handleCreateDailyNote}
               onUpdateNote={handleUpdateNote}

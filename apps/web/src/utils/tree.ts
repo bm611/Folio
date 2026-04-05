@@ -216,6 +216,30 @@ export function getParentId(tree: TreeNode[], nodeId: string): string | null {
   return null
 }
 
+export function getBreadcrumbPath(tree: TreeNode[], nodeId: string): TreeNode[] {
+  const path: TreeNode[] = []
+  let currentId: string | null = nodeId
+  const visited = new Set<string>()
+
+  while (currentId && !visited.has(currentId)) {
+    visited.add(currentId)
+    const parentId = getParentId(tree, currentId)
+    if (parentId) {
+      const parent = findNode(tree, parentId)
+      if (parent) {
+        path.unshift(parent)
+        currentId = parentId
+      } else {
+        break
+      }
+    } else {
+      break
+    }
+  }
+
+  return path
+}
+
 export function moveNode(tree: TreeNode[], nodeId: string, newParentId: string | null): TreeNode[] {
   const subtreeIds = new Set(collectSubtreeIds(tree, nodeId))
 

@@ -26,7 +26,9 @@ import {
 	File01Icon as FileText01Icon,
 	Download01Icon,
 	Home01Icon,
-	ArrowDown01Icon
+	ArrowDown01Icon,
+	Folder01Icon,
+	ArrowRight01Icon
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -45,6 +47,7 @@ import AccentPicker from './AccentPicker';
 import type { EditorApi } from './LiveMarkdownEditor';
 import MobileEditorToolbar from './MobileEditorToolbar';
 import type { NoteFile, TreeNode } from '../types';
+import { getBreadcrumbPath } from '../utils/tree';
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'));
 
@@ -67,6 +70,7 @@ interface SyncStatus {
 interface NoteEditorProps {
 	note: NoteFile | null;
 	notes: TreeNode[];
+	tree?: TreeNode[];
 	onNewNote: () => void;
 	onCreateDailyNote: () => void;
 	onUpdateNote: (
@@ -223,6 +227,83 @@ function FavoriteButton({ note, onUpdateNote }: FavoriteButtonProps) {
 				/>
 			</motion.span>
 		</motion.button>
+	);
+}
+
+// ─── Breadcrumbs Component ──────────────────────────────────────────────────────
+
+interface BreadcrumbsProps {
+	note: NoteFile;
+	notes: TreeNode[];
+	tree?: TreeNode[];
+	onSelectNote: (id: string | null) => void;
+}
+
+function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
+	// Use tree if available (has nested structure), otherwise fall back to notes
+	const source = tree && tree.length > 0 ? tree : notes;
+	const folderPath = useMemo(() => getBreadcrumbPath(source, note.id), [source, note.id]);
+
+	// Only show breadcrumbs if the note has parent folders
+	if (folderPath.length === 0) return null;
+
+	const noteName = note.title || note.name || 'Untitled';
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: -4 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
+			className="flex items-center gap-1.5 text-[12px] text-[var(--text-muted)] mb-3"
+		>
+			{/* Folder path */}
+			{folderPath.map((folder, index) => (
+				<span key={folder.id} className="flex items-center gap-1.5">
+					{index > 0 && (
+						<Icon
+							icon={ArrowRight01Icon}
+							size={12}
+							strokeWidth={1.5}
+							className="opacity-40"
+						/>
+					)}
+					<motion.button
+						type="button"
+						onClick={() => onSelectNote(folder.id)}
+						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors duration-150 hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+						whileHover={{ scale: 1.02 }}
+						whileTap={{ scale: 0.98 }}
+					>
+						<Icon
+							icon={Folder01Icon}
+							size={12}
+							strokeWidth={1.5}
+							className="opacity-60 group-hover:opacity-100 transition-opacity"
+						/>
+						<span className="max-w-[120px] truncate">{folder.name}</span>
+					</motion.button>
+				</span>
+			))}
+
+			{/* Separator before note name */}
+			<Icon
+				icon={ArrowRight01Icon}
+				size={12}
+				strokeWidth={1.5}
+				className="opacity-40"
+			/>
+
+			{/* Current note name */}
+			<span className="inline-flex items-center gap-1 text-[var(--text-primary)] font-medium">
+				<Icon
+					icon={File01Icon}
+					size={12}
+					strokeWidth={1.5}
+					className="opacity-60"
+				/>
+				<span className="max-w-[200px] truncate">{noteName}</span>
+			</span>
+		</motion.div>
 	);
 }
 
@@ -833,6 +914,7 @@ function getSaveBadgeMeta(saveStatus: SaveStatus): SaveBadgeMeta {
 export default function NoteEditor({
 	note,
 	notes,
+	tree,
 	onNewNote,
 	onCreateDailyNote,
 	onUpdateNote,
@@ -1795,6 +1877,8 @@ export default function NoteEditor({
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
 				<div className={wideMode ? 'w-full px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
+					<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
+
 					<input
 						type="text"
 						value={note.title}

@@ -22,6 +22,7 @@ import {
   Loading01Icon,
   StickyNoteIcon,
   SparklesIcon,
+  ArrowShrink02Icon,
 } from '@hugeicons/core-free-icons'
 
 import type { IconSvgElement } from '@hugeicons/react'
@@ -483,6 +484,8 @@ export default function Sidebar({
       return s
     })
 
+  const collapseAll = () => setExpanded(new Set())
+
   const handleCreateConfirm = useCallback((name: string, parentId: string | null, type: 'file' | 'folder') => {
     if (type === 'folder') {
       onNewFolder?.(name, parentId)
@@ -707,14 +710,29 @@ export default function Sidebar({
           {/* Tree list */}
           <div className="sb-tree">
             <div className="sb-tree-actions">
-              <span className="text-[13px] font-semibold text-[var(--text-secondary)] select-none" style={{ fontFamily: '"Outfit", var(--body-font)', paddingLeft: 4 }}>Notes</span>
+              <span className="text-[15px] font-semibold text-[var(--text-secondary)] select-none" style={{ fontFamily: '"Outfit", var(--body-font)', paddingLeft: 4 }}>Notes</span>
               {!searchQuery.trim() && (
-                <div className="flex items-center gap-0.5">
-                  <button className="sb-tree-action-btn" title="New File" onClick={() => handleRootCreate('file')}>
-                    <SidebarIcon n="newFile" s={15} />
+                <div className="flex items-center gap-0">
+                  <button
+                    className="sb-tree-action-btn has-tooltip"
+                    data-tooltip="Collapse All"
+                    onClick={collapseAll}
+                  >
+                    <Icon icon={ArrowShrink02Icon} size={20} strokeWidth={1.5} />
                   </button>
-                  <button className="sb-tree-action-btn" title="New Folder" onClick={() => handleRootCreate('folder')}>
-                    <SidebarIcon n="newFolder" s={15} />
+                  <button
+                    className="sb-tree-action-btn has-tooltip"
+                    data-tooltip="New File"
+                    onClick={() => handleRootCreate('file')}
+                  >
+                    <SidebarIcon n="newFile" s={20} />
+                  </button>
+                  <button
+                    className="sb-tree-action-btn has-tooltip"
+                    data-tooltip="New Folder"
+                    onClick={() => handleRootCreate('folder')}
+                  >
+                    <SidebarIcon n="newFolder" s={20} />
                   </button>
                 </div>
               )}

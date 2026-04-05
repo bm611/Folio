@@ -2075,13 +2075,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: transparent;
   cursor: pointer;
   color: var(--text-muted);
-  border-radius: 6px;
+  border-radius: 9px;
   transition: background 0.15s ease-out, color 0.15s ease-out;
   flex-shrink: 0;
 }
@@ -2089,6 +2089,39 @@ body {
 .sb-tree-action-btn:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+/* Tooltip for sidebar action buttons */
+.sb-tree-action-btn.has-tooltip {
+  position: relative;
+}
+
+.sb-tree-action-btn.has-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 8px);
+  transform: translateY(-50%) translateX(4px);
+  padding: 4px 8px;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+  z-index: 100;
+}
+
+.sb-tree-action-btn.has-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
 }
 
 .tn-actions button {
