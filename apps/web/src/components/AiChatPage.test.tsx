@@ -275,7 +275,7 @@ describe('AiChatPage mentions', () => {
     const { container } = render(<AiChatPage notes={[]} />)
     const composer = getComposer(container)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Find notes about a topic' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }))
 
     await waitFor(() => {
       expect(composer.textContent).toBe('Find notes about a topic')
