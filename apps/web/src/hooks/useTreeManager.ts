@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { TreeNode, FlatNode, NoteFile, NoteFolder } from '../types'
+import { insertNode as treeInsertNode } from '../utils/tree'
 
 export interface TreeManagerResult {
   tree: TreeNode[]
@@ -54,22 +55,6 @@ function doGetParentId(nodeMap: Map<string, TreeNode>, nodeId: string): string |
     }
   }
   return null
-}
-
-function doInsertNode(tree: TreeNode[], parentId: string | null, newNode: TreeNode): TreeNode[] {
-  if (parentId === null) {
-    return [...tree, newNode]
-  }
-  return tree.map((node) => {
-    if (node.id === parentId) {
-      const children = 'children' in node ? node.children : []
-      return { ...node, children: [...children, newNode] }
-    }
-    if ('children' in node && node.children) {
-      return { ...node, children: doInsertNode(node.children, parentId, newNode) }
-    }
-    return node
-  })
 }
 
 function doDeleteNode(tree: TreeNode[], id: string): TreeNode[] {
@@ -134,7 +119,7 @@ function doMoveNode(
   if (!nodeToMove) return tree
   const treeWithoutNode = doDeleteNode(tree, nodeId)
   const updatedNode = { ...nodeToMove, parentId: newParentId } as TreeNode
-  return doInsertNode(treeWithoutNode, newParentId, updatedNode)
+  return treeInsertNode(treeWithoutNode, newParentId, updatedNode)
 }
 
 export function useTreeManager(initialTree: TreeNode[] = []): TreeManagerResult {
@@ -156,7 +141,7 @@ export function useTreeManager(initialTree: TreeNode[] = []): TreeManagerResult 
   }, [nodeMap])
 
   const insertNode = useCallback((parentId: string | null, newNode: TreeNode) => {
-    setTreeState((prev) => doInsertNode(prev, parentId, newNode))
+    setTreeState((prev) => treeInsertNode(prev, parentId, newNode))
   }, [])
 
   const deleteNode = useCallback((id: string) => {
