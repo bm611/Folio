@@ -198,17 +198,21 @@ export function getVisibleFiles(nodes: TreeNode[], expanded: Set<string>): TreeN
 }
 
 export function getParentId(tree: TreeNode[], nodeId: string): string | null {
-  for (const node of tree) {
+  const stack = [...tree]
+
+  while (stack.length > 0) {
+    const node = stack.pop()!
+
     if ('children' in node && node.children) {
-      for (const child of node.children) {
-        if (child.id === nodeId) {
+      const children = node.children
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i]
+        if (child && child.id === nodeId) {
           return node.id
         }
-      }
-
-      const deeper = getParentId(node.children, nodeId)
-      if (deeper !== null) {
-        return deeper
+        if (child && 'children' in child && child.children) {
+          stack.push(child)
+        }
       }
     }
   }
