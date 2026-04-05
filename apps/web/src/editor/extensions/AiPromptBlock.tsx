@@ -173,9 +173,10 @@ function AiPromptView({ node, editor, getPos, deleteNode }: NodeViewProps) {
     setErrorMessage('')
 
     const allNotes = getNotes()
+    const notesMap = new Map(allNotes.map((n) => [n.id, n]))
     const noteContents = mentions
       .map((m) => {
-        const note = allNotes.find((n) => n.id === m.id)
+        const note = notesMap.get(m.id)
         if (!note) return null
         return { title: note.title || 'Untitled', content: note.content }
       })
