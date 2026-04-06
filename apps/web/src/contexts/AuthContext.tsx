@@ -20,15 +20,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      setUser(data.session?.user ?? null)
-      setLoading(false)
-    })
-
+    // Subscribe first so we never miss an auth event that fires while
+    // getSession() is in-flight.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
       setUser(newSession?.user ?? null)
+      setLoading(false)
+    })
+
+    // Seed the initial state from the persisted session (if any).
+    // If onAuthStateChange already fired, this is a harmless no-op.
+    supabase.auth.getSession().then(({ data }) => {
+      setSession((prev) => prev ?? data.session)
+      setUser((prev) => prev ?? data.session?.user ?? null)
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
