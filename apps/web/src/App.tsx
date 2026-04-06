@@ -870,7 +870,7 @@ function AppInner() {
     const cachedTree = savedTree ? ensureDailyFolder(savedTree) : []
     setTree(optimisticTree.length > 0 ? optimisticTree : cachedTree)
 
-    reconcileWithCloud({ preserveSelection: false })
+    reconcileWithCloud({ preserveSelection: true })
       .then(() => {
         if (cancelled) {
           return
