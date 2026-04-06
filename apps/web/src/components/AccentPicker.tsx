@@ -153,7 +153,7 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
                 Accent
               </p>
 
-              <div className="flex gap-0.5">
+              <div className="grid grid-cols-5 gap-0.5">
                 {ACCENT_COLORS.map((color: AccentColor) => {
                   const swatch = (theme === 'light' ? color.light : color.dark).accent
                   const isActive = color.id === accentId
