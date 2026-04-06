@@ -80,8 +80,14 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
         // Pop up above the button, centered
         setDropdownPos({ bottom: window.innerHeight - rect.top + 12, left: rect.left + rect.width / 2 })
       } else {
-        // Drop down, aligned to the right edge of the button
-        setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
+        // Drop down by default; flip upward if the popover would go off the bottom of the viewport
+        const estimatedHeight = 160 // approx popover height with 2 rows of colors
+        const spaceBelow = window.innerHeight - rect.bottom - 8
+        if (spaceBelow < estimatedHeight) {
+          setDropdownPos({ bottom: window.innerHeight - rect.top + 6, right: window.innerWidth - rect.right })
+        } else {
+          setDropdownPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right })
+        }
       }
     }
     setOpen((v) => !v)
@@ -142,11 +148,17 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
               transition={POPOVER_TRANSITION}
               style={{
                 boxShadow: 'var(--dialog-shadow)',
-                minWidth: '188px',
-                transformOrigin: mobile ? 'bottom center' : 'top right',
+                minWidth: '208px',
+                transformOrigin: mobile
+                  ? 'bottom center'
+                  : dropdownPos.bottom !== undefined
+                    ? 'bottom right'
+                    : 'top right',
                 ...(mobile
                   ? { bottom: dropdownPos.bottom, left: dropdownPos.left, x: '-50%' }
-                  : { top: dropdownPos.top, right: dropdownPos.right }),
+                  : dropdownPos.bottom !== undefined
+                    ? { bottom: dropdownPos.bottom, right: dropdownPos.right }
+                    : { top: dropdownPos.top, right: dropdownPos.right }),
               }}
             >
               <p className="mb-2 px-0.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] select-none">
