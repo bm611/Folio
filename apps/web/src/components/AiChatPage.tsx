@@ -36,6 +36,7 @@ interface AiChatPageProps {
   sidebarCollapsed?: boolean
   onToggleSidebar?: () => void
   onCloseChat?: () => void
+  onSaveToNote?: (noteId: string, content: string) => void
 }
 
 const EMPTY_STATE_PROMPTS = [
@@ -243,14 +244,45 @@ function CodeBlock({ className, children, ...props }: CodeBlockProps) {
   )
 }
 
-function MessageBubble({ message }: { message: Message }) {
+interface MessageBubbleProps {
+  message: Message
+  notes: NoteFile[]
+  onSaveToNote: (noteId: string, content: string) => void
+}
+
+function MessageBubble({ message, notes, onSaveToNote }: MessageBubbleProps) {
   const isUser = message.role === 'user'
   const [copied, setCopied] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [showNotePicker, setShowNotePicker] = useState(false)
+  const [noteSearch, setNoteSearch] = useState('')
+  const pickerRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!showNotePicker) return
+    setNoteSearch('')
+    setTimeout(() => searchRef.current?.focus(), 50)
+    function handleClick(e: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+        setShowNotePicker(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [showNotePicker])
 
   const handleCopyMessage = () => {
     navigator.clipboard.writeText(message.content)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleSaveToNote = (noteId: string) => {
+    onSaveToNote(noteId, message.content)
+    setShowNotePicker(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
   }
 
   return (
@@ -311,6 +343,65 @@ function MessageBubble({ message }: { message: Message }) {
                   <Icon icon={copied ? Tick01Icon : Copy01Icon} size={11} strokeWidth={2.2} />
                   {copied ? 'Copied' : 'Copy'}
                 </button>
+                <div ref={pickerRef} className="relative">
+                  <button
+                    onClick={() => setShowNotePicker((v) => !v)}
+                    className="flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform] duration-150 hover:border-[var(--border-default)] hover:text-[var(--text-primary)] active:scale-[0.96] shadow-sm"
+                    title="Save to note"
+                  >
+                    <Icon icon={saved ? Tick01Icon : StickyNoteIcon} size={11} strokeWidth={2.2} />
+                    {saved ? 'Saved' : 'Save to note'}
+                  </button>
+                  <AnimatePresence>
+                    {showNotePicker && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4, scale: 0.97 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                        transition={{ duration: 0.12, ease: [0.2, 0, 0, 1] }}
+                        className="absolute bottom-full left-0 z-30 mb-2 w-64 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] py-1.5 flex flex-col"
+                        style={{ boxShadow: 'var(--dialog-shadow)', maxHeight: '280px' }}
+                      >
+                        <div className="px-2.5 pt-1.5 pb-1.5 shrink-0">
+                          <input
+                            ref={searchRef}
+                            type="text"
+                            value={noteSearch}
+                            onChange={(e) => setNoteSearch(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Escape' && setShowNotePicker(false)}
+                            placeholder="Search notes…"
+                            className="w-full rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-hover)] px-2.5 py-1.5 text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)]"
+                          />
+                        </div>
+                        <div className="overflow-y-auto">
+                          {(() => {
+                            const q = noteSearch.trim().toLowerCase()
+                            const filtered = q
+                              ? notes.filter((n) => getNoteTitle(n).toLowerCase().includes(q))
+                              : notes.slice(0, 12)
+                            if (filtered.length === 0) {
+                              return <p className="px-3 py-2 text-xs text-[var(--text-muted)]">No notes found</p>
+                            }
+                            return filtered.map((note) => (
+                              <button
+                                key={note.id}
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault()
+                                  handleSaveToNote(note.id)
+                                }}
+                                className="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-[background-color,color] duration-100 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                              >
+                                <Icon icon={StickyNoteIcon} size={13} strokeWidth={1.8} className="shrink-0" style={{ color: 'var(--accent)' }} />
+                                <span className="block truncate text-[12px]">{getNoteTitle(note)}</span>
+                              </button>
+                            ))
+                          })()}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             )}
           </div>
@@ -594,7 +685,7 @@ function AiChatEmptyPrompt() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, onCloseChat }: AiChatPageProps) {
+export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, onCloseChat, onSaveToNote }: AiChatPageProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [mentionedNotes, setMentionedNotes] = useState<NoteFile[]>([])
@@ -1258,7 +1349,12 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                   />
                   <AnimatePresence initial={false}>
                     {messages.map((msg) => (
-                      <MessageBubble key={msg.id} message={msg} />
+                      <MessageBubble
+                        key={msg.id}
+                        message={msg}
+                        notes={notes}
+                        onSaveToNote={onSaveToNote ?? (() => {})}
+                      />
                     ))}
                   </AnimatePresence>
                   <div ref={messagesEndRef} />

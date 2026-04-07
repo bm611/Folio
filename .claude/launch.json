@@ -1,0 +1,40 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Vite (Web)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "apps/web",
+      "port": 5173
+    },
+    {
+      "name": "AI Proxy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["netlify/dev-server.js"],
+      "cwd": "apps/web",
+      "port": 9898
+    },
+    {
+      "name": "Vite + AI Proxy",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:ai"],
+      "cwd": "apps/web",
+      "port": 5173
+    },
+    {
+      "name": "Expo (Mobile)",
+      "runtimeExecutable": "expo",
+      "runtimeArgs": ["start"],
+      "cwd": "apps/mobile",
+      "port": 8081
+    },
+    {
+      "name": "Tauri (Desktop)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "tauri:dev"],
+      "cwd": "apps/web",
+      "port": 5173
+    }
+  ]
+}

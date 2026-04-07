@@ -1690,6 +1690,13 @@ function AppInner() {
               sidebarCollapsed={sidebarCollapsed}
               onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
               onCloseChat={() => setActiveView('notes')}
+              onSaveToNote={(noteId, content) => {
+                const note = notes.find((n) => n.id === noteId)
+                if (!note || note.type !== 'file') return
+                const existing = note.content || ''
+                const separator = existing.trim() ? '\n\n' : ''
+                handleUpdateNote(noteId, { content: existing + separator + content, contentDoc: null })
+              }}
             />
           ) : (
             <NoteEditor
