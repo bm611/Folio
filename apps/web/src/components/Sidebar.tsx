@@ -173,6 +173,7 @@ function TreeNodeComponent({
   const [renaming, setRenaming] = useState(false)
   const [renameVal, setRenameVal] = useState(node.name)
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null)
+  const [showAllChildren, setShowAllChildren] = useState(false)
   const renameRef = useRef<HTMLInputElement>(null)
   const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nodeRef = useRef<HTMLDivElement>(null)
@@ -390,24 +391,42 @@ function TreeNodeComponent({
       {isFolder && isOpen && (
         <div className="tn-children">
           <div className="tn-children-line" style={{ left: depth * 18 + 20 }} />
-          {node.type === 'folder' &&
-            node.children?.map((child) => (
-              <TreeNodeComponent
-                key={child.id}
-                node={child}
-                depth={depth + 1}
-                activeId={activeId}
-                onSelect={onSelect}
-                onDelete={onDelete}
-                onRename={onRename}
-                onMove={onMove}
-                expanded={expanded}
-                toggleExpand={toggleExpand}
-                creatingIn={creatingIn}
-                setCreatingIn={setCreatingIn}
-                onCreateConfirm={onCreateConfirm}
-              />
-            ))}
+          {node.type === 'folder' && (() => {
+            const children = node.children ?? []
+            const LIMIT = 5
+            const visible = showAllChildren ? children : children.slice(0, LIMIT)
+            const hidden = children.length - LIMIT
+            return (
+              <>
+                {visible.map((child) => (
+                  <TreeNodeComponent
+                    key={child.id}
+                    node={child}
+                    depth={depth + 1}
+                    activeId={activeId}
+                    onSelect={onSelect}
+                    onDelete={onDelete}
+                    onRename={onRename}
+                    onMove={onMove}
+                    expanded={expanded}
+                    toggleExpand={toggleExpand}
+                    creatingIn={creatingIn}
+                    setCreatingIn={setCreatingIn}
+                    onCreateConfirm={onCreateConfirm}
+                  />
+                ))}
+                {!showAllChildren && hidden > 0 && (
+                  <button
+                    className="tn-show-more"
+                    style={{ paddingLeft: (depth + 1) * 18 + 12 }}
+                    onClick={(e) => { e.stopPropagation(); setShowAllChildren(true) }}
+                  >
+                    {hidden} more...
+                  </button>
+                )}
+              </>
+            )
+          })()}
           {creatingIn?.parentId === node.id && (
             <InlineCreator
               depth={depth + 1}
