@@ -42,3 +42,4 @@ apps/mobile/android/
 .agent
 .crush
 .netlify
+.claude
