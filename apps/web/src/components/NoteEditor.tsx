@@ -1831,31 +1831,31 @@ export default function NoteEditor({
 				<div className={wideMode ? 'w-full px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0' : 'mx-auto max-w-5xl px-4 pb-24 pt-6 sm:px-6 md:px-10 md:pb-32 md:pt-0'}>
 					<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 
-					<NoteBanner
-						noteId={note.id}
-						title={note.title}
-						onTitleChange={(title) => onUpdateNote(note.id, { title })}
-						onTitleKeyDown={handleTitleKeyDown}
-					/>
+					{note.tags?.includes('daily') ? (
+						<DailyHeader note={note} />
+					) : (
+						<>
+							<NoteBanner
+								noteId={note.id}
+								title={note.title}
+								onTitleChange={(title) => onUpdateNote(note.id, { title })}
+								onTitleKeyDown={handleTitleKeyDown}
+							/>
 
-					<div className="text-[12px] text-[var(--text-muted)]">
-						<span className="inline-flex items-center gap-1.5">
-							<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
-							{createdAtLabel}
-						</span>
-					</div>
+							<div className="text-[12px] text-[var(--text-muted)]">
+								<span className="inline-flex items-center gap-1.5">
+									<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
+									{createdAtLabel}
+								</span>
+							</div>
 
-					<div className="mt-3">
-						<TagInput
-							tags={note.tags || []}
-							onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-						/>
-					</div>
-
-					{note.tags?.includes('daily') && (
-						<div className="mt-6">
-							<DailyHeader note={note} />
-						</div>
+							<div className="mt-3">
+								<TagInput
+									tags={note.tags || []}
+									onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+								/>
+							</div>
+						</>
 					)}
 
 					<div className="mt-4 md:mt-8">
