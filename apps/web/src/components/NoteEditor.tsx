@@ -255,7 +255,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-			className="flex items-center gap-1.5 text-[12px] text-[var(--text-muted)] mb-3"
+			className="flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mb-3"
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
@@ -941,6 +941,12 @@ function getSaveBadgeMeta(saveStatus: SaveStatus): SaveBadgeMeta {
 				spin: false
 			};
 	}
+}
+
+function getSaveTextClass(state: string): string {
+	if (state === 'syncing' || state === 'saved') return 'text-[var(--success)]';
+	if (state === 'error') return 'text-[var(--danger)]';
+	return 'text-[var(--warning)]';
 }
 
 // ── Time-aware greeting ───────────────────────────────────────────────────────
@@ -1858,7 +1864,6 @@ export default function NoteEditor({
 	const saveLabel = saveStatus.label || 'Not saved';
 	const saveDetail = saveStatus.detail || 'Sign in to save your notes';
 	const saveError = saveStatus.error;
-	const lastSavedLabel = formatRelativeSaveTime(lastSavedAt);
 
 	// ── Render ───────────────────────────────────────────────────────────────────
 
@@ -1869,8 +1874,8 @@ export default function NoteEditor({
 				className="pointer-events-none absolute left-0 right-0 top-0 z-0 h-[20vh] md:h-[35vh] opacity-100 transition-colors duration-700"
 				style={{
 					backgroundImage: getGradientForNote(note.id),
-					maskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)',
-					WebkitMaskImage: 'linear-gradient(to bottom, black 0%, transparent 100%)'
+					maskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)',
+					WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 55%, transparent 100%)'
 				}}
 			/>
 
@@ -2031,7 +2036,7 @@ export default function NoteEditor({
 						value={note.title}
 						onChange={(event) => onUpdateNote(note.id, { title: event.target.value })}
 						onKeyDown={handleTitleKeyDown}
-						className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] outline-none placeholder:text-[var(--text-muted)] md:text-4xl"
+						className="note-title-input w-full bg-transparent text-3xl font-bold tracking-tight text-[var(--title-color)] placeholder:text-[var(--text-muted)] md:text-4xl"
 						style={{ fontFamily: 'var(--font-display)', textWrap: 'balance' }}
 						placeholder="Untitled"
 					/>
@@ -2074,79 +2079,66 @@ export default function NoteEditor({
 				</div>
 			</div>
 
-			{/* Stats bar — bottom right */}
-			<div className="hidden md:flex absolute bottom-4 right-4 z-20 flex-col items-end gap-2 rounded-xl border border-[var(--border-subtle)]/60 bg-[var(--bg-surface)]/88 px-3.5 py-2.5 backdrop-blur-lg transition-[transform,box-shadow,border-color] duration-300">
-				<div className="flex items-center gap-2 text-[11px]">
-					<span
-						className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${saveBadgeMeta.toneClassName}`}
-						title={saveError || saveDetail}
-					>
-						<Icon
-							icon={saveBadgeMeta.icon}
-							size={12}
-							strokeWidth={1.8}
-							className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
-						/>
-						{saveLabel}
-					</span>
-					{(lastSavedLabel || saveStatus.state === 'offline') && (
-						<span className="text-[var(--text-muted)]" title={saveDetail}>
-							{lastSavedLabel || 'just now'}
-						</span>
-					)}
-					{saveStatus.canRetry && onRetrySync && (
-						<button
-							type="button"
-							onClick={onRetrySync}
-							className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
-						>
-							Retry
-						</button>
-					)}
-				</div>
+			{/* Stats bar — bottom right (minimal pill) */}
+			<div className="hidden md:flex absolute bottom-4 right-4 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3.5 py-1.5 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
+				{/* Save status */}
+				<span
+					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
+					title={saveError || (lastSavedAt ? `Last saved ${formatRelativeSaveTime(lastSavedAt)}` : saveDetail)}
+				>
+					<Icon
+						icon={saveBadgeMeta.icon}
+						size={11}
+						strokeWidth={1.8}
+						className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
+					/>
+					{saveLabel}
+				</span>
 
-				{/* Stats line */}
-				<div className="flex items-center gap-1.5 text-[11px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
-					{/* Session delta */}
-					{sessionDelta > 0 && (
+				<span className="text-[var(--text-muted)] opacity-30">·</span>
+
+				{/* Session delta */}
+				{sessionDelta > 0 && (
+					<>
 						<motion.span
 							key={sessionDelta}
 							initial={{ scale: 0.85, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-							className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
-							style={{
-								background: 'color-mix(in srgb, var(--success) 14%, transparent)',
-								color: 'var(--success)',
-							}}
+							className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]"
 						>
-							<Icon icon={FireIcon} size={11} strokeWidth={2.2} />
+							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}
 						</motion.span>
-					)}
+						<span className="text-[var(--text-muted)] opacity-30">·</span>
+					</>
+				)}
 
-					<span
-						className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-semibold"
-						style={{
-							background: 'color-mix(in srgb, var(--color-h2) 12%, transparent)',
-							color: 'var(--color-h2)',
-						}}
-					>
-						{new Intl.NumberFormat().format(wordCount)} words
-					</span>
+				{/* Word count */}
+				<span className="text-[var(--text-muted)]">
+					{new Intl.NumberFormat().format(wordCount)} words
+				</span>
 
-					{readTime && (
-						<span
-							className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-semibold"
-							style={{
-								background: 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
-								color: 'var(--text-muted)',
-							}}
+				{readTime && (
+					<>
+						<span className="text-[var(--text-muted)] opacity-30">·</span>
+						<span className="text-[var(--text-muted)]">{readTime}</span>
+					</>
+				)}
+
+				{/* Retry button */}
+				{saveStatus.canRetry && onRetrySync && (
+					<>
+						<span className="text-[var(--text-muted)] opacity-30">·</span>
+						<button
+							type="button"
+							onClick={onRetrySync}
+							className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
 						>
-							{readTime}
-						</span>
-					)}
-				</div>
+							Retry
+						</button>
+					</>
+				)}
 			</div>
 
 			{/* Mobile editor toolbar — floating formatting pill */}

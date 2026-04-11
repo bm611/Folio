@@ -20,14 +20,14 @@ import {
 
 import Icon from './Icon'
 
-interface ToolbarAction {
+export interface ToolbarAction {
   id: string
   icon: typeof Heading01Icon
   title: string
   action: (editor: Editor) => void
 }
 
-const TOOLBAR_ACTIONS: ToolbarAction[] = [
+export const TOOLBAR_ACTIONS: ToolbarAction[] = [
   {
     id: 'h1',
     icon: Heading01Icon,

@@ -2,6 +2,26 @@
    Folio Editor — TipTap / ProseMirror
    ═══════════════════════════════════════════════ */
 
+/* ── Note title input ── */
+
+.note-title-input {
+  outline: none;
+  border-bottom: 1.5px solid transparent;
+  padding-bottom: 2px;
+  transition: border-color 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .note-title-input:hover {
+    border-bottom-color: color-mix(in srgb, var(--text-muted) 22%, transparent);
+  }
+}
+
+.note-title-input:focus-visible {
+  outline: none;
+  border-bottom-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
 .aura-editor {
   position: relative;
   width: 100%;
