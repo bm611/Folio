@@ -178,7 +178,7 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 		<div
 			className="relative w-full overflow-hidden mb-6"
 			style={{
-				backgroundColor: 'var(--accent)',
+				backgroundColor: 'color-mix(in srgb, var(--accent) var(--banner-accent-mix, 100%), var(--bg-deep))',
 				minHeight: 160,
 			}}
 		>

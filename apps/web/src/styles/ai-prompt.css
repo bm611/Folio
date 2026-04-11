@@ -320,3 +320,10 @@
   color: var(--text-primary);
   border-color: var(--text-muted);
 }
+
+/* Chat composer contenteditable – suppress global focus-visible ring */
+.group\/composer [contenteditable]:focus,
+.group\/composer [contenteditable]:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+}

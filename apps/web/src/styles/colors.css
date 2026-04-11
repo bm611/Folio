@@ -25,6 +25,7 @@
   --accent: #e07a8a;
   --accent-hover: #f0909f;
   --accent-muted: color-mix(in srgb, var(--accent) 15%, transparent);
+  --banner-accent-mix: 55%;
 
   /* ── Semantic — distinct from accent ── */
   --danger: #e05c5c;
@@ -118,6 +119,7 @@
   --accent: #c4566a;
   --accent-hover: #d87080;
   --accent-muted: color-mix(in srgb, var(--accent) 10%, transparent);
+  --banner-accent-mix: 100%;
 
   --danger: #c84040;
   --danger-muted: rgba(200, 64, 64, 0.08);

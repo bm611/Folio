@@ -1128,7 +1128,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
       />
 
       <div
-        className="relative overflow-hidden rounded-[1.9rem] border transition-[border-color,box-shadow,transform] duration-200 focus-within:border-[var(--accent)] md:rounded-[2rem]"
+        className="relative overflow-hidden rounded-[1.9rem] border transition-[border-color,box-shadow,transform] duration-200 md:rounded-[2rem]"
         style={{
           borderColor: 'color-mix(in srgb, var(--border-default) 72%, transparent)',
           background:
@@ -1155,7 +1155,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
             }}
             onKeyDown={handleKeyDown}
             data-placeholder="Ask Folio"
-            className="m-0 min-h-[28px] w-full resize-none bg-transparent text-[15px] leading-[1.6] text-[var(--text-primary)] outline-none empty:before:pointer-events-none empty:before:content-[attr(data-placeholder)] empty:before:text-[var(--text-muted)] md:text-[15.5px]"
+            className="m-0 min-h-[28px] w-full resize-none bg-transparent text-[15px] leading-[1.6] text-[var(--text-primary)] outline-none focus-visible:outline-none empty:before:pointer-events-none empty:before:content-[attr(data-placeholder)] empty:before:text-[var(--text-muted)] md:text-[15.5px]"
             style={{ maxHeight: '160px', overflowY: 'hidden', opacity: isStreaming ? 0.5 : 1 }}
             autoFocus
           />
