@@ -943,6 +943,15 @@ function getSaveBadgeMeta(saveStatus: SaveStatus): SaveBadgeMeta {
 	}
 }
 
+// ── Time-aware greeting ───────────────────────────────────────────────────────
+function getTimeGreeting(): string {
+	const h = new Date().getHours()
+	if (h < 12) return 'Good morning.'
+	if (h < 17) return 'Good afternoon.'
+	return 'Good evening.'
+}
+
+
 export default function NoteEditor({
 	note,
 	notes,
@@ -1051,12 +1060,27 @@ export default function NoteEditor({
 
 	// Generate motivational message based on streak and recent activity
 	const getMotivationalMessage = (streak: number) => {
-		if (streak === 0) return 'Ready to start your writing journey?';
-		if (streak === 1) return 'Great start! Keep the momentum going.';
-		if (streak < 7) return "You're building a great habit.";
-		if (streak < 30) return 'Consistency is your superpower.';
-		return "You're a writing warrior.";
+		if (streak === 0) return 'What will you write today?';
+		if (streak === 1) return 'Day one. The beginning of something.';
+		if (streak < 7) return `${streak} days in. You're building something real.`;
+		if (streak < 30) return `${streak}-day streak. Consistency is your superpower.`;
+		return `${streak} days strong. You're unstoppable.`;
 	};
+
+	// Last 7 days activity for streak visualization
+	const last7DaysActivity = useMemo(() => {
+		return Array.from({ length: 7 }, (_, i) => {
+			const d = new Date()
+			d.setDate(d.getDate() - (6 - i))
+			d.setHours(0, 0, 0, 0)
+			const end = new Date(d)
+			end.setHours(23, 59, 59, 999)
+			return fileNotes.some(n => {
+				const nd = new Date(n.updatedAt || n.createdAt)
+				return nd >= d && nd <= end
+			})
+		})
+	}, [fileNotes])
 
 	// Mobile home tab state (Recent / Favorites)
 	const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent');
@@ -1178,44 +1202,100 @@ export default function NoteEditor({
 				<div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-36 md:pb-6 overflow-y-auto">
 					<div className="animate-fade-in-up flex flex-col items-center text-center">
 						<h1
-							className="text-6xl tracking-tight sm:text-7xl mb-4"
-							style={{ fontFamily: 'var(--font-logo)', color: 'var(--text-primary)', textWrap: 'balance' }}
+							className="text-[28px] sm:text-[32px] font-bold tracking-tight mb-1.5"
+							style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
 						>
-							Folio.
+							{getTimeGreeting()}
 						</h1>
-						<div className="mb-6 space-y-2" style={{ fontFamily: '"Outfit", sans-serif' }}>
-							<p className="text-[14px] text-[var(--text-muted)] tracking-wide">
-								{getMotivationalMessage(streak)}
-							</p>
-							<div className="flex items-center justify-center gap-6 text-[13px] text-[var(--text-secondary)]">
-								<div className="flex items-center gap-1.5">
-									<Icon
-										icon={File01Icon}
-										size={14}
-										strokeWidth={2}
-										className="text-[var(--success)]"
-									/>
-									<span>{fileNotes.length} {fileNotes.length === 1 ? 'note' : 'notes'}</span>
-								</div>
-								<div className="flex items-center gap-1.5">
-									<Icon
-										icon={FireIcon}
-										size={14}
-										strokeWidth={2}
-										className="text-[var(--warning)]"
-									/>
-									<span>{streak} day streak</span>
-								</div>
-								<div className="flex items-center gap-1.5">
-									<Icon
-										icon={FileText01Icon}
-										size={14}
-										strokeWidth={2}
-										className="text-[var(--accent)]"
-									/>
-									<span>{totalWords.toLocaleString()} words</span>
-								</div>
-							</div>
+						<p
+							className="text-[14px] mb-5 max-w-xs leading-relaxed"
+							style={{ fontFamily: '"Outfit", sans-serif', color: 'var(--text-secondary)' }}
+						>
+							{getMotivationalMessage(streak)}
+						</p>
+
+						{/* Stat badges */}
+						<div className="flex items-center gap-2.5 mb-5 flex-wrap justify-center" style={{ fontFamily: '"Outfit", sans-serif' }}>
+							<span
+								className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+								style={{
+									background: 'color-mix(in srgb, var(--success) 14%, transparent)',
+									color: 'var(--success)',
+								}}
+							>
+								<Icon icon={File01Icon} size={13} strokeWidth={2.2} />
+								{fileNotes.length} {fileNotes.length === 1 ? 'note' : 'notes'}
+							</span>
+							<span
+								className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+								style={{
+									background: 'color-mix(in srgb, var(--warning) 14%, transparent)',
+									color: 'var(--warning)',
+								}}
+							>
+								<Icon icon={FireIcon} size={13} strokeWidth={2.2} />
+								{streak} day streak
+							</span>
+							<span
+								className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+								style={{
+									background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+									color: 'var(--accent)',
+								}}
+							>
+								<Icon icon={FileText01Icon} size={13} strokeWidth={2.2} />
+								{totalWords.toLocaleString()} words
+							</span>
+						</div>
+
+						{/* 7-day activity strip */}
+						<div className="flex items-end gap-1.5 mb-1" title="Writing activity — last 7 days">
+							{last7DaysActivity.map((active, i) => {
+								const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+								const todayDow = new Date().getDay()
+								const label = DAY_LABELS[((todayDow - 6 + i) % 7 + 7) % 7]
+								const isToday = i === 6
+								return (
+									<div key={i} className="flex flex-col items-center gap-1">
+										<motion.div
+											className="w-7 h-7 rounded-lg flex items-center justify-center"
+											style={{
+												background: active
+													? 'color-mix(in srgb, var(--accent) 20%, transparent)'
+													: 'var(--bg-elevated)',
+												border: `1.5px solid ${active
+													? 'color-mix(in srgb, var(--accent) 42%, transparent)'
+													: isToday
+														? 'color-mix(in srgb, var(--accent) 30%, var(--border-subtle))'
+														: 'var(--border-subtle)'}`,
+											}}
+											initial={{ scale: 0.7, opacity: 0 }}
+											animate={{ scale: 1, opacity: 1 }}
+											transition={{ delay: i * 0.06, duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+										>
+											{active && (
+												<motion.span
+													initial={{ scale: 0 }}
+													animate={{ scale: 1 }}
+													transition={{ delay: i * 0.06 + 0.15, type: 'spring', stiffness: 420, damping: 18 }}
+												>
+													<Icon icon={FireIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+												</motion.span>
+											)}
+										</motion.div>
+										<span
+											className="text-[9px] font-semibold uppercase tracking-wide"
+											style={{
+												fontFamily: '"Outfit", sans-serif',
+												color: isToday ? 'var(--accent)' : 'var(--text-muted)',
+												opacity: isToday ? 1 : 0.55,
+											}}
+										>
+											{label}
+										</span>
+									</div>
+								)
+							})}
 						</div>
 					</div>
 
@@ -1382,7 +1462,7 @@ export default function NoteEditor({
 																					strokeWidth={1.5}
 																				/>
 																			</div>
-																			<span className="truncate flex-1 text-[14px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
+																			<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
 																				{displayTitle}
 																			</span>
 																			<span className="shrink-0 text-[11px] text-[var(--text-muted)] tabular-nums">
@@ -1466,7 +1546,7 @@ export default function NoteEditor({
 																/>
 															</div>
 															<div className="flex min-w-0 flex-1 flex-col gap-0.5 text-left">
-																<span className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
+																<span className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]">
 																	{displayTitle}
 																</span>
 																<span className="text-[11px] text-[var(--text-muted)] tabular-nums">
@@ -1571,7 +1651,7 @@ export default function NoteEditor({
 																</div>
 
 																{/* Title inline with timestamp */}
-																<span className="truncate flex-1 text-[14px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
+																<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
 																	{displayTitle}
 																</span>
 																<span className="shrink-0 text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
@@ -1687,7 +1767,7 @@ export default function NoteEditor({
 
 												{/* Title */}
 												<div className="relative z-10 w-full min-w-0">
-													<p className="truncate text-[14px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--text-primary)]">
+													<p className="truncate text-[15px] font-medium tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--text-primary)]">
 														{displayTitle}
 													</p>
 												</div>
@@ -1995,7 +2075,7 @@ export default function NoteEditor({
 			</div>
 
 			{/* Stats bar — bottom right */}
-			<div className="hidden md:flex absolute bottom-4 right-4 z-20 flex-col items-end gap-1.5 rounded-xl border border-[var(--border-subtle)]/60 bg-[var(--bg-surface)]/82 px-4 py-2.5 backdrop-blur-lg transition-[transform,box-shadow,border-color] duration-300">
+			<div className="hidden md:flex absolute bottom-4 right-4 z-20 flex-col items-end gap-2 rounded-xl border border-[var(--border-subtle)]/60 bg-[var(--bg-surface)]/88 px-3.5 py-2.5 backdrop-blur-lg transition-[transform,box-shadow,border-color] duration-300">
 				<div className="flex items-center gap-2 text-[11px]">
 					<span
 						className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-medium ${saveBadgeMeta.toneClassName}`}
@@ -2011,7 +2091,7 @@ export default function NoteEditor({
 					</span>
 					{(lastSavedLabel || saveStatus.state === 'offline') && (
 						<span className="text-[var(--text-muted)]" title={saveDetail}>
-							Last saved {lastSavedLabel || 'just now'}
+							{lastSavedLabel || 'just now'}
 						</span>
 					)}
 					{saveStatus.canRetry && onRetrySync && (
@@ -2026,25 +2106,45 @@ export default function NoteEditor({
 				</div>
 
 				{/* Stats line */}
-				<div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] tabular-nums select-none">
+				<div className="flex items-center gap-1.5 text-[11px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
 					{/* Session delta */}
 					{sessionDelta > 0 && (
-						<>
-							<span style={{ color: 'var(--success)', fontWeight: 500 }}>
-								+{sessionDelta.toLocaleString()}
-							</span>
-							<span className="opacity-40">&middot;</span>
-						</>
+						<motion.span
+							key={sessionDelta}
+							initial={{ scale: 0.85, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+							className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
+							style={{
+								background: 'color-mix(in srgb, var(--success) 14%, transparent)',
+								color: 'var(--success)',
+							}}
+						>
+							<Icon icon={FireIcon} size={11} strokeWidth={2.2} />
+							+{sessionDelta.toLocaleString()}
+						</motion.span>
 					)}
 
-					<span>{new Intl.NumberFormat().format(wordCount)} words</span>
+					<span
+						className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-semibold"
+						style={{
+							background: 'color-mix(in srgb, var(--color-h2) 12%, transparent)',
+							color: 'var(--color-h2)',
+						}}
+					>
+						{new Intl.NumberFormat().format(wordCount)} words
+					</span>
 
-					{/* Reading time */}
 					{readTime && (
-						<>
-							<span className="opacity-40">&middot;</span>
-							<span>{readTime}</span>
-						</>
+						<span
+							className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-semibold"
+							style={{
+								background: 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
+								color: 'var(--text-muted)',
+							}}
+						>
+							{readTime}
+						</span>
 					)}
 				</div>
 			</div>
