@@ -330,6 +330,37 @@ function getComparableTimestamp(value: string | undefined | null): number {
 	return Number.isNaN(parsed) ? 0 : parsed;
 }
 
+type TimelineGroup = { label: string; notes: NoteFile[] };
+
+function groupNotesByTimeline(notes: NoteFile[]): TimelineGroup[] {
+	const now = new Date();
+	const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+	const today: NoteFile[] = [];
+	const yesterday: NoteFile[] = [];
+	const thisWeek: NoteFile[] = [];
+	const thisMonth: NoteFile[] = [];
+	const older: NoteFile[] = [];
+
+	for (const note of notes) {
+		const date = new Date(note.updatedAt || note.createdAt || '');
+		const startOfNoteDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+		const dayDiff = Math.floor((startOfToday.getTime() - startOfNoteDay.getTime()) / 86400000);
+		if (dayDiff === 0) today.push(note);
+		else if (dayDiff === 1) yesterday.push(note);
+		else if (dayDiff < 7) thisWeek.push(note);
+		else if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) thisMonth.push(note);
+		else older.push(note);
+	}
+
+	const groups: TimelineGroup[] = [];
+	if (today.length) groups.push({ label: 'Today', notes: today });
+	if (yesterday.length) groups.push({ label: 'Yesterday', notes: yesterday });
+	if (thisWeek.length) groups.push({ label: 'This Week', notes: thisWeek });
+	if (thisMonth.length) groups.push({ label: 'This Month', notes: thisMonth });
+	if (older.length) groups.push({ label: 'Older', notes: older });
+	return groups;
+}
+
 function compareRecentNotes(a: NoteFile, b: NoteFile): number {
 	const updatedDiff =
 		getComparableTimestamp(b.updatedAt || b.createdAt) -
@@ -1000,6 +1031,7 @@ export default function NoteEditor({
 
 	// Mobile home tab state (Recent / Favorites)
 	const [homeTab, setHomeTab] = useState<'recent' | 'favorites'>('recent');
+	const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 	const [favExpanded, setFavExpanded] = useState(false);
 
 	// Session word count: capture baseline when a note is first opened
@@ -1036,7 +1068,8 @@ export default function NoteEditor({
 	};
 
 	if (!note) {
-		const recentNotes = [...fileNotes].sort(compareRecentNotes).slice(0, 5);
+		const recentNotes = [...fileNotes].sort(compareRecentNotes);
+		const groupedRecentNotes = groupNotesByTimeline(recentNotes);
 
 		// Mobile and desktop home surfaces show a short favorites list — max 6
 		const rawFavorites = [...fileNotes]
@@ -1321,57 +1354,82 @@ export default function NoteEditor({
 										exit={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
 										transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 									>
-										{recentNotes.length > 0 ? (
-											<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
-												{recentNotes.map((n, i) => {
-													const isDaily = n.tags?.includes('daily');
-													const rawTitle = getNoteDisplayTitle(n);
-													const date = new Date(n.updatedAt || n.createdAt);
-													let displayTitle = rawTitle;
-													if (isDaily) {
-														const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-														if (parts) {
-															const [, dd, mm, yyyy] = parts;
-															const d = new Date(`${yyyy}-${mm}-${dd}`);
-															const readable = d.toLocaleDateString('en-GB', {
-																day: 'numeric',
-																month: 'short',
-																year: 'numeric'
-															});
-															displayTitle = `Daily \u2014 ${readable}`;
-														} else {
-															displayTitle = `Daily \u2014 ${rawTitle}`;
-														}
-													}
+										{groupedRecentNotes.length > 0 ? (
+											<div className="flex flex-col gap-4">
+												{groupedRecentNotes.map((group) => {
+													const isExpanded = expandedGroups.has(group.label);
+													const visibleNotes = isExpanded ? group.notes : group.notes.slice(0, 4);
 													return (
-														<motion.button
-															key={n.id}
-															type="button"
-															onClick={() => onSelectNote(n.id)}
-															className="group flex items-center gap-3 rounded-xl px-1 py-2.5 transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
-															initial={{ opacity: 0, y: 6 }}
-															animate={{ opacity: 1, y: 0 }}
-															transition={{
-																duration: 0.25,
-																delay: i * 0.04,
-																ease: [0.23, 1, 0.32, 1]
-															}}
-															style={{ WebkitTapHighlightColor: 'transparent' }}
-														>
-															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-																<Icon
-																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
-																	size={15}
-																	strokeWidth={1.5}
-																/>
+														<div key={group.label}>
+															<div className="mb-1.5 px-1">
+																<span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+																	{group.label}
+																</span>
 															</div>
-															<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
-																{displayTitle}
-															</span>
-															<span className="shrink-0 text-[11px] text-[var(--text-muted)] tabular-nums">
-																{formatRelativeTime(date)}
-															</span>
-														</motion.button>
+															<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+																{visibleNotes.map((n, i) => {
+																	const isDaily = n.tags?.includes('daily');
+																	const rawTitle = getNoteDisplayTitle(n);
+																	const date = new Date(n.updatedAt || n.createdAt);
+																	let displayTitle = rawTitle;
+																	if (isDaily) {
+																		const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+																		if (parts) {
+																			const [, dd, mm, yyyy] = parts;
+																			const d = new Date(`${yyyy}-${mm}-${dd}`);
+																			const readable = d.toLocaleDateString('en-GB', {
+																				day: 'numeric',
+																				month: 'short',
+																				year: 'numeric'
+																			});
+																			displayTitle = `Daily \u2014 ${readable}`;
+																		} else {
+																			displayTitle = `Daily \u2014 ${rawTitle}`;
+																		}
+																	}
+																	return (
+																		<motion.button
+																			key={n.id}
+																			type="button"
+																			onClick={() => onSelectNote(n.id)}
+																			className="group flex items-center gap-3 rounded-xl px-1 py-2.5 transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+																			initial={{ opacity: 0, y: 6 }}
+																			animate={{ opacity: 1, y: 0 }}
+																			transition={{
+																				duration: 0.25,
+																				delay: i * 0.04,
+																				ease: [0.23, 1, 0.32, 1]
+																			}}
+																			style={{ WebkitTapHighlightColor: 'transparent' }}
+																		>
+																			<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+																				<Icon
+																					icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
+																					size={15}
+																					strokeWidth={1.5}
+																				/>
+																			</div>
+																			<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
+																				{displayTitle}
+																			</span>
+																			<span className="shrink-0 text-[11px] text-[var(--text-muted)] tabular-nums">
+																				{formatRelativeTime(date)}
+																			</span>
+																		</motion.button>
+																	);
+																})}
+															</div>
+															{isOlder && group.notes.length > 2 && (
+																<button
+																	type="button"
+																	onClick={() => setOlderExpanded((v) => !v)}
+																	className="mt-1 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+																	style={{ WebkitTapHighlightColor: 'transparent' }}
+																>
+																	{olderExpanded ? 'Show less' : `Show more (${group.notes.length - 2})`}
+																</button>
+															)}
+														</div>
 													);
 												})}
 											</div>
@@ -1484,76 +1542,106 @@ export default function NoteEditor({
 								</h2>
 							</div>
 
-							{recentNotes.length > 0 ? (
-								<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
-									{recentNotes.map((n, i) => {
-										const isDaily = n.tags?.includes('daily');
-										const rawTitle = getNoteDisplayTitle(n);
-										const date = new Date(n.updatedAt || n.createdAt);
-
-										let displayTitle = rawTitle;
-										if (isDaily) {
-											const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-											if (parts) {
-												const [, dd, mm, yyyy] = parts;
-												const d = new Date(`${yyyy}-${mm}-${dd}`);
-												const readable = d.toLocaleDateString('en-GB', {
-													day: 'numeric',
-													month: 'short',
-													year: 'numeric'
-												});
-												displayTitle = `Daily \u2014 ${readable}`;
-											} else {
-												displayTitle = `Daily \u2014 ${rawTitle}`;
-											}
-										}
-
+							{groupedRecentNotes.length > 0 ? (
+								<div className="flex flex-col gap-5">
+									{groupedRecentNotes.map((group) => {
+										const isExpanded = expandedGroups.has(group.label);
+										const visibleNotes = isExpanded ? group.notes : group.notes.slice(0, 4);
 										return (
-											<motion.button
-												key={n.id}
-												type="button"
-												onClick={() => onSelectNote(n.id)}
-												initial={{ opacity: 0, y: 8 }}
-												animate={{ opacity: 1, y: 0 }}
-												transition={{ duration: 0.28, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
-												className="group flex items-center gap-4 rounded-xl px-2 py-2.5 transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
-												style={{ WebkitTapHighlightColor: 'transparent' }}
-											>
-												{/* Icon block */}
-												<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
-													<Icon
-														icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
-														size={15}
-														strokeWidth={1.5}
-													/>
+											<div key={group.label}>
+												<div className="mb-2 px-2">
+													<span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-60">
+														{group.label}
+													</span>
 												</div>
+												<div className="flex flex-col divide-y divide-[var(--border-subtle)]/50">
+													{visibleNotes.map((n, i) => {
+														const isDaily = n.tags?.includes('daily');
+														const rawTitle = getNoteDisplayTitle(n);
+														const date = new Date(n.updatedAt || n.createdAt);
 
-												{/* Title inline with timestamp */}
-												<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
-													{displayTitle}
-												</span>
-												<span className="shrink-0 text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
-													{formatRelativeTime(date)}
-												</span>
+														let displayTitle = rawTitle;
+														if (isDaily) {
+															const parts = rawTitle.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+															if (parts) {
+																const [, dd, mm, yyyy] = parts;
+																const d = new Date(`${yyyy}-${mm}-${dd}`);
+																const readable = d.toLocaleDateString('en-GB', {
+																	day: 'numeric',
+																	month: 'short',
+																	year: 'numeric'
+																});
+																displayTitle = `Daily \u2014 ${readable}`;
+															} else {
+																displayTitle = `Daily \u2014 ${rawTitle}`;
+															}
+														}
 
-												{/* Chevron hint */}
-												<svg
-													className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity duration-150 -translate-x-1 group-hover:translate-x-0 transition-transform"
-													width="14"
-													height="14"
-													viewBox="0 0 14 14"
-													fill="none"
-													aria-hidden="true"
-												>
-													<path
-														d="M5 3l4 4-4 4"
-														stroke="currentColor"
-														strokeWidth="1.5"
-														strokeLinecap="round"
-														strokeLinejoin="round"
-													/>
-												</svg>
-											</motion.button>
+														return (
+															<motion.button
+																key={n.id}
+																type="button"
+																onClick={() => onSelectNote(n.id)}
+																initial={{ opacity: 0, y: 8 }}
+																animate={{ opacity: 1, y: 0 }}
+																transition={{ duration: 0.28, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
+																className="group flex items-center gap-4 rounded-xl px-2 py-2.5 transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+																style={{ WebkitTapHighlightColor: 'transparent' }}
+															>
+																{/* Icon block */}
+																<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+																	<Icon
+																		icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
+																		size={15}
+																		strokeWidth={1.5}
+																	/>
+																</div>
+
+																{/* Title inline with timestamp */}
+																<span className="truncate flex-1 text-[15px] font-medium tracking-tight text-[var(--text-primary)] text-left transition-colors duration-150 group-hover:text-[var(--accent)]">
+																	{displayTitle}
+																</span>
+																<span className="shrink-0 text-[12px] text-[var(--text-muted)] tabular-nums transition-colors duration-150 group-hover:text-[var(--text-secondary)]">
+																	{formatRelativeTime(date)}
+																</span>
+
+																{/* Chevron hint */}
+																<svg
+																	className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity duration-150 -translate-x-1 group-hover:translate-x-0 transition-transform"
+																	width="14"
+																	height="14"
+																	viewBox="0 0 14 14"
+																	fill="none"
+																	aria-hidden="true"
+																>
+																	<path
+																		d="M5 3l4 4-4 4"
+																		stroke="currentColor"
+																		strokeWidth="1.5"
+																		strokeLinecap="round"
+																		strokeLinejoin="round"
+																	/>
+																</svg>
+															</motion.button>
+														);
+													})}
+												</div>
+												{group.notes.length > 4 && (
+													<button
+														type="button"
+														onClick={() => {
+															const next = new Set(expandedGroups);
+															if (isExpanded) next.delete(group.label);
+															else next.add(group.label);
+															setExpandedGroups(next);
+														}}
+														className="mt-1 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+														style={{ WebkitTapHighlightColor: 'transparent' }}
+													>
+														{isExpanded ? 'Show less' : `Show more (${group.notes.length - 4})`}
+													</button>
+												)}
+											</div>
 										);
 									})}
 								</div>
