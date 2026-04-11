@@ -496,7 +496,7 @@
   min-width: 100%;
   max-width: 100%;
   border-collapse: collapse;
-  border-radius: var(--radius-md);
+  border-radius: 0;
   overflow: hidden;
   table-layout: fixed;
 }
@@ -504,7 +504,7 @@
 .aura-editor .ProseMirror th,
 .aura-editor .ProseMirror td {
   border: 1px solid var(--border-subtle);
-  padding: 0.6rem 0.75rem;
+  padding: 0.05rem 0.15rem;
   text-align: left;
   vertical-align: top;
   min-width: 96px;
