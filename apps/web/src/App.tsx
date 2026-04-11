@@ -934,7 +934,7 @@ function AppInner() {
   useEffect(() => {
     const palette = ACCENT_COLORS.find((a) => a.id === accentId)
     if (palette) {
-      const c = theme === 'light' ? palette.light : palette.dark
+      const c = theme === 'dark' ? palette.dark : palette.light
       document.documentElement.style.setProperty('--accent', c.accent)
       document.documentElement.style.setProperty('--accent-hover', c.accentHover)
       document.documentElement.style.setProperty('--color-h1', c.colorH1)
@@ -1413,8 +1413,8 @@ function AppInner() {
     }, 250)
   }, [finishSyncingIfIdle, isOnline, queuePendingUpsert, syncNoteToCloud, user])
 
-  const toggleTheme = useCallback(() => {
-    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'))
+  const cycleTheme = useCallback(() => {
+    setTheme((t) => t === 'dark' ? 'light' : t === 'light' ? 'playful' : 'dark')
   }, [])
 
   const onResizeStart = useCallback((e: React.MouseEvent) => {
@@ -1588,11 +1588,11 @@ function AppInner() {
     {
       id: 'action-toggle-theme',
       section: 'Actions',
-      title: theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
-      subtitle: 'Toggle the editorial theme',
+      title: theme === 'dark' ? 'Switch to light mode' : theme === 'light' ? 'Switch to playful mode' : 'Switch to dark mode',
+      subtitle: 'Cycle between dark, light, and playful themes',
       icon: theme === 'dark' ? <Icon icon={Sun01Icon} size={16} strokeWidth={1.5} /> : <Icon icon={Moon01Icon} size={16} strokeWidth={1.5} />,
-      keywords: ['theme', 'color', 'dark', 'light'],
-      run: () => toggleTheme(),
+      keywords: ['theme', 'color', 'dark', 'light', 'playful'],
+      run: () => cycleTheme(),
     },
     {
       id: 'action-focus-search',
@@ -1744,7 +1744,8 @@ function AppInner() {
                 setEditorReady(Boolean(api))
               }}
               theme={theme}
-              onToggleTheme={toggleTheme}
+              onSetTheme={setTheme}
+              onCycleTheme={cycleTheme}
               accentId={accentId}
               onAccentChange={setAccentId}
               sidebarCollapsed={sidebarCollapsed}

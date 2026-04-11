@@ -6,13 +6,14 @@ import {
   CloudSavingDone01Icon,
   AlertCircleIcon,
   Loading01Icon,
-  Moon01Icon,
   Sun01Icon,
   Settings02Icon,
   TextFontIcon,
   ArrowRight01Icon,
   Tick01Icon,
   ExpandIcon,
+  SunCloud02Icon,
+  Moon02Icon,
 } from '@hugeicons/core-free-icons'
 import type { IconSvgElement } from '@hugeicons/react'
 
@@ -29,7 +30,7 @@ interface SyncStatus {
 
 interface SettingsMenuProps {
   theme: string
-  onToggleTheme: () => void
+  onSetTheme: (theme: string) => void
   accentId: string
   onAccentChange: (id: string) => void
   syncing: boolean
@@ -171,7 +172,7 @@ function FontPopover({ anchorRef, fontId, onFontChange, onClose }: FontPopoverPr
 
 export default function SettingsMenu({
   theme,
-  onToggleTheme,
+  onSetTheme,
   accentId,
   onAccentChange,
   syncing,
@@ -267,7 +268,7 @@ export default function SettingsMenu({
         {open && (
           <motion.div
             ref={panelRef}
-            className="absolute right-0 top-11 z-50 w-52 overflow-visible rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
+            className="absolute right-0 top-11 z-50 w-64 overflow-visible rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]"
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -288,42 +289,52 @@ export default function SettingsMenu({
             />
 
             {/* ── Theme ────────────────────────────────────── */}
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              className="settings-item"
-              data-settings-autofocus="true"
-            >
+            <div className="settings-item" data-settings-autofocus="true">
               <span className={ICON_WRAP}>
                 <span className="relative flex h-[18px] w-[18px] items-center justify-center">
-                  <motion.span
-                    className="absolute inset-0 flex items-center justify-center"
-                    initial={false}
-                    animate={{
-                      opacity: theme === 'dark' ? 1 : 0,
-                      scale: theme === 'dark' ? 1 : 0.25,
-                      filter: theme === 'dark' ? 'blur(0px)' : 'blur(4px)',
-                    }}
-                    transition={POPOVER_TRANSITION}
-                  >
+                  <motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
+                    animate={{ opacity: theme === 'dark' ? 1 : 0, scale: theme === 'dark' ? 1 : 0.3 }}
+                    transition={POPOVER_TRANSITION}>
+                    <Icon icon={Moon02Icon} size={18} strokeWidth={1.8} />
+                  </motion.span>
+                  <motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
+                    animate={{ opacity: theme === 'light' ? 1 : 0, scale: theme === 'light' ? 1 : 0.3 }}
+                    transition={POPOVER_TRANSITION}>
                     <Icon icon={Sun01Icon} size={18} strokeWidth={1.8} />
                   </motion.span>
-                  <motion.span
-                    className="absolute inset-0 flex items-center justify-center"
-                    initial={false}
-                    animate={{
-                      opacity: theme === 'dark' ? 0 : 1,
-                      scale: theme === 'dark' ? 0.25 : 1,
-                      filter: theme === 'dark' ? 'blur(4px)' : 'blur(0px)',
-                    }}
-                    transition={POPOVER_TRANSITION}
-                  >
-                    <Icon icon={Moon01Icon} size={18} strokeWidth={1.8} />
+                  <motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
+                    animate={{ opacity: theme === 'playful' ? 1 : 0, scale: theme === 'playful' ? 1 : 0.3 }}
+                    transition={POPOVER_TRANSITION}>
+                    <Icon icon={SunCloud02Icon} size={18} strokeWidth={1.8} style={{ color: '#e8602a' }} />
                   </motion.span>
                 </span>
               </span>
               <span className="settings-item-label">Theme</span>
-            </button>
+              <div className="ml-auto flex items-center gap-0.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-deep)] p-0.5">
+                {([
+                  { id: 'dark',    icon: Moon02Icon,     label: 'Dark'    },
+                  { id: 'light',   icon: Sun01Icon,     label: 'Light'   },
+                  { id: 'playful', icon: SunCloud02Icon, label: 'Playful' },
+                ] as const).map(({ id, icon, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    title={label}
+                    onClick={() => onSetTheme(id)}
+                    className="relative flex h-[22px] w-[22px] items-center justify-center rounded-md transition-colors duration-150"
+                    style={{
+                      color: theme === id
+                        ? (id === 'playful' ? '#e8602a' : 'var(--accent)')
+                        : 'var(--text-muted)',
+                      background: theme === id ? 'var(--bg-elevated)' : 'transparent',
+                      boxShadow: theme === id ? 'var(--neu-shadow)' : 'none',
+                    }}
+                  >
+                    <Icon icon={icon} size={13} strokeWidth={2} />
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* ── Font ─────────────────────────────────────── */}
             <button

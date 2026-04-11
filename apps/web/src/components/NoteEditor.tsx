@@ -11,8 +11,9 @@ import {
 	CloudSavingDone01Icon,
 	CloudOffIcon,
 	Loading01Icon,
-	Moon01Icon,
+	Moon02Icon,
 	Sun01Icon,
+	SunCloud02Icon,
 	SidebarLeftIcon,
 	CommandIcon,
 	Add01Icon,
@@ -82,7 +83,8 @@ interface NoteEditorProps {
 	onSelectNote: (id: string | null) => void;
 	onRegisterEditorApi?: (api: EditorApi | null) => void;
 	theme: string;
-	onToggleTheme: () => void;
+	onSetTheme: (theme: string) => void;
+	onCycleTheme: () => void;
 	accentId: string;
 	onAccentChange: (id: string) => void;
 	sidebarCollapsed: boolean;
@@ -940,7 +942,8 @@ export default function NoteEditor({
 	onSelectNote,
 	onRegisterEditorApi,
 	theme,
-	onToggleTheme,
+	onSetTheme,
+	onCycleTheme,
 	accentId,
 	onAccentChange,
 	sidebarCollapsed,
@@ -1100,7 +1103,7 @@ export default function NoteEditor({
 					<div className="ml-auto flex items-center gap-1.5 md:gap-2">
 						<SettingsMenu
 							theme={theme}
-							onToggleTheme={onToggleTheme}
+							onSetTheme={onSetTheme}
 							accentId={accentId}
 							onAccentChange={onAccentChange}
 							syncing={syncing}
@@ -1754,34 +1757,25 @@ export default function NoteEditor({
 						/>
 						<button
 							type="button"
-							onClick={onToggleTheme}
+							onClick={onCycleTheme}
 							className="transition-transform duration-150 ease-out active:scale-[0.96]"
-							aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+							aria-label="Cycle theme"
 						>
 							<span className="relative flex h-[18px] w-[18px] items-center justify-center">
-								<motion.span
-									className="absolute inset-0 flex items-center justify-center"
-									initial={false}
-									animate={{
-										opacity: theme === 'dark' ? 1 : 0,
-										scale: theme === 'dark' ? 1 : 0.25,
-										filter: theme === 'dark' ? 'blur(0px)' : 'blur(4px)',
-									}}
-									transition={POPOVER_TRANSITION}
-								>
+								<motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
+									animate={{ opacity: theme === 'dark' ? 1 : 0, scale: theme === 'dark' ? 1 : 0.25 }}
+									transition={POPOVER_TRANSITION}>
+									<Icon icon={Moon02Icon} size={18} strokeWidth={1.5} />
+								</motion.span>
+								<motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
+									animate={{ opacity: theme === 'light' ? 1 : 0, scale: theme === 'light' ? 1 : 0.25 }}
+									transition={POPOVER_TRANSITION}>
 									<Icon icon={Sun01Icon} size={18} strokeWidth={1.5} />
 								</motion.span>
-								<motion.span
-									className="absolute inset-0 flex items-center justify-center"
-									initial={false}
-									animate={{
-										opacity: theme === 'dark' ? 0 : 1,
-										scale: theme === 'dark' ? 0.25 : 1,
-										filter: theme === 'dark' ? 'blur(4px)' : 'blur(0px)',
-									}}
-									transition={POPOVER_TRANSITION}
-								>
-									<Icon icon={Moon01Icon} size={18} strokeWidth={1.5} />
+								<motion.span className="absolute inset-0 flex items-center justify-center" initial={false}
+									animate={{ opacity: theme === 'playful' ? 1 : 0, scale: theme === 'playful' ? 1 : 0.25 }}
+									transition={POPOVER_TRANSITION}>
+									<Icon icon={SunCloud02Icon} size={18} strokeWidth={1.5} style={{ color: '#e8602a' }} />
 								</motion.span>
 							</span>
 						</button>
@@ -1857,7 +1851,7 @@ export default function NoteEditor({
 
 					<SettingsMenu
 						theme={theme}
-						onToggleTheme={onToggleTheme}
+						onSetTheme={onSetTheme}
 						accentId={accentId}
 						onAccentChange={onAccentChange}
 						syncing={syncing}
