@@ -1429,7 +1429,7 @@ export default function NoteEditor({
 																delay: i * 0.04,
 																ease: [0.23, 1, 0.32, 1]
 															}}
-															className="glass group flex items-center gap-3 rounded-xl px-1 py-3 text-left transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96]"
+															className="glass group flex items-center gap-3 rounded-xl px-1 py-3 text-left shadow-sm transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96] hover:shadow-md"
 															style={{ WebkitTapHighlightColor: 'transparent' }}
 														>
 															<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
@@ -1612,7 +1612,7 @@ export default function NoteEditor({
 												initial={{ opacity: 0, scale: 0.95 }}
 												animate={{ opacity: 1, scale: 1 }}
 												transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-												className="glass group relative flex flex-col items-start justify-between overflow-hidden rounded-xl px-4 py-3.5 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--glass-border-hover)] active:scale-[0.98]"
+												className="glass group relative flex flex-col items-start justify-between overflow-hidden rounded-xl px-4 py-3.5 text-left shadow-sm transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--glass-border-hover)] hover:shadow-md active:scale-[0.98]"
 												style={{
 													WebkitTapHighlightColor: 'transparent',
 													minHeight: '100px'
