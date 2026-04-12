@@ -1,4 +1,5 @@
 import { useMemo, useRef, useEffect } from 'react'
+import { motion } from 'framer-motion'
 
 const W = 800
 const H = 280
@@ -275,16 +276,20 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 	}, [title])
 
 	return (
-		<div
-			className="relative w-full overflow-hidden rounded-lg"
+		<motion.div
+			key={`banner-${noteId}`}
+			className="banner-draw relative w-full overflow-hidden rounded-lg"
 			style={{
 				backgroundColor: 'color-mix(in srgb, var(--accent) var(--banner-accent-mix, 100%), var(--bg-deep))',
 				minHeight: 160,
 			}}
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
 		>
-			{/* SVG pattern — spans full banner */}
+			{/* SVG pattern — draws in with sweep animation */}
 			<div
-				className="absolute inset-0 pointer-events-none"
+				className="absolute inset-0 pointer-events-none banner-pattern"
 				style={{
 					backgroundImage: svgDataUri,
 					backgroundRepeat: 'no-repeat',
@@ -292,6 +297,9 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 					backgroundSize: '100% 100%',
 				}}
 			/>
+
+			{/* Shimmer sweep highlight */}
+			<div className="absolute inset-0 pointer-events-none banner-shimmer" aria-hidden="true" />
 
 			{/* Title overlay */}
 			<div className="relative z-10 flex items-end h-full min-h-[160px] p-6 md:p-8">
@@ -306,6 +314,6 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 					placeholder="Untitled"
 				/>
 			</div>
-		</div>
+		</motion.div>
 	)
 }

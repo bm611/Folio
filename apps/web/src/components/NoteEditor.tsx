@@ -1,6 +1,6 @@
 import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
 
 import type { Editor } from '@tiptap/react';
 import {
@@ -32,6 +32,7 @@ import DailyHeader from './DailyHeader';
 import type { EditorApi } from './LiveMarkdownEditor';
 import MobileEditorToolbar from './MobileEditorToolbar';
 import NoteBanner from './NoteBanner';
+
 import type { NoteFile, TreeNode } from '../types';
 import { getBreadcrumbPath } from '../utils/tree';
 import { useAuth } from '../contexts/AuthContext';
@@ -40,6 +41,36 @@ import type { SaveStatus, SyncStatus } from './noteEditorUtils';
 import { formatRelativeSaveTime, getSaveBadgeMeta, getSaveTextClass } from './noteEditorUtils';
 
 const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'));
+
+// ─── Animated Word Count ─────────────────────────────────────────────────────
+
+interface SpringNumberProps {
+	value: number;
+	className?: string;
+}
+
+function SpringNumber({ value, className }: SpringNumberProps) {
+	const springVal = useSpring(value, { stiffness: 300, damping: 25 });
+	const display = useMotionValue('');
+	const formatted = new Intl.NumberFormat().format(value);
+
+	useEffect(() => {
+		springVal.set(value);
+	}, [value, springVal]);
+
+	useEffect(() => {
+		const unsubscribe = springVal.on('change', (v) => {
+			display.set(new Intl.NumberFormat().format(Math.round(v)));
+		});
+		return unsubscribe;
+	}, [springVal, display]);
+
+	return (
+		<motion.span className={className} aria-label={formatted}>
+			{formatted}
+		</motion.span>
+	);
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -390,6 +421,7 @@ export default function NoteEditor({
 	}, [note]);
 
 	const editorApiRef = useRef<EditorApi | null>(null);
+	// Stagger animations apply when switching notes (CSS animation classes handle timing)
 
 	const handleRegisterEditorApi = useCallback(
 		(api: EditorApi | null) => {
@@ -568,53 +600,61 @@ export default function NoteEditor({
 
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
+				
+
 				<div className={wideMode ? 'w-full px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8' : 'mx-auto max-w-3xl px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8'}>
-					<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
+					<div className="editor-stagger-1">
+						<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
+					</div>
 
 					{note.tags?.includes('daily') ? (
 						<DailyHeader note={note} />
 					) : (
 						<>
-							<NoteBanner
-								noteId={note.id}
-								title={note.title}
-								onTitleChange={(title) => onUpdateNote(note.id, { title })}
-								onTitleKeyDown={handleTitleKeyDown}
-							/>
-
-							<div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-5 md:mt-6">
-								<span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] tracking-wide">
-									<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
-									{createdAtLabel}
-								</span>
-								<TagInput
-									tags={note.tags || []}
-									onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+							<div className="editor-stagger-2">
+								<NoteBanner
+									noteId={note.id}
+									title={note.title}
+									onTitleChange={(title) => onUpdateNote(note.id, { title })}
+									onTitleKeyDown={handleTitleKeyDown}
 								/>
+
+								<div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-5 md:mt-6">
+									<span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] tracking-wide">
+										<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
+										{createdAtLabel}
+									</span>
+									<TagInput
+										tags={note.tags || []}
+										onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+									/>
+								</div>
 							</div>
 						</>
 					)}
 
-					<div className="mt-6 md:mt-10">
-						<Suspense fallback={<EditorFallback />}>
-							<LiveMarkdownEditor
-								key={note.id}
-								value={note.content}
-								contentDoc={note.contentDoc}
-								notes={fileNotes}
-								currentNoteId={note.id}
-								currentNoteTitle={note.title}
-								wideMode={wideMode}
-								onChange={(updates) => onUpdateNote(note.id, { ...updates })}
-								onRegisterEditorApi={handleRegisterEditorApi}
-							/>
-						</Suspense>
+					<div className="editor-stagger-3">
+						<div className="mt-6 md:mt-10">
+							<Suspense fallback={<EditorFallback />}>
+								<LiveMarkdownEditor
+									key={note.id}
+									value={note.content}
+									contentDoc={note.contentDoc}
+									notes={fileNotes}
+									currentNoteId={note.id}
+									currentNoteTitle={note.title}
+									wideMode={wideMode}
+									onChange={(updates) => onUpdateNote(note.id, { ...updates })}
+									onRegisterEditorApi={handleRegisterEditorApi}
+								/>
+							</Suspense>
+						</div>
 					</div>
 				</div>
 			</div>
 
 			{/* Stats bar — bottom right (minimal pill) */}
-			<div className="hidden md:flex absolute bottom-5 right-5 z-20 items-center gap-2.5 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-4 py-2 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
+			<div className="stats-bar-desktop hidden md:flex absolute bottom-5 right-5 z-20 items-center gap-2.5 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-4 py-2 backdrop-blur-lg text-[11px] tabular-nums select-none transition-[border-color] duration-300" style={{ fontFamily: '"Outfit", sans-serif' }}>
 				{/* Save status */}
 				<motion.span
 					key={saveStatus.state}
@@ -636,26 +676,28 @@ export default function NoteEditor({
 				<span className="text-[var(--text-muted)] opacity-30">·</span>
 
 				{/* Session delta */}
-				{sessionDelta > 0 && (
-					<>
+				<AnimatePresence mode="popLayout">
+					{sessionDelta > 0 && (
 						<motion.span
-							key={sessionDelta}
-							initial={{ scale: 0.85, opacity: 0, y: 4 }}
+							key="session-delta"
+							initial={{ scale: 0.7, opacity: 0, y: 6 }}
 							animate={{ scale: 1, opacity: 1, y: 0 }}
-							transition={{ type: 'spring', stiffness: 400, damping: 18 }}
+							exit={{ scale: 0.7, opacity: 0, y: -6 }}
+							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
 							className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]"
 						>
 							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}
 						</motion.span>
-						<span className="text-[var(--text-muted)] opacity-30">·</span>
-					</>
+					)}
+				</AnimatePresence>
+				{sessionDelta > 0 && (
+					<span className="text-[var(--text-muted)] opacity-30">·</span>
 				)}
 
 				{/* Word count */}
-				<span className="text-[var(--text-muted)]">
-					{new Intl.NumberFormat().format(wordCount)} words
-				</span>
+				<SpringNumber value={wordCount} className="text-[var(--text-muted)]" />
+				<span className="text-[var(--text-muted)]"> words</span>
 
 				{readTime && (
 					<>
@@ -680,7 +722,7 @@ export default function NoteEditor({
 			</div>
 
 			{/* Mobile stats — minimal pill (hidden on desktop) */}
-			<div className="flex md:hidden fixed bottom-[5.25rem] left-1/2 -translate-x-1/2 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1.5 backdrop-blur-lg text-[10px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
+			<div className="stats-bar-mobile flex md:hidden fixed bottom-[5.25rem] left-1/2 -translate-x-1/2 z-20 items-center gap-2 rounded-full border border-[var(--border-subtle)]/50 bg-[var(--bg-surface)]/90 px-3 py-1.5 backdrop-blur-lg text-[10px] tabular-nums select-none" style={{ fontFamily: '"Outfit", sans-serif' }}>
 				<span
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 				>
@@ -694,15 +736,21 @@ export default function NoteEditor({
 				</span>
 				<span className="text-[var(--text-muted)] opacity-30">·</span>
 				<span className="text-[var(--text-muted)]">
-					{new Intl.NumberFormat().format(wordCount)} words
+					<SpringNumber value={wordCount} />
+					{' '}words
 				</span>
 				{sessionDelta > 0 && (
 					<>
 						<span className="text-[var(--text-muted)] opacity-30">·</span>
-						<span className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]">
+						<motion.span
+							initial={{ scale: 0.7, opacity: 0 }}
+							animate={{ scale: 1, opacity: 1 }}
+							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+							className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]"
+						>
 							<Icon icon={FireIcon} size={8} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}
-						</span>
+						</motion.span>
 					</>
 				)}
 			</div>
