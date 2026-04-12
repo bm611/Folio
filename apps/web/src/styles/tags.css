@@ -17,7 +17,7 @@
   height: 24px;
   padding: 0 4px;
   font-family: var(--body-font);
-  font-size: 16px;
+  font-size: 13px;
   color: var(--text-muted);
   background: transparent;
   border: none;
@@ -27,6 +27,19 @@
 .tag-input-field::placeholder {
   color: var(--text-muted);
   opacity: 0.5;
+}
+
+@media (max-width: 767px) {
+  .tag-input-row {
+    min-height: 0;
+    gap: 5px;
+  }
+
+  .tag-input-field {
+    height: 20px;
+    /* Prevent iOS auto-zoom by keeping font ≥ 16px on touch devices */
+    font-size: 16px;
+  }
 }
 
 .tag-chip {
@@ -44,6 +57,14 @@
   user-select: none;
   transition: opacity 150ms ease;
   animation: tag-pop-in 0.18s var(--ease-out-quart) both;
+}
+
+@media (max-width: 767px) {
+  .tag-chip {
+    padding: 1px 6px 1px 7px;
+    font-size: 10px;
+    gap: 3px;
+  }
 }
 
 .tag-chip__label {
@@ -143,4 +164,29 @@
 .tag-chip__remove:hover {
   color: var(--chip-x-hover, var(--text-muted));
   background: var(--chip-x-hover-bg, transparent);
+}
+
+/* Ghost tag — placeholder chip shown when no tags exist */
+.tag-chip.tag-ghost {
+  background: transparent;
+  border-color: var(--border-subtle);
+  border-style: dashed;
+  color: var(--text-muted);
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 150ms ease, border-color 150ms ease, color 150ms ease;
+  animation: none;
+}
+
+.tag-chip.tag-ghost:hover {
+  opacity: 0.85;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .tag-chip.tag-ghost {
+    padding: 1px 5px 1px 6px;
+    font-size: 10px;
+  }
 }

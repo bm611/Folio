@@ -86,6 +86,18 @@ export default function TagInput({ tags = [], onChange }: TagInputProps) {
 
   return (
     <div className={`tag-input-row${focused ? ' tag-input-row--focused' : ''}`}>
+      {tags.length === 0 && !focused && !inputValue && (
+        <button
+          type="button"
+          className="tag-chip tag-ghost"
+          onClick={() => inputRef.current?.focus()}
+          tabIndex={0}
+          aria-label="Add a tag"
+        >
+          <span className="tag-chip__label">+ tag</span>
+        </button>
+      )}
+
       {tags.map((tag) => {
         const colorClass = getTagColor(tag)
         return (
@@ -113,7 +125,7 @@ export default function TagInput({ tags = [], onChange }: TagInputProps) {
         onKeyDown={handleKeyDown}
         onFocus={() => setFocused(true)}
         onBlur={handleBlur}
-        placeholder={tags.length === 0 ? 'Add tags…' : ''}
+        placeholder={tags.length === 0 && focused ? 'Type a tag…' : ''}
         aria-label="Add a tag"
         maxLength={36}
         spellCheck={false}
