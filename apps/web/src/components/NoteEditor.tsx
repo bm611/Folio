@@ -214,7 +214,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-			className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] mb-4 px-2 py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm"
+			className="inline-flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] text-[var(--text-muted)] mb-3 md:mb-4 px-1.5 py-0.5 md:px-2 md:py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm"
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
@@ -230,7 +230,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					<motion.button
 						type="button"
 						onClick={() => onSelectNote(folder.id)}
-						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-colors duration-150 hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+						className="group inline-flex items-center gap-1 rounded-md px-1 py-0.5 md:px-1.5 transition-colors duration-150 hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
 						whileHover={{ scale: 1.02 }}
 						whileTap={{ scale: 0.98 }}
 					>
@@ -240,7 +240,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 							strokeWidth={1.5}
 							className="opacity-60 group-hover:opacity-100 transition-opacity"
 						/>
-						<span className="max-w-[120px] truncate">{folder.name}</span>
+						<span className="max-w-[72px] md:max-w-[120px] truncate">{folder.name}</span>
 					</motion.button>
 				</span>
 			))}
@@ -261,7 +261,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					strokeWidth={1.5}
 					className="opacity-60"
 				/>
-				<span className="max-w-[200px] truncate">{noteName}</span>
+				<span className="max-w-[120px] md:max-w-[200px] truncate">{noteName}</span>
 			</span>
 		</motion.div>
 	);
