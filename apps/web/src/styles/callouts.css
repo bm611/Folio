@@ -29,15 +29,19 @@
   width: 1.7rem;
   height: 1.7rem;
   border-radius: var(--radius-sm);
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  transition: background var(--duration-fast);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
 .aura-callout-icon-btn:hover {
   background: color-mix(in srgb, var(--callout-color) 12%, transparent);
+  border-color: color-mix(in srgb, var(--callout-color) 20%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--callout-color) 10%, transparent);
 }
 
 .aura-callout-title {

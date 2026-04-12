@@ -12,14 +12,16 @@
   top: -1.8rem;
   right: 0;
   padding: 0.1rem 0.3rem;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
   font-size: 1rem;
   cursor: pointer;
   border-radius: var(--radius-sm);
   line-height: 1;
-  transition: background var(--duration-fast), color var(--duration-fast);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
   opacity: 0;
 }
 
@@ -28,8 +30,10 @@
 }
 
 .aura-ai-prompt-close-floating:hover {
-  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
   color: var(--text-primary);
+  box-shadow: var(--glass-glow);
 }
 
 
@@ -95,12 +99,16 @@
   color: var(--text-muted);
   font-size: 0.78rem;
   cursor: pointer;
-  transition: border-color var(--duration-fast), color var(--duration-fast);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color var(--duration-fast), color var(--duration-fast), background-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
 .aura-ai-mention-add-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-glow);
 }
 
 .aura-ai-mention-search-wrap {

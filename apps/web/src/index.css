@@ -8,6 +8,7 @@
 
 /* ── Foundation ── */
 @import "./styles/base.css";
+@import "./styles/glass.css";
 @import "./styles/neumorphic.css";
 
 /* ── Editor ── */

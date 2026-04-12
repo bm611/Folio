@@ -1,0 +1,202 @@
+/* ═══════════════════════════════════════════════
+   Glassmorphism Button System
+   ═══════════════════════════════════════════════ */
+
+/* ── Glass foundation ── */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--glass-glow-hover);
+  }
+}
+
+.glass:active {
+  background: var(--glass-bg-active);
+  transform: scale(0.97);
+}
+
+/* ── Glass accent (primary CTA) ── */
+
+.glass-accent {
+  position: relative;
+  overflow: hidden;
+  background: var(--accent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20), var(--glass-glow);
+  will-change: transform, box-shadow;
+  transition: transform var(--duration-fast) var(--ease-out-quart),
+              box-shadow var(--duration-fast),
+              filter var(--duration-fast);
+}
+
+/* Shimmer sweep on hover */
+.glass-accent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass-accent:hover {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--glass-glow-hover);
+  }
+
+  .glass-accent:hover::before {
+    transform: translateX(100%);
+  }
+}
+
+.glass-accent:active {
+  transform: scale(0.97);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), var(--glass-glow-active);
+}
+
+/* ── Glass secondary (outline / ghost buttons) ── */
+
+.glass-ghost {
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  will-change: transform, box-shadow, border-color;
+  transition: transform var(--duration-fast) var(--ease-out-quart),
+              box-shadow var(--duration-fast),
+              border-color var(--duration-fast),
+              background-color var(--duration-fast),
+              color var(--duration-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass-ghost:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+    color: var(--text-primary);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16), var(--glass-glow-hover);
+  }
+}
+
+.glass-ghost:active {
+  transform: scale(0.96);
+  background: var(--glass-bg-active);
+  box-shadow: var(--glass-glow);
+}
+
+/* ── Glass icon (small icon buttons) ── */
+
+.glass-icon {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  will-change: transform, box-shadow;
+  transition: transform var(--duration-fast) var(--ease-out-quart),
+              box-shadow var(--duration-fast),
+              background-color var(--duration-fast),
+              border-color var(--duration-fast),
+              color var(--duration-fast);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass-icon:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--glass-glow-hover);
+  }
+}
+
+.glass-icon:active {
+  transform: scale(0.95);
+  background: var(--glass-bg-active);
+}
+
+/* ── Glass nav (sidebar nav items) ── */
+
+.glass-nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid transparent;
+  will-change: transform, background-color, border-color, box-shadow;
+  transition: transform 100ms ease-out,
+              background-color 0.15s ease-out,
+              border-color 0.15s ease-out,
+              box-shadow 0.15s ease-out,
+              color 0.15s ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass-nav:hover {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-glow);
+  }
+}
+
+.glass-nav:active {
+  transform: scale(0.98);
+}
+
+.glass-nav.is-active {
+  background: var(--glass-bg-hover);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  box-shadow: var(--glass-glow);
+}
+
+/* ── Glass danger (destructive actions) ── */
+
+.glass-danger:hover {
+  background: color-mix(in srgb, var(--danger) 15%, transparent) !important;
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--danger) 15%, transparent) !important;
+  color: var(--danger) !important;
+}
+
+.glass-danger:active {
+  background: color-mix(in srgb, var(--danger) 20%, transparent) !important;
+  transform: scale(0.97);
+}
+
+/* ── Glass pill (auth pills, small rounded buttons) ── */
+
+.glass-pill {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  will-change: transform, box-shadow;
+  transition: transform var(--duration-fast) var(--ease-out-quart),
+              box-shadow var(--duration-fast),
+              background-color 0.2s var(--ease-out-quart),
+              border-color 0.2s var(--ease-out-quart),
+              color 0.2s var(--ease-out-quart);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .glass-pill:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--glass-glow-hover);
+  }
+}
+
+.glass-pill:active {
+  transform: scale(0.97);
+  background: var(--glass-bg-active);
+}

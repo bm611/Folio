@@ -157,7 +157,7 @@ function FavoriteButton({ note, onUpdateNote }: FavoriteButtonProps) {
 		<motion.button
 			type="button"
 			onClick={handleClick}
-			className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent transition-colors duration-150 ease-out hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2"
+			className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg transition-[background-color,color,border-color,box-shadow] duration-150 ease-out after:absolute after:-inset-2"
 			style={{ color: isFavorite ? 'var(--warning)' : 'var(--text-muted)' }}
 			title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
 			whileTap={{ scale: 0.85 }}
@@ -1054,7 +1054,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={onToggleSidebar}
-							className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
 							title="Open sidebar (Cmd+B)"
 						>
 							<Icon
@@ -1131,9 +1131,10 @@ export default function NoteEditor({
 						{/* Stat badges */}
 						<div className="flex items-center gap-2.5 mb-5 flex-wrap justify-center" style={{ fontFamily: '"Outfit", sans-serif' }}>
 							<span
-								className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+								className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
 								style={{
 									background: 'color-mix(in srgb, var(--success) 14%, transparent)',
+									borderColor: 'color-mix(in srgb, var(--success) 25%, transparent)',
 									color: 'var(--success)',
 								}}
 							>
@@ -1141,9 +1142,10 @@ export default function NoteEditor({
 								{fileNotes.length} {fileNotes.length === 1 ? 'note' : 'notes'}
 							</span>
 							<span
-								className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+								className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
 								style={{
 									background: 'color-mix(in srgb, var(--warning) 14%, transparent)',
+									borderColor: 'color-mix(in srgb, var(--warning) 25%, transparent)',
 									color: 'var(--warning)',
 								}}
 							>
@@ -1151,9 +1153,10 @@ export default function NoteEditor({
 								{streak} day streak
 							</span>
 							<span
-								className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+								className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
 								style={{
 									background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
+									borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)',
 									color: 'var(--accent)',
 								}}
 							>
@@ -1176,12 +1179,14 @@ export default function NoteEditor({
 											style={{
 												background: active
 													? 'color-mix(in srgb, var(--accent) 20%, transparent)'
-													: 'var(--bg-elevated)',
+													: 'var(--glass-bg)',
 												border: `1.5px solid ${active
 													? 'color-mix(in srgb, var(--accent) 42%, transparent)'
 													: isToday
-														? 'color-mix(in srgb, var(--accent) 30%, var(--border-subtle))'
-														: 'var(--border-subtle)'}`,
+														? 'color-mix(in srgb, var(--accent) 30%, var(--glass-border))'
+														: 'var(--glass-border)'}`,
+												backdropFilter: 'blur(var(--glass-blur))',
+												WebkitBackdropFilter: 'blur(var(--glass-blur))',
 											}}
 											initial={{ scale: 0.7, opacity: 0 }}
 											animate={{ scale: 1, opacity: 1 }}
@@ -1219,7 +1224,7 @@ export default function NoteEditor({
 								onClick={() => onNewNote?.()}
 								whileHover={{ scale: 1.02 }}
 								whileTap={{ scale: 0.96 }}
-								className="neu-btn-primary group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-transparent bg-[var(--accent)] px-3 py-4 text-[14px] font-medium text-white shadow-[0_4px_20px_var(--accent)]/30 transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 hover:shadow-[0_4px_24px_var(--accent)]/50 active:scale-[0.96] sm:px-6 sm:text-[15px]"
+								className="glass-accent group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-3 py-4 text-[14px] font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96] sm:px-6 sm:text-[15px]"
 								style={{ fontFamily: '"Outfit", sans-serif' }}
 							>
 								<Icon
@@ -1235,7 +1240,7 @@ export default function NoteEditor({
 								onClick={() => onCreateDailyNote?.()}
 								whileHover={{ scale: 1.02 }}
 								whileTap={{ scale: 0.96 }}
-								className="group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/10 px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-[transform,background-color,border-color,box-shadow] duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 hover:shadow-[0_2px_12px_var(--accent)]/20 active:scale-[0.96] sm:px-6 sm:text-[15px]"
+								className="glass-ghost group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-[transform,background-color,border-color,box-shadow] duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 active:scale-[0.96] sm:px-6 sm:text-[15px]"
 								style={{ fontFamily: '"Outfit", sans-serif' }}
 							>
 								<Icon
@@ -1348,7 +1353,7 @@ export default function NoteEditor({
 															key={n.id}
 															type="button"
 															onClick={() => onSelectNote(n.id)}
-															className="group flex items-center gap-3 rounded-xl px-1 py-2.5 transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+															className="glass group flex items-center gap-3 rounded-xl px-1 py-2.5 transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96]"
 															initial={{ opacity: 0, y: 6 }}
 															animate={{ opacity: 1, y: 0 }}
 															transition={{
@@ -1358,7 +1363,7 @@ export default function NoteEditor({
 															}}
 															style={{ WebkitTapHighlightColor: 'transparent' }}
 														>
-															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+															<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 																<Icon
 																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
 																	size={15}
@@ -1424,10 +1429,10 @@ export default function NoteEditor({
 																delay: i * 0.04,
 																ease: [0.23, 1, 0.32, 1]
 															}}
-															className="group flex items-center gap-3 rounded-xl px-1 py-3 text-left transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+															className="glass group flex items-center gap-3 rounded-xl px-1 py-3 text-left transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96]"
 															style={{ WebkitTapHighlightColor: 'transparent' }}
 														>
-															<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+															<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 																<Icon
 																	icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
 																	size={15}
@@ -1450,7 +1455,7 @@ export default function NoteEditor({
 												<button
 													type="button"
 													onClick={() => setFavExpanded((v) => !v)}
-													className="mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-colors duration-150 hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+													className="glass mt-2 w-full rounded-xl py-2 text-[12px] font-medium text-[var(--text-muted)] transition-[background-color,color,border-color,box-shadow] duration-150 hover:text-[var(--text-primary)] active:scale-[0.96]"
 													style={{ WebkitTapHighlightColor: 'transparent' }}
 												>
 													{favExpanded ? 'Show less' : `Show more (${favoriteNotes.length - 4})`}
@@ -1476,7 +1481,7 @@ export default function NoteEditor({
 						{/* ── Recent Column — Sleek list ────────────────────────── */}
 						<div className="flex flex-col">
 							<div className="mb-5 flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
+								<div className="glass-icon flex h-8 w-8 items-center justify-center rounded-lg text-[var(--accent)]" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}>
 									<Icon icon={Clock01Icon} size={17} strokeWidth={2} />
 								</div>
 								<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
@@ -1516,11 +1521,11 @@ export default function NoteEditor({
 												initial={{ opacity: 0, y: 8 }}
 												animate={{ opacity: 1, y: 0 }}
 												transition={{ duration: 0.28, delay: i * 0.04, ease: [0.23, 1, 0.32, 1] }}
-												className="group flex items-center gap-4 rounded-xl px-2 py-2.5 transition-[background-color,transform] duration-150 ease-out hover:bg-[var(--bg-hover)] active:scale-[0.96]"
+												className="glass group flex items-center gap-4 rounded-xl px-2 py-2.5 transition-[background-color,transform,border-color,box-shadow] duration-150 ease-out active:scale-[0.96]"
 												style={{ WebkitTapHighlightColor: 'transparent' }}
 											>
 												{/* Icon block */}
-												<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)]/60 text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
+												<div className="glass-icon flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors duration-150 group-hover:border-[var(--accent)]/30 group-hover:text-[var(--accent)]">
 													<Icon
 														icon={n.icon && CATEGORY_ICON_MAP[n.icon] ? CATEGORY_ICON_MAP[n.icon]! : (isDaily ? Calendar01Icon : File01Icon)}
 														size={15}
@@ -1567,7 +1572,7 @@ export default function NoteEditor({
 						{/* ── Favorites Column — Bento card grid ───────────────── */}
 						<div className="flex flex-col">
 							<div className="mb-5 flex items-center gap-3">
-								<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--warning)]/10 text-[var(--warning)]">
+								<div className="glass-icon flex h-8 w-8 items-center justify-center rounded-lg text-[var(--warning)]" style={{ background: 'color-mix(in srgb, var(--warning) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--warning) 20%, transparent)' }}>
 									<Icon icon={StarIcon} size={17} strokeWidth={2} />
 								</div>
 								<h2 className="text-[15px] font-semibold tracking-wide text-[var(--text-primary)] letter-spacing-widest opacity-60">
@@ -1607,16 +1612,15 @@ export default function NoteEditor({
 												initial={{ opacity: 0, scale: 0.95 }}
 												animate={{ opacity: 1, scale: 1 }}
 												transition={{ duration: 0.3, delay: i * 0.06, ease: [0.23, 1, 0.32, 1] }}
-												className="group relative flex flex-col items-start justify-between overflow-hidden rounded-xl border border-[var(--border-subtle)] px-4 py-3.5 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--border-muted)] hover:shadow-sm active:scale-[0.98]"
+												className="glass group relative flex flex-col items-start justify-between overflow-hidden rounded-xl px-4 py-3.5 text-left transition-[transform,box-shadow,border-color] duration-150 ease-out hover:border-[var(--glass-border-hover)] active:scale-[0.98]"
 												style={{
-													backgroundColor: 'var(--bg-surface)',
 													WebkitTapHighlightColor: 'transparent',
 													minHeight: '100px'
 												}}
 											>
 												<div className="flex w-full items-start justify-between gap-3 mb-2">
 													{/* Star icon */}
-													<div className="relative z-10 shrink-0 flex h-7 w-7 items-center justify-center rounded-md bg-[var(--accent)]/10 text-[var(--accent)] transition-colors duration-150 group-hover:bg-[var(--accent)]/15">
+													<div className="relative z-10 shrink-0 glass-icon flex h-7 w-7 items-center justify-center rounded-md text-[var(--accent)] transition-[background-color,border-color] duration-150 group-hover:bg-[var(--accent)]/15" style={{ background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}>
 														<Icon
 															icon={isDaily ? Calendar01Icon : StarIcon}
 															size={14}
@@ -1725,7 +1729,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={() => onSelectNote(null)}
-							className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
 							title="Back to Home"
 						>
 						<Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
@@ -1735,7 +1739,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={onToggleSidebar}
-							className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
 							title="Open sidebar (Cmd+B)"
 						>
 							<Icon
@@ -1754,7 +1758,7 @@ export default function NoteEditor({
 					<button
 						type="button"
 						onClick={() => onSelectNote(null)}
-						className="hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+						className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
 						title="Home"
 					>
 						<Icon icon={Home01Icon} size={20} strokeWidth={1.5} />
@@ -1785,7 +1789,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={() => exportNoteAsMarkdown(note)}
-							className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
 							title="Export as Markdown"
 							aria-label="Export note as Markdown"
 						>

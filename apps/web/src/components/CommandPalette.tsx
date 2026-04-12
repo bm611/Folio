@@ -173,9 +173,9 @@ export default function CommandPalette({
                     type="button"
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => onSelectItem(item)}
-                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
+                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-[background-color,color,border-color,box-shadow] ${
                       isActive
-                        ? 'bg-[var(--bg-hover)] text-[var(--text-primary)]'
+                        ? 'glass text-[var(--text-primary)]'
                         : 'text-[var(--text-secondary)]'
                     }`}
                   >

@@ -760,7 +760,7 @@ function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () =
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <button
               onClick={onStart}
-              className="neu-btn-primary group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96]"
+              className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96]"
             >
               <span className="text-base font-semibold tracking-wide">Get Started</span>
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-300 group-hover:translate-x-1 group-hover:bg-white/30">
@@ -770,7 +770,7 @@ function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () =
 
             <button
               onClick={onSignIn}
-              className="group inline-flex items-center gap-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] shadow-[0_10px_28px_rgba(0,0,0,0.12)] transition-[transform,color,border-color,box-shadow] duration-200 ease-out hover:border-[var(--border-default)] hover:text-[var(--text-primary)] hover:shadow-[0_14px_34px_rgba(0,0,0,0.16)] active:scale-[0.96]"
+              className="glass-ghost group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-[transform,color,border-color,box-shadow,background-color] duration-200 ease-out hover:text-[var(--text-primary)] active:scale-[0.96]"
             >
               <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[var(--accent)]" />
               <span>Sign in to sync</span>
@@ -864,7 +864,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
                 <div className="flex flex-wrap items-center gap-4">
                   <button
                     onClick={onStart}
-                    className="neu-btn-primary group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96]"
+                    className="glass-accent group inline-flex items-center gap-3 rounded-full bg-[var(--accent)] px-8 py-4 font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96]"
                   >
                     <span className="text-base font-semibold tracking-wide">Get Started</span>
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 shadow-sm transition-[transform,background-color] duration-300 group-hover:translate-x-1 group-hover:bg-white/30">
@@ -874,7 +874,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
 
                   <button
                     onClick={onSignIn}
-                    className="group inline-flex items-center gap-2.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface)] px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] shadow-[0_10px_28px_rgba(0,0,0,0.12)] transition-[transform,color,border-color,box-shadow] duration-200 ease-out hover:border-[var(--border-default)] hover:text-[var(--text-primary)] hover:shadow-[0_14px_34px_rgba(0,0,0,0.16)] active:scale-[0.96]"
+                    className="glass-ghost group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-[14px] font-medium text-[var(--text-muted)] transition-[transform,color,border-color,box-shadow,background-color] duration-200 ease-out hover:text-[var(--text-primary)] active:scale-[0.96]"
                   >
                     <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-300 group-hover:text-[var(--accent)]" />
                     <span>Sign in to sync</span>

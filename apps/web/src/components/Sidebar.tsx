@@ -441,7 +441,7 @@ function TreeNodeComponent({
               {CATEGORY_ICONS.map((entry) => (
                 <button
                   key={entry.key}
-                  className={`flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-colors hover:bg-[var(--bg-hover)] ${node.icon === entry.key ? 'bg-[var(--bg-hover)] ring-1.5 ring-[var(--accent)]' : ''}`}
+                  className={`glass-icon flex flex-col items-center justify-center w-10 h-10 rounded-lg transition-[background-color,color,border-color,box-shadow] hover:bg-[var(--glass-bg-hover)] ${node.icon === entry.key ? 'bg-[var(--glass-bg-hover)] ring-1.5 ring-[var(--accent)]' : ''}`}
                   title={entry.label}
                   onClick={() => {
                     onChangeIcon?.(node.id, entry.key)
@@ -700,7 +700,7 @@ export default function Sidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] after:absolute after:-inset-3 active:scale-[0.96]"
+              className="glass-icon relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-3 active:scale-[0.96]"
               title="Toggle sidebar (Cmd+B)"
             >
               <Icon icon={SidebarLeftIcon} size={22} stroke={1.5} />

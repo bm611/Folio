@@ -254,7 +254,7 @@ export default function SettingsMenu({
       <button
         type="button"
         onClick={() => (open ? closeMenu() : setOpen(true))}
-        className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+        className="glass-icon relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
         title="Settings"
         aria-label="Open settings"
         aria-expanded={open}
@@ -326,8 +326,8 @@ export default function SettingsMenu({
                       color: theme === id
                         ? (id === 'playful' ? '#e8602a' : 'var(--accent)')
                         : 'var(--text-muted)',
-                      background: theme === id ? 'var(--bg-elevated)' : 'transparent',
-                      boxShadow: theme === id ? 'var(--neu-shadow)' : 'none',
+                      background: theme === id ? 'var(--glass-bg-hover)' : 'transparent',
+                      boxShadow: theme === id ? 'var(--glass-glow)' : 'none',
                     }}
                   >
                     <Icon icon={icon} size={13} strokeWidth={2} />

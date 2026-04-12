@@ -216,7 +216,7 @@ function CodeBlock({ className, children, ...props }: CodeBlockProps) {
           <span>{language}</span>
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] transition-colors hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)]"
+            className="glass-icon flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] transition-colors hover:text-[var(--text-primary)]"
             title="Copy code"
           >
             <Icon icon={copied ? Tick01Icon : Copy01Icon} size={12} strokeWidth={2} />
@@ -228,7 +228,7 @@ function CodeBlock({ className, children, ...props }: CodeBlockProps) {
         <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
           <button
             onClick={handleCopy}
-            className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--bg-hover)] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] border border-[var(--border-subtle)] shadow-sm"
+            className="glass-icon flex h-7 w-7 items-center justify-center rounded-md text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
             title="Copy code"
           >
             <Icon icon={copied ? Tick01Icon : Copy01Icon} size={14} strokeWidth={2} />
@@ -337,7 +337,7 @@ function MessageBubble({ message, notes, onSaveToNote }: MessageBubbleProps) {
               <div className="absolute -bottom-8 left-0 opacity-0 transition-opacity group-hover:opacity-100 flex items-center gap-2">
                 <button
                   onClick={handleCopyMessage}
-                  className="flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform] duration-150 hover:border-[var(--border-default)] hover:text-[var(--text-primary)] active:scale-[0.96] shadow-sm"
+                  className="glass-ghost flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform,box-shadow] duration-150 hover:text-[var(--text-primary)] active:scale-[0.96]"
                   title="Copy response"
                 >
                   <Icon icon={copied ? Tick01Icon : Copy01Icon} size={11} strokeWidth={2.2} />
@@ -346,7 +346,7 @@ function MessageBubble({ message, notes, onSaveToNote }: MessageBubbleProps) {
                 <div ref={pickerRef} className="relative">
                   <button
                     onClick={() => setShowNotePicker((v) => !v)}
-                    className="flex items-center gap-1.5 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform] duration-150 hover:border-[var(--border-default)] hover:text-[var(--text-primary)] active:scale-[0.96] shadow-sm"
+                    className="glass-ghost flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform,box-shadow] duration-150 hover:text-[var(--text-primary)] active:scale-[0.96]"
                     title="Save to note"
                   >
                     <Icon icon={saved ? Tick01Icon : StickyNoteIcon} size={11} strokeWidth={2.2} />
@@ -390,7 +390,7 @@ function MessageBubble({ message, notes, onSaveToNote }: MessageBubbleProps) {
                                   e.preventDefault()
                                   handleSaveToNote(note.id)
                                 }}
-                                className="mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-[background-color,color] duration-100 text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+                                className="glass mx-1 flex w-[calc(100%-0.5rem)] items-center gap-2 rounded-lg px-2.5 py-1.5 text-left transition-[background-color,color,border-color,box-shadow] duration-100 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                               >
                                 <Icon icon={StickyNoteIcon} size={13} strokeWidth={1.8} className="shrink-0" style={{ color: 'var(--accent)' }} />
                                 <span className="block truncate text-[12px]">{getNoteTitle(note)}</span>
@@ -1165,11 +1165,9 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
           <button
             type="button"
             onClick={openMentionPicker}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[transform,background,color,box-shadow] duration-150 active:scale-[0.96]"
+            className="glass-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[transform,background,color,box-shadow,border-color] duration-150 active:scale-[0.96]"
             style={{
-              background: 'color-mix(in srgb, var(--bg-hover) 60%, transparent)',
               color: mentionQuery !== null ? 'var(--accent)' : 'var(--text-secondary)',
-              boxShadow: 'inset 0 1px 0 color-mix(in srgb, white 12%, transparent)',
             }}
             aria-label="Insert note mention"
             title="Insert note mention"
@@ -1181,14 +1179,10 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
             type="button"
             onClick={() => sendMessage()}
             disabled={!hasDraftText || isStreaming}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[transform,opacity,background,color,box-shadow] duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50"
+            className={(hasDraftText && !isStreaming ? 'glass-accent' : 'glass-icon') + ' flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-[transform,opacity,background,color,box-shadow,border-color] duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50'}
             style={{
-              background: hasDraftText && !isStreaming ? 'var(--accent)' : 'var(--bg-hover)',
+              background: hasDraftText && !isStreaming ? 'var(--accent)' : 'var(--glass-bg)',
               color: hasDraftText && !isStreaming ? 'white' : 'var(--text-muted)',
-              boxShadow:
-                hasDraftText && !isStreaming
-                  ? '0 10px 24px -16px color-mix(in srgb, var(--accent) 70%, transparent)'
-                  : 'inset 0 1px 0 color-mix(in srgb, white 10%, transparent)',
             }}
             aria-label="Send message"
           >
@@ -1240,7 +1234,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
               <button
                 type="button"
                 onClick={onToggleSidebar}
-                className="relative hidden md:flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]"
+                className="glass-icon relative hidden md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
                 title="Open sidebar (Cmd+B)"
               >
                 <Icon icon={SidebarLeftIcon} size={22} strokeWidth={1.5} style={{ transform: 'scaleX(-1)' }} />
@@ -1252,7 +1246,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
             <button
               type="button"
               onClick={onCloseChat}
-              className="relative flex md:hidden h-10 w-10 items-center justify-center -ml-2 rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] active:scale-[0.96]"
+              className="glass-icon relative flex md:hidden h-10 w-10 items-center justify-center -ml-2 rounded-lg text-[var(--text-muted)] transition-[background-color,color,border-color,box-shadow] hover:text-[var(--text-primary)] active:scale-[0.96]"
               title="Back to notes"
             >
               <Icon icon={ArrowLeft01Icon} size={24} strokeWidth={1.8} />
@@ -1269,7 +1263,7 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                 transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
                 type="button"
                 onClick={handleNewChat}
-                className="flex items-center gap-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform] duration-150 hover:border-[var(--border-default)] hover:text-[var(--text-primary)] active:scale-[0.96]"
+                className="glass-ghost flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-[var(--text-secondary)] transition-[background,color,border-color,transform,box-shadow] duration-150 hover:text-[var(--text-primary)] active:scale-[0.96]"
               >
                 <Icon icon={Add01Icon} size={12} strokeWidth={2.2} />
                 New Chat
@@ -1378,10 +1372,10 @@ export default function AiChatPage({ notes, sidebarCollapsed, onToggleSidebar, o
                     key={prompt.id}
                     type="button"
                     onClick={() => applyPromptText(prompt.label)}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-left transition-all duration-150 active:scale-95"
+                    className="glass flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-left transition-all duration-150 active:scale-95"
                     style={{
                       background: 'color-mix(in srgb, var(--accent) 12%, var(--bg-elevated))',
-                      border: '1px solid color-mix(in srgb, var(--accent) 22%, transparent)',
+                      borderColor: 'color-mix(in srgb, var(--accent) 22%, transparent)',
                     }}
                   >
                     <Icon icon={prompt.icon} size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />

@@ -87,7 +87,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
+            className="glass-icon flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-[background-color,color,border-color,box-shadow]"
             aria-label="Close"
           >
             <Icon icon={Cancel01Icon} size={16} stroke={1.5} />
@@ -109,10 +109,10 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
               role="tab"
               aria-selected={tab === t.id}
               onClick={() => { setTab(t.id); setError(''); setSuccess('') }}
-              className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-200 ${
+              className={`flex-1 rounded-lg py-2 text-[13px] font-medium transition-[background-color,color,box-shadow,border-color] duration-200 ${
                 tab === t.id
-                  ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-sm'
-                  : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                  ? 'bg-[var(--glass-bg-hover)] text-[var(--text-primary)] border border-[var(--glass-border-hover)] shadow-[var(--glass-glow)]'
+                  : 'text-[var(--text-muted)] border border-transparent hover:text-[var(--text-secondary)]'
               }`}
             >
               {t.label}
@@ -180,8 +180,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-60"
-            style={{ boxShadow: 'var(--neu-shadow)' }}
+            className="glass-accent mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading && <Icon icon={Loading01Icon} size={15} stroke={2} className="animate-spin" />}
             {tab === 'signin' ? 'Sign In' : 'Create Account'}

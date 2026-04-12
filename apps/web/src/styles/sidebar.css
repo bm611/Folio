@@ -60,13 +60,15 @@
   height: 38px;
   padding: 0 12px;
   border-radius: 10px;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
   color: var(--text-secondary);
   font-size: 15px;
   font-family: "Outfit", var(--body-font);
-  transition: background 0.15s ease-out, color 0.15s ease-out, transform 100ms ease-out;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 100ms ease-out;
   text-align: left;
   width: 100%;
   flex-shrink: 0;
@@ -74,8 +76,10 @@
 
 @media (hover: hover) and (pointer: fine) {
   .sb-nav-item:hover {
-    background: color-mix(in srgb, var(--bg-hover) 80%, transparent);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
     color: var(--text-primary);
+    box-shadow: var(--glass-glow);
   }
 }
 
@@ -84,7 +88,9 @@
 }
 
 .sb-nav-item.is-active {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  background: var(--glass-bg-hover);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  box-shadow: var(--glass-glow);
   color: var(--accent);
 }
 
@@ -189,18 +195,29 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
   color: var(--text-muted);
   border-radius: 9px;
-  transition: background 0.15s ease-out, color 0.15s ease-out;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out, transform 100ms ease-out;
   flex-shrink: 0;
 }
 
-.sb-tree-action-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+@media (hover: hover) and (pointer: fine) {
+  .sb-tree-action-btn:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+    color: var(--text-primary);
+    box-shadow: var(--glass-glow-hover);
+  }
+}
+
+.sb-tree-action-btn:active {
+  transform: scale(0.95);
+  background: var(--glass-bg-active);
 }
 
 /* Tooltip for sidebar action buttons */
@@ -238,7 +255,7 @@
 
 .tn-actions button {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   color: var(--text-muted);
   width: 24px;
@@ -249,7 +266,9 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transition: color 0.15s ease-out;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: color 0.15s ease-out, background 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
   font-family: "Outfit", var(--body-font);
   position: relative;
 }
@@ -262,14 +281,21 @@
 
 .tn-actions button:hover {
   color: var(--text-primary);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-glow);
 }
 
 .tn-actions button:active {
   transform: scale(0.9);
+  background: var(--glass-bg-active);
 }
 
 .tn-actions button.hover-danger:hover {
   color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
 .sb-tree {
@@ -523,29 +549,32 @@
   gap: 10px;
   width: 100%;
   padding: 10px 12px;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
   font-family: "Outfit", var(--body-font);
   cursor: pointer;
-  transition: background 0.12s ease-out, color 0.12s ease-out, transform 0.12s ease-out;
+  transition: background 0.12s ease-out, color 0.12s ease-out, transform 0.12s ease-out, border-color 0.12s ease-out, box-shadow 0.15s ease-out;
   min-height: 40px;
   min-width: auto;
   box-shadow: none;
   -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .ctx-menu button:hover {
-  background: var(--bg-hover);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
   color: var(--text-primary);
   transform: none;
-  box-shadow: none;
+  box-shadow: var(--glass-glow-hover);
 }
 
 .ctx-menu button:active {
-  background: var(--bg-hover);
+  background: var(--glass-bg-active);
   color: var(--text-primary);
   transform: scale(0.96);
   box-shadow: none;
@@ -553,7 +582,9 @@
 
 .ctx-menu button.ctx-danger:hover {
   background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
   color: var(--danger);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--danger) 12%, transparent);
 }
 
 .ctx-menu button.ctx-danger:active {
@@ -602,13 +633,19 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-muted);
-  transition: background-color 0.15s, color 0.15s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .mt-modal-close:hover {
-  background-color: var(--bg-hover);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
   color: var(--text-primary);
+  box-shadow: var(--glass-glow-hover);
 }
 
 .mt-modal-body {
@@ -696,7 +733,8 @@
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  transition: background-color 0.15s, opacity 0.15s;
+  border: 1px solid transparent;
+  transition: background-color 0.15s, opacity 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .mt-btn:disabled {
@@ -705,21 +743,53 @@
 }
 
 .mt-btn-cancel {
-  background-color: var(--bg-hover);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   color: var(--text-primary);
 }
 
 .mt-btn-cancel:hover:not(:disabled) {
-  background-color: var(--bg-active);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-glow-hover);
 }
 
 .mt-btn-confirm {
+  position: relative;
+  overflow: hidden;
   background-color: var(--accent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20), var(--glass-glow);
   color: white;
 }
 
-.mt-btn-confirm:hover:not(:disabled) {
-  opacity: 0.9;
+.mt-btn-confirm::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.12) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease-out;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mt-btn-confirm:hover:not(:disabled)::before {
+    transform: translateX(100%);
+  }
+
+  .mt-btn-confirm:hover:not(:disabled) {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), var(--glass-glow-hover);
+  }
+}
+
+.mt-btn-confirm:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10), var(--glass-glow-active);
 }
 
 /* ── Template Gallery ── */
@@ -759,13 +829,19 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-muted);
-  transition: background-color 0.15s, color 0.15s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .tg-modal-close:hover {
-  background-color: var(--bg-hover);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
   color: var(--text-primary);
+  box-shadow: var(--glass-glow-hover);
 }
 
 .tg-modal-body {
