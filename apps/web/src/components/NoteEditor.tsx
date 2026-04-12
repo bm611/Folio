@@ -643,9 +643,9 @@ export default function NoteEditor({
 					<>
 						<motion.span
 							key={sessionDelta}
-							initial={{ scale: 0.85, opacity: 0 }}
-							animate={{ scale: 1, opacity: 1 }}
-							transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+							initial={{ scale: 0.85, opacity: 0, y: 4 }}
+							animate={{ scale: 1, opacity: 1, y: 0 }}
+							transition={{ type: 'spring', stiffness: 400, damping: 18 }}
 							className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]"
 						>
 							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />

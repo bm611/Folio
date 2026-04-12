@@ -44,7 +44,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
         onClose()
       } else {
         await signUpWithEmail(email, password)
-        setSuccess('Account created! You are now signed in.')
+        setSuccess('You\'re in! Welcome to Folio. ✨')
         setTimeout(onClose, 1200)
       }
     } catch (err) {
@@ -78,10 +78,10 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
               className="text-2xl font-bold text-[var(--text-primary)]"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              {tab === 'signin' ? 'Welcome back.' : 'Create account.'}
+              {tab === 'signin' ? 'Welcome back.' : 'Join the fold.'}
             </h2>
             <p className="mt-1 text-[13px] text-[var(--text-muted)]">
-              {tab === 'signin' ? 'Sign in to sync your notes.' : 'Sync your notes across devices.'}
+              {tab === 'signin' ? 'Your notes missed you.' : 'Keep your thoughts in sync, everywhere.'}
             </p>
           </div>
           <button
@@ -139,7 +139,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Email"
-              className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-deep)] py-2.5 pl-9 pr-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] transition-colors"
+              className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-deep)] py-2.5 pl-9 pr-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-[color,border-color,box-shadow]"
             />
           </div>
 
@@ -160,7 +160,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-deep)] py-2.5 pl-9 pr-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] transition-colors"
+              className="w-full rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-deep)] py-2.5 pl-9 pr-4 text-[14px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15 transition-[color,border-color,box-shadow]"
             />
           </div>
 
@@ -180,7 +180,7 @@ export default function AuthModal({ open, onClose }: AuthModalProps) {
           <button
             type="submit"
             disabled={loading}
-            className="glass-accent mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-60"
+            className="glass-accent mt-1 flex items-center justify-center gap-2 rounded-full bg-[var(--accent)] py-3 text-[14px] font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 hover:-translate-y-px active:scale-[0.95] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading && <Icon icon={Loading01Icon} size={15} stroke={2} className="animate-spin" />}
             {tab === 'signin' ? 'Sign In' : 'Create Account'}

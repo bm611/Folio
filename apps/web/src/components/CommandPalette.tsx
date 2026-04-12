@@ -134,7 +134,7 @@ export default function CommandPalette({
             type="text"
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search..."
+            placeholder="What are you looking for?"
             className="w-full bg-transparent text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-muted)]"
           />
           <kbd
@@ -148,7 +148,7 @@ export default function CommandPalette({
         <div className="max-h-[50vh] overflow-y-auto p-1.5">
           {items.length === 0 ? (
             <div className="px-3 py-8 text-center text-sm text-[var(--text-muted)]">
-              No results
+              Nothing matched — try a different search.
             </div>
           ) : (
             <div>
@@ -173,7 +173,7 @@ export default function CommandPalette({
                     type="button"
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => onSelectItem(item)}
-                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-[background-color,color,border-color,box-shadow] ${
+                    className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left transition-[background-color,color,border-color,box-shadow,transform] duration-150 active:scale-[0.98] ${
                       isActive
                         ? 'glass text-[var(--text-primary)]'
                         : 'text-[var(--text-secondary)]'

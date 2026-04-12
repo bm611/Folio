@@ -627,39 +627,48 @@ export default function HomeScreen({
 
 					{/* Stat badges */}
 					<div className="flex items-center gap-2.5 mb-5 flex-wrap justify-center" style={{ fontFamily: '"Outfit", sans-serif' }}>
-						<span
+						<motion.span
 							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
 							style={{
 								background: 'color-mix(in srgb, var(--success) 14%, transparent)',
 								borderColor: 'color-mix(in srgb, var(--success) 25%, transparent)',
 								color: 'var(--success)',
 							}}
+							initial={{ opacity: 0, y: 8, scale: 0.9 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
 						>
 							<Icon icon={File01Icon} size={13} strokeWidth={2.2} />
 							{fileNotes.length} {fileNotes.length === 1 ? 'note' : 'notes'}
-						</span>
-						<span
+						</motion.span>
+						<motion.span
 							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
 							style={{
 								background: 'color-mix(in srgb, var(--warning) 14%, transparent)',
 								borderColor: 'color-mix(in srgb, var(--warning) 25%, transparent)',
 								color: 'var(--warning)',
 							}}
+							initial={{ opacity: 0, y: 8, scale: 0.9 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							transition={{ duration: 0.4, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
 						>
 							<Icon icon={FireIcon} size={13} strokeWidth={2.2} />
 							{streak} day streak
-						</span>
-						<span
+						</motion.span>
+						<motion.span
 							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
 							style={{
 								background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
 								borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)',
 								color: 'var(--accent)',
 							}}
+							initial={{ opacity: 0, y: 8, scale: 0.9 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							transition={{ duration: 0.4, delay: 0.5, ease: [0.25, 1, 0.5, 1] }}
 						>
 							<Icon icon={FileText01Icon} size={13} strokeWidth={2.2} />
 							{totalWords.toLocaleString()} words
-						</span>
+						</motion.span>
 					</div>
 
 					{/* 7-day activity strip */}
@@ -688,8 +697,14 @@ export default function HomeScreen({
 											WebkitBackdropFilter: 'blur(var(--glass-blur))',
 										}}
 										initial={{ scale: 0.7, opacity: 0 }}
-										animate={{ scale: 1, opacity: 1 }}
-										transition={{ delay: i * 0.06, duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
+										animate={isToday && !active 
+											? { scale: [1, 1.06, 1], opacity: 1 }
+											: { scale: 1, opacity: 1 }
+										}
+										transition={isToday && !active
+											? { scale: { duration: 3, repeat: Infinity, ease: 'easeInOut' }, opacity: { duration: 0.35 } }
+											: { delay: i * 0.06, duration: 0.35, ease: [0.25, 1, 0.5, 1] }
+										}
 									>
 										{active && (
 											<motion.span
@@ -721,8 +736,8 @@ export default function HomeScreen({
 					<div className="flex items-center gap-3 w-full justify-center px-4 sm:px-0">
 						<motion.button
 							onClick={() => onNewNote?.()}
-							whileHover={{ scale: 1.02 }}
-							whileTap={{ scale: 0.96 }}
+							whileHover={{ scale: 1.03, y: -1 }}
+							whileTap={{ scale: 0.95, y: 1 }}
 							className="glass-accent group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-3 py-4 text-[14px] font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96] sm:px-6 sm:text-[15px]"
 							style={{ fontFamily: '"Outfit", sans-serif' }}
 						>
@@ -737,8 +752,8 @@ export default function HomeScreen({
 						</motion.button>
 						<motion.button
 							onClick={() => onCreateDailyNote?.()}
-							whileHover={{ scale: 1.02 }}
-							whileTap={{ scale: 0.96 }}
+							whileHover={{ scale: 1.03, y: -1 }}
+							whileTap={{ scale: 0.95, y: 1 }}
 							className="glass-ghost group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-[transform,background-color,border-color,box-shadow] duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 active:scale-[0.96] sm:px-6 sm:text-[15px]"
 							style={{ fontFamily: '"Outfit", sans-serif' }}
 						>
@@ -997,13 +1012,22 @@ export default function HomeScreen({
 										>
 											{/* Timeline dot + line */}
 											<div className="relative flex flex-col items-center shrink-0 pt-1.5">
-												<div
-													className="w-2 h-2 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0"
-													style={{
-														background: i === 0 ? 'var(--accent)' : 'var(--text-muted)',
-														opacity: i === 0 ? 1 : 0.4,
-													}}
-												/>
+												{i === 0 ? (
+													<motion.div
+														className="w-2 h-2 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0"
+														style={{ background: 'var(--accent)' }}
+														animate={{ scale: [1, 1.5, 1], opacity: [1, 0.7, 1] }}
+														transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+													/>
+												) : (
+													<div
+														className="w-2 h-2 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0"
+														style={{
+															background: 'var(--text-muted)',
+															opacity: 0.4,
+														}}
+													/>
+												)}
 												{i < recentNotes.length - 1 && (
 													<div
 														className="w-px flex-1 mt-1.5 rounded-full"
@@ -1089,7 +1113,7 @@ export default function HomeScreen({
 											initial={{ opacity: 0, scale: 0.96, y: 8 }}
 											animate={{ opacity: 1, scale: 1, y: 0 }}
 											transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
-											className="group relative flex flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-left shadow-md transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:shadow-lg active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+											className="group relative flex flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-left shadow-md transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:shadow-[0_8px_30px_-8px_var(--accent-glow,rgba(224,122,138,0.15))] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
 											style={{
 												WebkitTapHighlightColor: 'transparent',
 												minHeight: '130px',
@@ -1098,7 +1122,7 @@ export default function HomeScreen({
 												backdropFilter: 'blur(var(--glass-blur))',
 												WebkitBackdropFilter: 'blur(var(--glass-blur))',
 											}}
-											whileHover={{ y: -3 }}
+											whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }}
 										>
 											{/* Top row: star + time */}
 											<div className="flex w-full items-center justify-between mb-3">

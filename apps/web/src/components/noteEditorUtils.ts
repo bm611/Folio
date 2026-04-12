@@ -184,17 +184,26 @@ export function getSaveTextClass(state: string): string {
 
 export function getTimeGreeting(): string {
 	const h = new Date().getHours()
+	if (h < 5) return 'Burning the midnight oil?'
+	if (h < 8) return 'Early bird catches the thought.'
 	if (h < 12) return 'Good morning.'
-	if (h < 17) return 'Good afternoon.'
-	return 'Good evening.'
+	if (h < 14) return 'Good afternoon.'
+	if (h < 17) return 'Afternoon focus mode.'
+	if (h < 20) return 'Good evening.'
+	return 'Night thoughts welcome.'
 }
 
 export function getMotivationalMessage(streak: number): string {
-	if (streak === 0) return 'What will you write today?';
-	if (streak === 1) return 'Day one. The beginning of something.';
-	if (streak < 7) return `${streak} days in. You're building something real.`;
+	if (streak === 0) return 'Your thoughts are waiting.';
+	if (streak === 1) return 'Day one. Something begins.';
+	if (streak === 3) return '3 days — a habit is forming.';
+	if (streak === 7) return '🔥 One whole week. You\'re on fire.';
+	if (streak < 7) return `${streak} days in. Keep going.`;
+	if (streak === 14) return '2 weeks strong. This is who you are now.';
+	if (streak === 30) return '🎯 30 days. You\'re a force of nature.';
 	if (streak < 30) return `${streak}-day streak. Consistency is your superpower.`;
-	return `${streak} days strong. You're unstoppable.`;
+	if (streak === 100) return '💯 One hundred days. Legendary.';
+	return `${streak} days strong. Unstoppable.`;
 }
 
 export function formatDailyTitle(rawTitle: string): string {

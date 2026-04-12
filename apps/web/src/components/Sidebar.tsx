@@ -769,7 +769,7 @@ export default function Sidebar({
                     type="text"
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    placeholder="Search..."
+                    placeholder="Find a note..."
                     onFocus={() => setSearchFocused(true)}
                     onBlur={() => {
                       if (!searchQuery) setSearchFocused(false)
@@ -857,7 +857,7 @@ export default function Sidebar({
               />
             )}
             {searchQuery.trim() && visibleTree.length === 0 && (
-              <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">No results found</div>
+              <div className="px-4 py-8 text-center text-sm text-[var(--text-muted)]">No notes matched that search.</div>
             )}
           </div>
         </div>
@@ -867,8 +867,8 @@ export default function Sidebar({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="relative absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-[transform,background-color,box-shadow] duration-150 ease-out after:absolute after:-inset-3 md:hidden active:scale-[0.96]"
-            aria-label="Close sidebar"
+            className="relative absolute bottom-[calc(2.5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] shadow-2xl backdrop-blur-xl transition-[transform,background-color,box-shadow] duration-150 ease-out after:absolute after:-inset-3 md:hidden active:scale-[0.92]"
+                         aria-label="Close sidebar"
           >
             <Icon icon={Cancel01Icon} size={24} stroke={2} />
           </button>
