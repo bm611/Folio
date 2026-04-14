@@ -40,7 +40,12 @@ import HomeScreen from './HomeScreen';
 import type { SaveStatus, SyncStatus } from './noteEditorUtils';
 import { formatRelativeSaveTime, getSaveBadgeMeta, getSaveTextClass } from './noteEditorUtils';
 
-const LiveMarkdownEditor = lazy(() => import('./LiveMarkdownEditor'));
+const LiveMarkdownEditor = lazy(() =>
+	import('./LiveMarkdownEditor').catch(() => {
+		window.location.reload();
+		return import('./LiveMarkdownEditor');
+	})
+);
 
 // ─── Animated Word Count ─────────────────────────────────────────────────────
 
