@@ -184,7 +184,7 @@ function FavoriteButton({ note, onUpdateNote }: FavoriteButtonProps) {
 						}}
 						initial={{ 
 							opacity: 1, 
-							scale: 0,
+							scale: 0.3,
 							x: 0, 
 							y: 0 
 						}}
@@ -250,7 +250,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-			className="inline-flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] text-[var(--text-muted)] mb-3 md:mb-4 px-1.5 py-0.5 md:px-2 md:py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm"
+			className="inline-flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] text-[var(--text-muted)] mb-3 md:mb-4 px-1.5 py-0.5 md:px-2 md:py-1 rounded-md bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-sm transition-[border-color] duration-[180ms] hover:border-[color-mix(in_srgb,var(--accent)_30%,var(--glass-border))]"
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
@@ -266,9 +266,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					<motion.button
 						type="button"
 						onClick={() => onSelectNote(folder.id)}
-						className="group inline-flex items-center gap-1 rounded-md px-1 py-0.5 md:px-1.5 transition-colors duration-150 hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
-						whileHover={{ scale: 1.02 }}
-						whileTap={{ scale: 0.98 }}
+						className="group inline-flex items-center gap-1 rounded-md px-1 py-0.5 md:px-1.5 transition-[colors,transform] duration-[160ms] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:scale-[1.02] active:scale-[0.97]"
 					>
 						<Icon
 							icon={Folder01Icon}
@@ -578,7 +576,7 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={() => exportNoteAsMarkdown(note)}
-							className="glass-icon hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:bg-[var(--glass-bg-hover)] hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.96]"
+							className="glass-icon hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-150 ease-out hover:bg-[var(--glass-bg-hover)] hover:text-[var(--accent)] after:absolute after:-inset-2 active:scale-[0.96]"
 							title="Export as Markdown"
 							aria-label="Export note as Markdown"
 						>
@@ -734,7 +732,8 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={onRetrySync}
-							className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]"
+							className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-muted)] transition-[color,background-color,transform] duration-[160ms] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] active:scale-[0.97]"
+							style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
 						>
 							Retry
 						</button>

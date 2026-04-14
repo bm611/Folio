@@ -283,9 +283,9 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 				backgroundColor: 'color-mix(in srgb, var(--accent) var(--banner-accent-mix, 100%), var(--bg-deep))',
 				minHeight: 160,
 			}}
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+			initial={{ opacity: 0, scale: 0.98 }}
+			animate={{ opacity: 1, scale: 1 }}
+			transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
 		>
 			{/* SVG pattern — draws in with sweep animation */}
 			<div
@@ -309,7 +309,7 @@ export default function NoteBanner({ noteId, title, onTitleChange, onTitleKeyDow
 					onChange={(e) => onTitleChange(e.target.value)}
 					onKeyDown={onTitleKeyDown}
 					rows={1}
-					className="w-full max-w-[80%] bg-transparent text-4xl sm:text-5xl md:text-6xl font-light tracking-tight text-white placeholder:text-white/50 focus:outline-none resize-none overflow-hidden"
+					className="w-full max-w-[80%] bg-transparent text-4xl sm:text-5xl md:text-6xl font-light tracking-tight text-white placeholder:text-white/50 focus:outline-none resize-none overflow-hidden transition-shadow duration-[200ms] focus:shadow-[0_2px_0_0_rgba(255,255,255,0.5)]"
 					style={{ fontFamily: '"Fraunces", Georgia, serif', textWrap: 'balance', lineHeight: 1.2 }}
 					placeholder="Untitled"
 				/>

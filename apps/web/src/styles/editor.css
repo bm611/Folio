@@ -118,6 +118,14 @@
 
 .stats-bar-desktop {
   animation: stats-spring-in 0.5s var(--ease-out-quart) 0.3s both;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), border-color 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stats-bar-desktop:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent) 25%, var(--border-subtle));
+  }
 }
 
 .stats-bar-mobile {
