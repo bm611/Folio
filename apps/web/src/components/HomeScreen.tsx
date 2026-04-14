@@ -198,12 +198,12 @@ function FavoritesEmptyPrompt() {
 				transition={{ duration: 0.5, delay: 0.8 }}
 			>
 				<p
-					className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
+					className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight leading-[1.15]"
 					style={{ fontFamily: 'var(--font-display)' }}
 				>
 					No favorites yet.
 				</p>
-				<p className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed">
+				<p className="text-[15px] text-[var(--text-muted)] max-w-[240px] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
 					Star your most important notes to keep them handy here.
 				</p>
 			</motion.div>
@@ -432,12 +432,12 @@ function FirstNotePrompt() {
 				transition={{ duration: 0.5, delay: 0.8 }}
 			>
 				<p
-					className="text-[22px] font-medium text-[var(--text-primary)] tracking-tight"
+					className="text-[22px] font-semibold text-[var(--text-primary)] tracking-tight leading-[1.15]"
 					style={{ fontFamily: 'var(--font-display)' }}
 				>
 					Your canvas is empty.
 				</p>
-				<p className="text-[14px] text-[var(--text-muted)] max-w-[240px] leading-relaxed">
+				<p className="text-[15px] text-[var(--text-muted)] max-w-[240px] leading-relaxed" style={{ fontFamily: 'var(--font-body)' }}>
 					Every great idea starts somewhere. Write your first note.
 				</p>
 			</motion.div>
@@ -600,7 +600,7 @@ export default function HomeScreen({
 							onClick={onOpenAuthModal}
 							className="auth-pill auth-pill--signed-out h-10 px-4"
 							title="Sign in to sync your notes"
-							style={{ fontFamily: '"Outfit", sans-serif' }}
+							style={{ fontFamily: 'var(--font-body)' }}
 						>
 							<Icon icon={CloudUploadIcon} size={18} strokeWidth={2} />
 							<span>Sign in</span>
@@ -610,69 +610,90 @@ export default function HomeScreen({
 			</div>
 
 			{/* Welcome content */}
-			<div className="flex flex-1 flex-col items-center px-6 pt-[5vh] md:pt-[5vh] pb-36 md:pb-6 overflow-y-auto">
-				<div className="animate-fade-in-up flex flex-col items-center text-center">
-					<h1
-						className="text-[28px] sm:text-[32px] font-bold tracking-tight mb-1.5"
+			<div className="flex flex-1 flex-col items-center px-6 pt-[6vh] md:pt-[8vh] pb-36 md:pb-6 overflow-y-auto">
+				<div className="flex flex-col items-center text-center">
+					<motion.h1
+						className="text-[28px] sm:text-[34px] font-bold tracking-tight leading-[1.1] mb-2"
 						style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
+						initial={{ opacity: 0, y: 12 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
 					>
 						{getTimeGreeting()}
-					</h1>
-					<p
-						className="text-[14px] mb-5 max-w-xs leading-relaxed"
-						style={{ fontFamily: '"Outfit", sans-serif', color: 'var(--text-secondary)' }}
+					</motion.h1>
+					<motion.p
+						className="text-[15px] mb-7 max-w-[280px] leading-relaxed"
+						style={{ fontFamily: 'var(--font-body)', color: 'var(--text-secondary)' }}
+						initial={{ opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 1, 0.5, 1] }}
 					>
 						{getMotivationalMessage(streak)}
-					</p>
+					</motion.p>
 
 					{/* Stat badges */}
-					<div className="flex items-center gap-2.5 mb-5 flex-wrap justify-center" style={{ fontFamily: '"Outfit", sans-serif' }}>
+					<motion.div
+						className="flex items-center gap-2.5 mb-7 flex-wrap justify-center"
+						style={{ fontFamily: 'var(--font-body)' }}
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.3, delay: 0.25 }}
+					>
 						<motion.span
-							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px]"
 							style={{
 								background: 'color-mix(in srgb, var(--success) 14%, transparent)',
 								borderColor: 'color-mix(in srgb, var(--success) 25%, transparent)',
 								color: 'var(--success)',
 							}}
-							initial={{ opacity: 0, y: 8, scale: 0.9 }}
+							initial={{ opacity: 0, y: 6, scale: 0.95 }}
 							animate={{ opacity: 1, y: 0, scale: 1 }}
-							transition={{ duration: 0.4, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
+							transition={{ duration: 0.35, delay: 0.3, ease: [0.25, 1, 0.5, 1] }}
 						>
 							<Icon icon={File01Icon} size={13} strokeWidth={2.2} />
-							{fileNotes.length} {fileNotes.length === 1 ? 'note' : 'notes'}
+							<span className="font-semibold tabular-nums">{fileNotes.length}</span>
+							<span className="font-medium opacity-70">{fileNotes.length === 1 ? 'note' : 'notes'}</span>
 						</motion.span>
 						<motion.span
-							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px]"
 							style={{
 								background: 'color-mix(in srgb, var(--warning) 14%, transparent)',
 								borderColor: 'color-mix(in srgb, var(--warning) 25%, transparent)',
 								color: 'var(--warning)',
 							}}
-							initial={{ opacity: 0, y: 8, scale: 0.9 }}
+							initial={{ opacity: 0, y: 6, scale: 0.95 }}
 							animate={{ opacity: 1, y: 0, scale: 1 }}
-							transition={{ duration: 0.4, delay: 0.4, ease: [0.25, 1, 0.5, 1] }}
+							transition={{ duration: 0.35, delay: 0.38, ease: [0.25, 1, 0.5, 1] }}
 						>
 							<Icon icon={FireIcon} size={13} strokeWidth={2.2} />
-							{streak} day streak
+							<span className="font-semibold tabular-nums">{streak}</span>
+							<span className="font-medium opacity-70">day streak</span>
 						</motion.span>
 						<motion.span
-							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold"
+							className="glass-pill inline-flex items-center gap-1.5 rounded-full px-3.5 py-[7px] text-[12px]"
 							style={{
 								background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
 								borderColor: 'color-mix(in srgb, var(--accent) 25%, transparent)',
 								color: 'var(--accent)',
 							}}
-							initial={{ opacity: 0, y: 8, scale: 0.9 }}
+							initial={{ opacity: 0, y: 6, scale: 0.95 }}
 							animate={{ opacity: 1, y: 0, scale: 1 }}
-							transition={{ duration: 0.4, delay: 0.5, ease: [0.25, 1, 0.5, 1] }}
+							transition={{ duration: 0.35, delay: 0.46, ease: [0.25, 1, 0.5, 1] }}
 						>
 							<Icon icon={FileText01Icon} size={13} strokeWidth={2.2} />
-							{totalWords.toLocaleString()} words
+							<span className="font-semibold tabular-nums">{totalWords.toLocaleString()}</span>
+							<span className="font-medium opacity-70">words</span>
 						</motion.span>
-					</div>
+					</motion.div>
 
 					{/* 7-day activity strip */}
-					<div className="flex items-end gap-1.5 mb-1" title="Writing activity — last 7 days">
+					<motion.div
+						className="flex items-end gap-[6px] mb-1"
+						title="Writing activity — last 7 days"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.3, delay: 0.45 }}
+					>
 						{last7DaysActivity.map(({ active, intensity }, i) => {
 							const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 							const todayDow = new Date().getDay()
@@ -681,9 +702,9 @@ export default function HomeScreen({
 							const accentPct = active ? Math.round(15 + intensity * 30) : 0
 							const borderPct = active ? Math.round(25 + intensity * 25) : 0
 							return (
-								<div key={i} className="flex flex-col items-center gap-1">
+								<div key={i} className="flex flex-col items-center gap-[5px]">
 									<motion.div
-										className="w-7 h-7 rounded-lg flex items-center justify-center"
+										className="w-[30px] h-[30px] rounded-lg flex items-center justify-center"
 										style={{
 											background: active
 												? `color-mix(in srgb, var(--accent) ${accentPct}%, transparent)`
@@ -696,7 +717,7 @@ export default function HomeScreen({
 											backdropFilter: 'blur(var(--glass-blur))',
 											WebkitBackdropFilter: 'blur(var(--glass-blur))',
 										}}
-										initial={{ scale: 0.7, opacity: 0 }}
+										initial={{ scale: 0.85, opacity: 0 }}
 										animate={isToday && !active 
 											? { scale: [1, 1.06, 1], opacity: 1 }
 											: { scale: 1, opacity: 1 }
@@ -717,11 +738,11 @@ export default function HomeScreen({
 										)}
 									</motion.div>
 									<span
-										className="text-[9px] font-semibold uppercase tracking-wide"
+										className="text-[10px] font-semibold uppercase tracking-wider"
 										style={{
-											fontFamily: '"Outfit", sans-serif',
+											fontFamily: 'var(--font-body)',
 											color: isToday ? 'var(--accent)' : 'var(--text-muted)',
-											opacity: isToday ? 1 : 0.55,
+											opacity: isToday ? 1 : 0.5,
 										}}
 									>
 										{label}
@@ -729,7 +750,7 @@ export default function HomeScreen({
 								</div>
 							)
 						})}
-					</div>
+					</motion.div>
 				</div>
 
 				<div className="animate-fade-in-up-delay-2 mt-8 mb-2 flex items-center justify-center w-full max-w-md">
@@ -739,7 +760,7 @@ export default function HomeScreen({
 							whileHover={{ scale: 1.03, y: -1 }}
 							whileTap={{ scale: 0.95, y: 1 }}
 							className="glass-accent group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-3 py-4 text-[14px] font-medium text-white transition-[transform,filter,box-shadow] duration-300 hover:brightness-110 active:scale-[0.96] sm:px-6 sm:text-[15px]"
-							style={{ fontFamily: '"Outfit", sans-serif' }}
+							style={{ fontFamily: 'var(--font-body)' }}
 						>
 							<Icon
 								icon={Add01Icon}
@@ -755,7 +776,7 @@ export default function HomeScreen({
 							whileHover={{ scale: 1.03, y: -1 }}
 							whileTap={{ scale: 0.95, y: 1 }}
 							className="glass-ghost group relative inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl px-3 py-4 text-[14px] font-medium text-[var(--accent)] transition-[transform,background-color,border-color,box-shadow] duration-300 hover:bg-[var(--accent)]/15 hover:border-[var(--accent)]/30 active:scale-[0.96] sm:px-6 sm:text-[15px]"
-							style={{ fontFamily: '"Outfit", sans-serif' }}
+							style={{ fontFamily: 'var(--font-body)' }}
 						>
 							<Icon
 								icon={Calendar01Icon}
@@ -771,7 +792,7 @@ export default function HomeScreen({
 				{/* ── Mobile Tab View ─────────────────────────────────── */}
 				<div
 					className="animate-fade-in-up-delay-2 mt-8 w-full px-4 md:hidden"
-					style={{ fontFamily: '"Outfit", sans-serif' }}
+					style={{ fontFamily: 'var(--font-body)' }}
 				>
 					{/* Tab bar — editorial treatment */}
 					<div className="relative mb-8 flex">
@@ -878,7 +899,7 @@ export default function HomeScreen({
 														)}
 														<div className="flex min-w-0 flex-col gap-1.5">
 															<div className="flex items-baseline justify-between gap-3">
-																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
+																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: 'var(--font-body)' }}>
 																	{displayTitle}
 																</span>
 																<span className="shrink-0 text-[11px] font-medium text-[var(--text-muted)] tabular-nums transition-colors duration-[180ms] group-hover:text-[var(--text-secondary)]">
@@ -940,7 +961,7 @@ export default function HomeScreen({
 																	className="transition-[opacity,transform] duration-[180ms] group-hover:opacity-100 group-hover:scale-110"
 																	style={{ color: 'var(--warning)', opacity: 0.5 }}
 																/>
-																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
+																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: 'var(--font-body)' }}>
 																	{displayTitle}
 																</span>
 															</div>
@@ -979,7 +1000,7 @@ export default function HomeScreen({
 				{/* ── Desktop Two-Column View — Bolder layout ───────────────── */}
 				<div
 					className="animate-fade-in-up-delay-2 mt-12 w-full max-w-[1200px] hidden md:grid md:grid-cols-[3fr_5fr] lg:grid-cols-[3fr_5fr] gap-8 lg:gap-12 px-8"
-					style={{ fontFamily: '"Outfit", sans-serif' }}
+					style={{ fontFamily: 'var(--font-body)' }}
 				>
 					{/* ── Recent Column — Editorial timeline ────────────────── */}
 					<div className="flex flex-col">
