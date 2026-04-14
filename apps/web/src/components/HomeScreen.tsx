@@ -13,6 +13,7 @@ import {
 	CloudUploadIcon,
 	StarIcon,
 	FireIcon,
+	Cancel01Icon,
 	File01Icon,
 	Clock01Icon,
 	File01Icon as FileText01Icon,
@@ -727,13 +728,21 @@ export default function HomeScreen({
 											: { delay: i * 0.06, duration: 0.35, ease: [0.25, 1, 0.5, 1] }
 										}
 									>
-										{active && (
+										{active ? (
 											<motion.span
 												initial={{ scale: 0 }}
 												animate={{ scale: 1 }}
 												transition={{ delay: i * 0.06 + 0.15, type: 'spring', stiffness: 420, damping: 18 }}
 											>
 												<Icon icon={FireIcon} size={13} strokeWidth={2} style={{ color: 'var(--accent)', opacity: 0.6 + intensity * 0.4 }} />
+											</motion.span>
+										) : (
+											<motion.span
+												initial={{ scale: 0 }}
+												animate={{ scale: 1 }}
+												transition={{ delay: i * 0.06 + 0.15, type: 'spring', stiffness: 420, damping: 18 }}
+											>
+												<Icon icon={Cancel01Icon} size={13} strokeWidth={2} style={{ color: 'var(--text-muted)', opacity: 0.3 }} />
 											</motion.span>
 										)}
 									</motion.div>
