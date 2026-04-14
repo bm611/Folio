@@ -35,7 +35,7 @@ export const MarkdownPaste = Extension.create({
               const hasFormattedHtml = /<(strong|em|b|i|a|ul|ol|li|h[1-6]|table|blockquote|img)\b/i.test(html)
               // Check if the plain text still has raw markdown syntax —
               // if so, the HTML didn't actually render it
-              const hasRawMarkdown = /(\*\*|__|^#{1,6}\s|^[-*+]\s|^\d+\.\s|^>)/m.test(text)
+              const hasRawMarkdown = /(\*\*|__|^[ \t]*#{1,6}\s|^[ \t]*[-*+]\s|^[ \t]*\d+\.\s|^[ \t]*>|\[[^\]]+\]\([^)]+\)|`[^`]+`)/m.test(text)
               if (hasFormattedHtml && !hasRawMarkdown) {
                 return false
               }

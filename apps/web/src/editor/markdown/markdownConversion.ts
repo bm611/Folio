@@ -22,7 +22,7 @@ const CALLOUT_TITLE_FALLBACKS: Record<string, string> = {
 }
 
 const CALLOUT_BLOCK_PATTERN = /^> \[!([A-Za-z-]+)\]([+-])?\s*(.*)$/
-const MARKDOWN_PATTERN = /(^#{1,6}\s)|(```)|(^[-*+]\s)|(^\d+\.\s)|(^- \[[ xX]\]\s)|(^> \[!)|(\|.+\|)|(\*\*[^*]+\*\*)|(`[^`]+`)|(\[[^\]]+\]\([^)]+\))/m
+const MARKDOWN_PATTERN = /(^[ \t]*#{1,6}\s)|(```)|(^[ \t]*[-*+]\s)|(^[ \t]*\d+\.\s)|(^[ \t]*- \[[ xX]\]\s)|(^[ \t]*> \[!)|(\|.+\|)|(\*\*[^*]+\*\*)|(`[^`]+`)|(\[[^\]]+\]\([^)]+\))/m
 
 const markdown = new MarkdownIt({
   html: false,
