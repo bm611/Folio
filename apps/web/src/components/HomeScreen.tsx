@@ -854,7 +854,7 @@ export default function HomeScreen({
 														key={n.id}
 														type="button"
 														onClick={() => onSelectNote(n.id)}
-														className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+														className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow,border-color] duration-[180ms] hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--accent)_25%,transparent)] hover:border-[color-mix(in_srgb,var(--accent)_60%,var(--glass-border))] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] active:scale-[0.97] active:shadow-none focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
 														initial={{ opacity: 0, y: 10 }}
 														animate={{ opacity: 1, y: 0 }}
 														transition={{
@@ -866,21 +866,22 @@ export default function HomeScreen({
 															WebkitTapHighlightColor: 'transparent',
 															background: 'var(--glass-bg)',
 															border: '1px solid var(--glass-border)',
+															transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 														}}
 													>
 														{/* Accent dot for first item */}
 														{i === 0 && (
 															<div
-																className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 rounded-full"
-																style={{ background: 'var(--accent)' }}
+																className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-8 rounded-full transition-[height] duration-[180ms] group-hover:h-full"
+																style={{ background: 'var(--accent)', transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
 															/>
 														)}
 														<div className="flex min-w-0 flex-col gap-1.5">
 															<div className="flex items-baseline justify-between gap-3">
-																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
+																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
 																	{displayTitle}
 																</span>
-																<span className="shrink-0 text-[11px] font-medium text-[var(--text-muted)] tabular-nums">
+																<span className="shrink-0 text-[11px] font-medium text-[var(--text-muted)] tabular-nums transition-colors duration-[180ms] group-hover:text-[var(--text-secondary)]">
 																	{formatRelativeTime(date)}
 																</span>
 															</div>
@@ -922,11 +923,12 @@ export default function HomeScreen({
 															delay: i * 0.06,
 															ease: [0.23, 1, 0.32, 1]
 														}}
-														className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow] duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+														className="group relative w-full text-left rounded-2xl px-4 py-4 transition-[transform,background-color,box-shadow,border-color] duration-[180ms] hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-[0_8px_30px_-6px_color-mix(in_srgb,var(--accent)_25%,transparent)] hover:border-[color-mix(in_srgb,var(--accent)_60%,var(--glass-border))] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] active:scale-[0.97] active:shadow-none focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
 														style={{
 															WebkitTapHighlightColor: 'transparent',
 															background: 'var(--glass-bg)',
 															border: '1px solid var(--glass-border)',
+															transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 														}}
 													>
 														<div className="flex min-w-0 flex-col gap-1.5">
@@ -935,14 +937,15 @@ export default function HomeScreen({
 																	icon={StarIcon}
 																	size={12}
 																	strokeWidth={2.5}
+																	className="transition-[opacity,transform] duration-[180ms] group-hover:opacity-100 group-hover:scale-110"
 																	style={{ color: 'var(--warning)', opacity: 0.5 }}
 																/>
-																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-150 group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
+																<span className="truncate text-[15px] font-semibold tracking-tight text-[var(--text-primary)] transition-colors duration-[180ms] group-hover:text-[var(--accent)]" style={{ fontFamily: '"Outfit", sans-serif' }}>
 																	{displayTitle}
 																</span>
 															</div>
 															<div className="flex items-center gap-2 text-[11px] text-[var(--text-muted)]">
-																<span className="tabular-nums font-medium">{formatRelativeTime(date)}</span>
+																<span className="tabular-nums font-medium transition-colors duration-[180ms] group-hover:text-[var(--text-secondary)]">{formatRelativeTime(date)}</span>
 															</div>
 														</div>
 													</motion.button>
@@ -1007,8 +1010,8 @@ export default function HomeScreen({
 											initial={{ opacity: 0, x: -12 }}
 											animate={{ opacity: 1, x: 0 }}
 											transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
-											className="group relative flex items-start gap-4 py-4 text-left transition-[background-color,transform] duration-200 hover:bg-[var(--glass-bg)] hover:-translate-y-px active:scale-[0.98] rounded-xl px-3 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
-											style={{ WebkitTapHighlightColor: 'transparent' }}
+											className="group relative flex items-start gap-4 py-4 text-left transition-[background-color,transform,box-shadow] duration-[180ms] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] hover:-translate-y-1 hover:shadow-[0_6px_24px_-6px_color-mix(in_srgb,var(--accent)_20%,transparent)] active:scale-[0.97] rounded-xl px-3 focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+											style={{ WebkitTapHighlightColor: 'transparent', transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
 										>
 											{/* Timeline dot + line */}
 											<div className="relative flex flex-col items-center shrink-0 pt-1.5">
@@ -1021,10 +1024,11 @@ export default function HomeScreen({
 													/>
 												) : (
 													<div
-														className="w-2 h-2 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0"
+														className="w-2.5 h-2.5 rounded-full ring-2 ring-[var(--bg-primary)] shrink-0 transition-[background-color,opacity,box-shadow,transform] duration-[180ms] group-hover:scale-125 group-hover:opacity-100 group-hover:shadow-[0_0_8px_color-mix(in_srgb,var(--accent)_40%,transparent)]"
 														style={{
 															background: 'var(--text-muted)',
 															opacity: 0.4,
+															transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 														}}
 													/>
 												)}
@@ -1042,7 +1046,7 @@ export default function HomeScreen({
 											{/* Content */}
 											<div className="flex min-w-0 flex-1 flex-col gap-1 py-0.5">
 												<span
-													className="truncate text-[15px] font-semibold tracking-tight transition-colors duration-150 group-hover:text-[var(--accent)]"
+													className="truncate text-[15px] font-semibold tracking-tight transition-colors duration-[180ms] group-hover:text-[var(--accent)]"
 													style={{
 														color: i === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
 													}}
@@ -1050,29 +1054,31 @@ export default function HomeScreen({
 													{displayTitle}
 												</span>
 												<div className="flex items-center gap-2 mt-0.5">
-													<span className="text-[10px] font-semibold uppercase tracking-wider tabular-nums" style={{ color: 'var(--accent)', opacity: 0.55 }}>
+													<span className="text-[10px] font-semibold uppercase tracking-wider tabular-nums transition-opacity duration-[180ms] group-hover:opacity-100" style={{ color: 'var(--accent)', opacity: 0.55 }}>
 														{formatRelativeTime(date)}
 													</span>
 												</div>
 											</div>
 
 											{/* Arrow hint */}
-											<svg
-												className="shrink-0 opacity-0 group-hover:opacity-30 transition-all duration-200 translate-x-0 group-hover:translate-x-0 self-center"
-												width="16"
-												height="16"
-												viewBox="0 0 16 16"
-												fill="none"
-												aria-hidden="true"
-											>
-												<path
-													d="M6 4l4 4-4 4"
-													stroke="currentColor"
-													strokeWidth="1.5"
-													strokeLinecap="round"
-													strokeLinejoin="round"
-												/>
-											</svg>
+											<div className="shrink-0 self-center opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-[opacity,transform] duration-[180ms]" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}>
+												<svg
+													width="18"
+													height="18"
+													viewBox="0 0 16 16"
+													fill="none"
+													aria-hidden="true"
+													style={{ color: 'var(--accent)' }}
+												>
+													<path
+														d="M6 4l4 4-4 4"
+														stroke="currentColor"
+														strokeWidth="2"
+														strokeLinecap="round"
+														strokeLinejoin="round"
+													/>
+												</svg>
+											</div>
 										</motion.button>
 									);
 								})}
@@ -1113,7 +1119,7 @@ export default function HomeScreen({
 											initial={{ opacity: 0, scale: 0.96, y: 8 }}
 											animate={{ opacity: 1, scale: 1, y: 0 }}
 											transition={{ duration: 0.4, delay: i * 0.07, ease: [0.23, 1, 0.32, 1] }}
-											className="group relative flex flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-left shadow-md transition-[transform,box-shadow,border-color,background-color] duration-200 ease-out hover:shadow-[0_8px_30px_-8px_var(--accent-glow,rgba(224,122,138,0.15))] active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
+											className="group relative flex flex-col justify-between overflow-hidden rounded-2xl px-5 py-5 text-left shadow-md transition-[transform,box-shadow,border-color,background-color] duration-[180ms] hover:shadow-[0_12px_36px_-8px_color-mix(in_srgb,var(--accent)_30%,transparent)] hover:border-[color-mix(in_srgb,var(--accent)_60%,var(--glass-border))] hover:bg-[color-mix(in_srgb,var(--accent)_6%,var(--glass-bg))] active:scale-[0.97] active:shadow-none focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-1"
 											style={{
 												WebkitTapHighlightColor: 'transparent',
 												minHeight: '130px',
@@ -1121,8 +1127,9 @@ export default function HomeScreen({
 												border: '1px solid var(--glass-border)',
 												backdropFilter: 'blur(var(--glass-blur))',
 												WebkitBackdropFilter: 'blur(var(--glass-blur))',
+												transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)',
 											}}
-											whileHover={{ y: -4, transition: { duration: 0.25, ease: [0.25, 1, 0.5, 1] } }}
+											whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] } }}
 										>
 											{/* Top row: star + time */}
 											<div className="flex w-full items-center justify-between mb-3">
@@ -1130,16 +1137,17 @@ export default function HomeScreen({
 													icon={StarIcon}
 													size={14}
 													strokeWidth={2.5}
+													className="transition-[opacity,transform] duration-[180ms] group-hover:opacity-100 group-hover:scale-125"
 													style={{ color: 'var(--warning)', opacity: 0.45 }}
 												/>
-												<span className="text-[11px] font-semibold tabular-nums" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
+												<span className="text-[11px] font-semibold tabular-nums transition-[color,opacity] duration-[180ms] group-hover:opacity-100 group-hover:text-[var(--text-secondary)]" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
 													{formatRelativeTime(date)}
 												</span>
 											</div>
 
 											{/* Title — larger, bolder */}
 											<span
-												className="relative z-10 block truncate text-[17px] font-bold tracking-tight transition-colors duration-150 group-hover:text-[var(--accent)]"
+												className="relative z-10 block truncate text-[17px] font-bold tracking-tight transition-colors duration-[180ms] group-hover:text-[var(--accent)]"
 												style={{
 													fontFamily: 'var(--font-display)',
 													color: 'var(--text-secondary)',
@@ -1153,7 +1161,7 @@ export default function HomeScreen({
 											<div className="relative z-10 flex items-center gap-2 mt-3">
 												{isDaily && (
 													<span
-														className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+														className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-[background-color] duration-[180ms] group-hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)]"
 														style={{
 															background: 'color-mix(in srgb, var(--accent) 12%, transparent)',
 															color: 'var(--accent)',
