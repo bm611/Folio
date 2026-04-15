@@ -1172,7 +1172,6 @@ export default function HomeScreen({
 											<span
 												className="relative z-10 block truncate text-[17px] font-bold tracking-tight transition-colors duration-[180ms] group-hover:text-[var(--accent)]"
 												style={{
-													fontFamily: 'var(--font-display)',
 													color: 'var(--text-secondary)',
 													lineHeight: 1.3,
 												}}

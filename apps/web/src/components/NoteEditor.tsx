@@ -16,6 +16,7 @@ import {
 	ArrowRight01Icon,
 	SidebarLeftIcon,
 	Logout01Icon,
+	Tag01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -638,15 +639,20 @@ export default function NoteEditor({
 									onTitleKeyDown={handleTitleKeyDown}
 								/>
 
-								<div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-5 md:mt-6">
-									<span className="inline-flex items-center gap-1.5 text-[13px] text-[var(--text-muted)] tracking-wide">
-										<Icon icon={Calendar01Icon} size={14} strokeWidth={1.5} className="opacity-70" />
-										{createdAtLabel}
-									</span>
-									<TagInput
-										tags={note.tags || []}
-										onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-									/>
+								<div className="flex flex-col gap-2 mt-5 md:mt-6">
+									<div className="flex items-center gap-2.5">
+										<Icon icon={Calendar01Icon} size={13} strokeWidth={1.5} style={{ color: 'var(--text-muted)', opacity: 0.6, flexShrink: 0 }} />
+										<span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-50 w-14 shrink-0">Created</span>
+										<span className="text-[13px] text-[var(--text-secondary)]">{createdAtLabel}</span>
+									</div>
+									<div className="flex items-center gap-2.5">
+										<Icon icon={Tag01Icon} size={13} strokeWidth={1.5} style={{ color: 'var(--text-muted)', opacity: 0.6, flexShrink: 0 }} />
+										<span className="text-[11px] font-semibold uppercase tracking-widest text-[var(--text-muted)] opacity-50 w-14 shrink-0">Tags</span>
+										<TagInput
+											tags={note.tags || []}
+											onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+										/>
+									</div>
 								</div>
 							</div>
 						</>
