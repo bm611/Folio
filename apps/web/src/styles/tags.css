@@ -169,19 +169,21 @@
 /* Ghost tag — placeholder chip shown when no tags exist */
 .tag-chip.tag-ghost {
   background: transparent;
-  border-color: var(--border-subtle);
-  border-style: dashed;
+  border-color: color-mix(in srgb, var(--text-muted) 30%, transparent);
+  border-style: solid;
+  border-radius: 999px;
   color: var(--text-muted);
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: pointer;
-  transition: opacity 150ms ease, border-color 150ms ease, color 150ms ease;
+  transition: opacity 150ms ease, border-color 150ms ease, color 150ms ease, background 150ms ease;
   animation: none;
 }
 
 .tag-chip.tag-ghost:hover {
-  opacity: 0.85;
+  opacity: 1;
   border-color: var(--accent);
   color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 @media (max-width: 767px) {

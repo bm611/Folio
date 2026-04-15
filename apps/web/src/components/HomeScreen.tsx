@@ -13,9 +13,7 @@ import {
 	CloudUploadIcon,
 	StarIcon,
 	FireIcon,
-	File01Icon,
 	Clock01Icon,
-	File01Icon as FileText01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
