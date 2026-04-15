@@ -83,7 +83,7 @@ input[type='number'] {
     display: none;
   }
 
-  button:not(.tag-chip__remove) {
+  button:not(.tag-chip__remove):not(.tag-ghost) {
     min-height: 36px;
     min-width: 36px;
   }

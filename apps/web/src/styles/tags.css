@@ -188,7 +188,7 @@
 
 @media (max-width: 767px) {
   .tag-chip.tag-ghost {
-    padding: 1px 5px 1px 6px;
+    padding: 1px 8px;
     font-size: 10px;
   }
 }
