@@ -110,111 +110,111 @@ export default function AuthPage({ onBack }: AuthPageProps) {
               </p>
             </div>
 
-            {/* Auth Box */}
-            <div className="w-full">
-              {/* Tab switcher */}
-              <div
-                className="mb-8 flex border-b border-[var(--border-subtle)]"
-                role="tablist"
-              >
-                {([
-                  { id: 'signin' as const, label: 'Sign In' },
-                  { id: 'signup' as const, label: 'Sign Up' },
-                ]).map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={tab === t.id}
-                    onClick={() => setTab(t.id)}
-                    className={`flex-1 py-3 text-sm font-medium transition-[color,border-color] duration-200 border-b-2 -mb-[1px] ${
-                      tab === t.id
-                        ? 'text-[var(--text-primary)] border-[var(--accent)]'
-                        : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-secondary)] hover:border-[var(--border-subtle)]'
-                    }`}
-                  >
-                    {t.label}
-                  </button>
-                ))}
-              </div>
+            {/* Auth Form Area */}
+            {/* Tab switcher */}
+            <div
+              className="mb-12 flex border-b border-[var(--border-subtle)]"
+              role="tablist"
+            >
+              {([
+                { id: 'signin' as const, label: 'Sign In' },
+                { id: 'signup' as const, label: 'Sign Up' },
+              ]).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`flex-1 py-3 text-sm font-medium transition-[color,border-color] duration-200 border-b-2 -mb-[1px] ${
+                    tab === t.id
+                      ? 'text-[var(--text-primary)] border-[var(--accent)]'
+                      : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-secondary)] hover:border-[var(--border-subtle)]'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="space-y-4">
-                  {/* Email */}
-                  <div className="relative">
-                    <Icon
-                      icon={Mail01Icon}
-                      size={18}
-                      strokeWidth={1.5}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
-                    />
-                    <input
-                      ref={emailRef}
-                      id="auth-email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email address"
-                      className="w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/50 py-3 pl-12 pr-4 text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] focus:bg-[var(--bg-surface)] transition-colors"
-                    />
-                  </div>
-
-                  {/* Password */}
-                  <div className="relative">
-                    <Icon
-                      icon={LockPasswordIcon}
-                      size={18}
-                      strokeWidth={1.5}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] pointer-events-none"
-                    />
-                    <input
-                      id="auth-password"
-                      type="password"
-                      autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
-                      required
-                      minLength={6}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Password"
-                      className="w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/50 py-3 pl-12 pr-4 text-[15px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:border-[var(--accent)] focus:bg-[var(--bg-surface)] transition-colors"
-                    />
-                  </div>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+              <div className="space-y-6">
+                {/* Email */}
+                <div className="relative group">
+                  <Icon
+                    icon={Mail01Icon}
+                    size={22}
+                    strokeWidth={1.5}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors pointer-events-none"
+                  />
+                  <input
+                    ref={emailRef}
+                    id="auth-email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email address"
+                    className="w-full bg-transparent border-0 border-b-2 border-[var(--border-subtle)] focus:border-[var(--border-subtle)] focus:border-b-[var(--accent)] focus:ring-0 py-4 pl-10 pr-4 text-xl sm:text-2xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 transition-colors duration-300 rounded-none !outline-none !shadow-none"
+                    style={{ boxShadow: 'none' }}
+                  />
                 </div>
 
-                {/* Error / success */}
-                {error && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-[13px] text-[var(--danger)] leading-relaxed"
-                  >
-                    {error}
-                  </motion.p>
-                )}
-                {success && (
-                  <motion.p
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="rounded-xl border border-[var(--success)]/20 bg-[var(--success)]/10 px-4 py-3 text-[13px] text-[var(--success)] leading-relaxed"
-                  >
-                    {success}
-                  </motion.p>
-                )}
+                {/* Password */}
+                <div className="relative group">
+                  <Icon
+                    icon={LockPasswordIcon}
+                    size={22}
+                    strokeWidth={1.5}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors pointer-events-none"
+                  />
+                  <input
+                    id="auth-password"
+                    type="password"
+                    autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="w-full bg-transparent border-0 border-b-2 border-[var(--border-subtle)] focus:border-[var(--border-subtle)] focus:border-b-[var(--accent)] focus:ring-0 py-4 pl-10 pr-4 text-xl sm:text-2xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 transition-colors duration-300 rounded-none !outline-none !shadow-none"
+                    style={{ boxShadow: 'none' }}
+                  />
+                </div>
+              </div>
 
-                {/* Submit */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] py-3.5 text-[15px] font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+              {/* Error / success */}
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="px-2 text-sm text-[var(--danger)] leading-relaxed"
                 >
-                  {loading && <Icon icon={Loading01Icon} size={18} strokeWidth={2} className="animate-spin" />}
-                  {tab === 'signin' ? 'Sign In' : 'Create Account'}
-                </button>
-              </form>
-            </div>
+                  {error}
+                </motion.p>
+              )}
+              {success && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="px-2 text-sm text-[var(--success)] leading-relaxed"
+                >
+                  {success}
+                </motion.p>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] py-4 text-lg font-semibold text-white transition-[transform,filter,opacity] duration-200 hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 shadow-lg shadow-[var(--accent)]/20"
+              >
+                {loading && <Icon icon={Loading01Icon} size={20} strokeWidth={2} className="animate-spin" />}
+                {tab === 'signin' ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
           </motion.div>
         </div>
 
