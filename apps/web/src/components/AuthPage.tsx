@@ -111,10 +111,10 @@ export default function AuthPage({ onBack }: AuthPageProps) {
             </div>
 
             {/* Auth Box */}
-            <div className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-primary)]/60 backdrop-blur-xl p-8 shadow-[0_32px_80px_rgba(0,0,0,0.45)]">
+            <div className="w-full">
               {/* Tab switcher */}
               <div
-                className="mb-8 flex rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-1"
+                className="mb-8 flex border-b border-[var(--border-subtle)]"
                 role="tablist"
               >
                 {([
@@ -127,10 +127,10 @@ export default function AuthPage({ onBack }: AuthPageProps) {
                     role="tab"
                     aria-selected={tab === t.id}
                     onClick={() => setTab(t.id)}
-                    className={`flex-1 rounded-lg py-2.5 text-sm font-medium transition-[background-color,color,box-shadow,border-color] duration-200 ${
+                    className={`flex-1 py-3 text-sm font-medium transition-[color,border-color] duration-200 border-b-2 -mb-[1px] ${
                       tab === t.id
-                        ? 'bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-subtle)] shadow-sm'
-                        : 'text-[var(--text-muted)] border border-transparent hover:text-[var(--text-secondary)]'
+                        ? 'text-[var(--text-primary)] border-[var(--accent)]'
+                        : 'text-[var(--text-muted)] border-transparent hover:text-[var(--text-secondary)] hover:border-[var(--border-subtle)]'
                     }`}
                   >
                     {t.label}
