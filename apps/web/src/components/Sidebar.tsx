@@ -633,7 +633,7 @@ export default function Sidebar({
       {/* On mobile this element is always 0-wide in the flex row; the aside is position:fixed and slides over the content */}
       <aside
         className={`sidebar-vs
-          max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:h-[100dvh] max-md:w-[60vw]
+          max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-40 max-md:h-[100dvh] max-md:w-[80vw]
           max-md:transition-transform max-md:duration-300 max-md:ease-out
           ${collapsed ? 'max-md:-translate-x-full' : 'max-md:translate-x-0'}
           md:relative md:z-auto md:h-[100dvh] md:shrink-0 md:transition-[width] md:duration-300 md:ease-out`}
