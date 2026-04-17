@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Cancel01Icon, Loading01Icon, Mail01Icon, LockPasswordIcon } from '@hugeicons/core-free-icons';
+import { Cancel01Icon, Loading01Icon, Mail01Icon, LockPasswordIcon, UserAccountIcon } from '@hugeicons/core-free-icons';
 import Icon from './Icon';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
@@ -17,6 +17,7 @@ export default function AuthPage({ onBack }: AuthPageProps) {
   const [tab, setTab] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -29,6 +30,7 @@ export default function AuthPage({ onBack }: AuthPageProps) {
     setSuccess('');
     setEmail('');
     setPassword('');
+    setDisplayName('');
     setTimeout(() => emailRef.current?.focus(), 60);
   }, [tab]);
 
@@ -43,7 +45,7 @@ export default function AuthPage({ onBack }: AuthPageProps) {
         await signInWithEmail(email, password);
         // App.tsx handles unmounting this component once authenticated
       } else {
-        await signUpWithEmail(email, password);
+        await signUpWithEmail(email, password, displayName || undefined);
         setSuccess("You're in! Welcome to Folio. ✨");
       }
     } catch (err) {
@@ -140,6 +142,28 @@ export default function AuthPage({ onBack }: AuthPageProps) {
             {/* Form */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-8">
               <div className="space-y-6">
+                {/* Display Name (sign-up only) */}
+                {tab === 'signup' && (
+                  <div className="relative group">
+                    <Icon
+                      icon={UserAccountIcon}
+                      size={22}
+                      strokeWidth={1.5}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--accent)] transition-colors pointer-events-none"
+                    />
+                    <input
+                      id="auth-display-name"
+                      type="text"
+                      autoComplete="name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Display name"
+                      className="w-full bg-transparent border-0 border-b-2 border-[var(--border-subtle)] focus:border-[var(--border-subtle)] focus:border-b-[var(--accent)] focus:ring-0 py-4 pl-10 pr-4 text-xl sm:text-2xl text-[var(--text-primary)] placeholder:text-[var(--text-muted)]/50 transition-colors duration-300 rounded-none !outline-none !shadow-none"
+                      style={{ boxShadow: 'none' }}
+                    />
+                  </div>
+                )}
+
                 {/* Email */}
                 <div className="relative group">
                   <Icon

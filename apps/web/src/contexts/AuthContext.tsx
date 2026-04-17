@@ -7,7 +7,7 @@ interface AuthContextValue {
   user: User | null
   session: Session | null
   loading: boolean
-  signUpWithEmail: (email: string, password: string) => Promise<unknown>
+  signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<unknown>
   signInWithEmail: (email: string, password: string) => Promise<unknown>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
@@ -46,8 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function signUpWithEmail(email: string, password: string) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+  async function signUpWithEmail(email: string, password: string, displayName?: string) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: displayName ? { data: { display_name: displayName } } : undefined,
+    })
     if (error) throw error
     return data
   }
