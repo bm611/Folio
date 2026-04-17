@@ -98,6 +98,7 @@
   line-height: 1;
   flex-shrink: 0;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 30%, transparent);
+  object-fit: cover;
 }
 
 .auth-pill__avatar--sm {

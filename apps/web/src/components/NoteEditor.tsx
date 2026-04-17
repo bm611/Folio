@@ -592,8 +592,11 @@ export default function NoteEditor({
 								className="auth-pill auth-pill--signed-in"
 								title={`Signed in as ${user.email}`}
 							>
-								<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
-								<span className="auth-pill__dot" />
+								{user.user_metadata?.avatar_url ? (
+									<img src={user.user_metadata.avatar_url} alt="" className="auth-pill__avatar" referrerPolicy="no-referrer" />
+								) : (
+									<span className="auth-pill__avatar">{user.email?.[0]?.toUpperCase() || '?'}</span>
+								)}
 							</div>
 							<button
 								type="button"
