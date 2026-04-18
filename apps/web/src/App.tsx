@@ -31,6 +31,7 @@ import type { PaletteItem } from './components/CommandPalette'
 import LandingPage from './components/LandingPage'
 import AuthPage from './components/AuthPage'
 import TemplateGallery from './components/TemplateGallery'
+import WelcomeModal from './components/WelcomeModal'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { getEditorCommands } from './utils/editorCommands'
 import { searchNotes } from './utils/knowledgeBase'
@@ -75,6 +76,7 @@ interface DeletedNoteState {
 const TREE_STORAGE_KEY_PREFIX = 'canvas-tree:'
 const PENDING_UPSERT_STORAGE_KEY_PREFIX = 'canvas-pending-upserts:'
 const PENDING_DELETE_STORAGE_KEY_PREFIX = 'canvas-pending-delete:'
+const ONBOARDING_SEEN_KEY_PREFIX = 'folio-onboarding-seen:'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -190,6 +192,30 @@ function clearPendingDeleteIds(userId: string): void {
   localStorage.removeItem(getPendingDeleteStorageKey(userId))
 }
 
+function getOnboardingSeenKey(userId: string): string {
+  return `${ONBOARDING_SEEN_KEY_PREFIX}${userId}`
+}
+
+function hasSeenOnboarding(userId: string): boolean {
+  if (!userId) {
+    return false
+  }
+
+  try {
+    return localStorage.getItem(getOnboardingSeenKey(userId)) === 'true'
+  } catch {
+    return false
+  }
+}
+
+function markOnboardingSeen(userId: string): void {
+  if (!userId) {
+    return
+  }
+
+  localStorage.setItem(getOnboardingSeenKey(userId), 'true')
+}
+
 function getInitialOnlineState(): boolean {
   if (typeof navigator === 'undefined') {
     return true
@@ -283,6 +309,98 @@ Folio supports high-visibility callouts for expert organization.
 - \`Cmd + N\` — Create New Note
 
 Ready to go? Create your first note from the **Sidebar** or press \`Cmd + N\`!
+`
+
+const ONBOARDING_NOTE = `# 🎉 Welcome to Folio!
+
+You're all set up and ready to start writing. This note will help you discover Folio's powerful features.
+
+> [!tip] - Your Notes are Safe
+> Your notes are automatically saved and synced to the cloud. Access them from any device, anytime.
+
+---
+
+## ✨ Quick Start
+
+### 1. Create Your First Note
+Click the **New Note** button in the sidebar or press \`Cmd + N\`.
+
+### 2. Use Slash Commands
+Type \`/\` on a new line to see what you can create:
+- \`/todo\` for task lists
+- \`/table\` for tables
+- \`/tip\`, \`/warning\`, \`/note\` for callouts
+- \`/code\` for code blocks
+
+### 3. Try Markdown
+Folio supports full markdown syntax:
+- **Bold** and *italic* text
+- [Links](https://example.com)
+- \`Inline code\` and code blocks
+- Nested lists with Tab/Shift+Tab
+
+---
+
+## 📋 Example Task List
+
+Here's a sample task list to get you started:
+
+- [x] Sign up for Folio
+- [ ] Create my first note
+- [ ] Try slash commands
+- [ ] Organize notes into folders
+- [ ] Set up daily notes
+
+---
+
+## 🎨 Callouts
+
+Use callouts to highlight important information:
+
+> [!note] This is a note callout
+> Great for general information and tips.
+
+> [!tip] This is a tip callout
+> Perfect for helpful suggestions and shortcuts.
+
+> [!warning] This is a warning callout
+> Use this for important reminders or cautions.
+
+> [!important] This is an important callout
+> For critical information that shouldn't be missed.
+
+---
+
+## 📊 Sample Table
+
+| Feature | Description |
+| :--- | :--- |
+| Cloud Sync | Access notes anywhere |
+| Slash Commands | Quick content insertion |
+| Markdown Support | Full formatting power |
+| Daily Notes | Track your daily thoughts |
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+- \`Cmd + K\` — Command Palette (search, settings, themes)
+- \`Cmd + N\` — New Note
+- \`Cmd + B\` — Toggle Sidebar
+- \`Cmd + S\` — Force Save
+- \`Cmd + /\` — Toggle Comment (in code blocks)
+
+---
+
+## 🚀 Next Steps
+
+1. **Delete this note** when you're comfortable with the basics
+2. **Create folders** to organize your notes
+3. **Use tags** to categorize and filter
+4. **Try daily notes** for journaling
+5. **Explore templates** from the command palette
+
+Happy writing! ✍️
 `
 
 function matchesQuery(query: string, values: (string | undefined)[]): boolean {
@@ -419,6 +537,22 @@ function makeSampleTree(): TreeNode[] {
   ]
 }
 
+function makeOnboardingTree(): TreeNode[] {
+  const now = new Date().toISOString()
+  return [
+    {
+      id: generateId(),
+      type: 'file',
+      name: 'Welcome to Folio',
+      title: 'Welcome to Folio',
+      content: ONBOARDING_NOTE,
+      tags: [],
+      createdAt: now,
+      updatedAt: now,
+    } as NoteFile,
+  ]
+}
+
 function AppInner() {
   const { user, loading: authLoading } = useAuth()
   const [demoMode, setDemoMode] = useState(false)
@@ -478,6 +612,7 @@ function AppInner() {
   const pendingUpsertsRef = useRef<Record<string, TreeNode>>({})
   const pendingDeleteIdsRef = useRef<string[]>([])
   const hydrationInFlightRef = useRef(false)
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
 
   const hasPendingCloudSaves = useCallback(() => {
     return Object.values(cloudSaveTimers.current).some(Boolean)
@@ -876,6 +1011,21 @@ function AppInner() {
         if (cancelled) {
           return
         }
+        // Show welcome modal for new users with no notes
+        if (!hasSeenOnboarding(user.id) && tree.length === 0) {
+          // Create onboarding note automatically
+          const onboardingTree = makeOnboardingTree()
+          setTree(onboardingTree)
+          const note = onboardingTree[0]
+          if (note) {
+            queuePendingUpsert(note)
+            setSyncing(true)
+            syncNoteToCloud(note).finally(() => {
+              finishSyncingIfIdle()
+            })
+          }
+          setShowWelcomeModal(true)
+        }
       })
       .catch(console.error)
 
@@ -953,6 +1103,17 @@ function AppInner() {
     setCommandPaletteOpen(false)
     setCommandPaletteQuery('')
   }, [])
+
+  const handleWelcomeModalClose = useCallback(() => {
+    setShowWelcomeModal(false)
+    if (user) {
+      markOnboardingSeen(user.id)
+    }
+  }, [user])
+
+  const handleGetStarted = useCallback(() => {
+    handleWelcomeModalClose()
+  }, [handleWelcomeModalClose])
 
   const createFolder = useCallback((name: string, parentId: string | null = null) => {
     const now = new Date().toISOString()
@@ -1667,6 +1828,8 @@ function AppInner() {
     setTree(makeSampleTree())
     setDemoMode(true)
     demoModeRef.current = true
+    // Show welcome modal for demo mode testing
+    setShowWelcomeModal(true)
   }, [])
 
   // While auth is resolving, render nothing so the HTML loading indicator stays
@@ -1836,6 +1999,13 @@ function AppInner() {
         onClose={() => setTemplateGalleryOpen(false)}
         onSelectTemplate={handleSelectTemplate}
       />
+
+      <WelcomeModal
+        open={showWelcomeModal}
+        onClose={handleWelcomeModalClose}
+        onGetStarted={handleGetStarted}
+      />
+
       {showAuthPage && (
         <AuthPage onBack={() => setShowAuthPage(false)} />
       )}
