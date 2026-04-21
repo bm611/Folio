@@ -10,6 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@10play/tentap-editor": "^1.0.1",
     "@folio/shared": "*",
     "@react-native-async-storage/async-storage": "^3.0.2",
     "@react-native-community/netinfo": "11.4.1",

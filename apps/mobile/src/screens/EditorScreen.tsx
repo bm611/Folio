@@ -3,17 +3,13 @@ import {
   View,
   TextInput,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
   TouchableOpacity,
   Text,
 } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { AppStackParamList } from '../navigation/AppNavigator'
 import { useNotes } from '../contexts/NotesContext'
-import MarkdownEditor from '../components/MarkdownEditor'
-import MarkdownToolbar from '../components/MarkdownToolbar'
-import type { MarkdownEditorHandle } from '../components/MarkdownEditor'
+import TenTapEditor from '../components/TenTapEditor'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Editor'>
 
@@ -23,12 +19,10 @@ export default function EditorScreen({ route, navigation }: Props) {
 
   const note = findNote(noteId)
   const [title, setTitle] = useState(note?.title || note?.name || '')
-  const [content, setContent] = useState(note?.content || '')
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const editorRef = useRef<MarkdownEditorHandle>(null)
+  const latestContent = useRef(note?.content || '')
 
-  // Set header title button
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => (
@@ -36,7 +30,7 @@ export default function EditorScreen({ route, navigation }: Props) {
           value={title}
           onChangeText={(t) => {
             setTitle(t)
-            scheduleSave(t, content)
+            scheduleSave(t, latestContent.current)
           }}
           style={headerStyles.titleInput}
           placeholder="Untitled"
@@ -55,23 +49,24 @@ export default function EditorScreen({ route, navigation }: Props) {
       ),
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, content])
+  }, [title])
 
-  function scheduleSave(newTitle: string, newContent: string) {
+  function scheduleSave(newTitle: string, newContent: string, newContentDoc?: object) {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       updateNote(noteId, {
         title: newTitle,
         name: newTitle,
         content: newContent,
+        ...(newContentDoc ? { contentDoc: newContentDoc as Record<string, unknown>, editorVersion: 2 } : {}),
       })
     }, 500)
   }
 
   const handleContentChange = useCallback(
-    (markdown: string) => {
-      setContent(markdown)
-      scheduleSave(title, markdown)
+    (html: string, json: object) => {
+      latestContent.current = html
+      scheduleSave(title, html, json)
     },
     [title]
   )
@@ -85,21 +80,15 @@ export default function EditorScreen({ route, navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <MarkdownEditor
-        ref={editorRef}
-        value={content}
+    <View style={styles.container}>
+      <TenTapEditor
+        initialContent={note.content || ''}
+        initialContentDoc={note.contentDoc}
         onChange={handleContentChange}
         placeholder="Start writing…"
         style={styles.editor}
       />
-
-      <MarkdownToolbar editorRef={editorRef} />
-    </KeyboardAvoidingView>
+    </View>
   )
 }
 
@@ -110,9 +99,6 @@ const styles = StyleSheet.create({
   },
   editor: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
   },
 })
 
