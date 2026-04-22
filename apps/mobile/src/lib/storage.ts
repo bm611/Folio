@@ -21,12 +21,12 @@ export async function getTree(userId: string): Promise<TreeNode[] | null> {
   }
 }
 
-export function saveTree(userId: string, tree: TreeNode[]): void {
-  AsyncStorage.setItem(treeKey(userId), JSON.stringify(tree)).catch(() => {})
+export async function saveTree(userId: string, tree: TreeNode[]): Promise<void> {
+  await AsyncStorage.setItem(treeKey(userId), JSON.stringify(tree))
 }
 
-export function clearTree(userId: string): void {
-  AsyncStorage.removeItem(treeKey(userId)).catch(() => {})
+export async function clearTree(userId: string): Promise<void> {
+  await AsyncStorage.removeItem(treeKey(userId))
 }
 
 export async function getPendingUpserts(userId: string): Promise<Record<string, unknown>[]> {
@@ -39,8 +39,8 @@ export async function getPendingUpserts(userId: string): Promise<Record<string, 
   }
 }
 
-export function savePendingUpserts(userId: string, items: Record<string, unknown>[]): void {
-  AsyncStorage.setItem(pendingUpsertsKey(userId), JSON.stringify(items)).catch(() => {})
+export async function savePendingUpserts(userId: string, items: Record<string, unknown>[]): Promise<void> {
+  await AsyncStorage.setItem(pendingUpsertsKey(userId), JSON.stringify(items))
 }
 
 export async function getPendingDeletes(userId: string): Promise<string[]> {
@@ -53,6 +53,6 @@ export async function getPendingDeletes(userId: string): Promise<string[]> {
   }
 }
 
-export function savePendingDeletes(userId: string, ids: string[]): void {
-  AsyncStorage.setItem(pendingDeletesKey(userId), JSON.stringify(ids)).catch(() => {})
+export async function savePendingDeletes(userId: string, ids: string[]): Promise<void> {
+  await AsyncStorage.setItem(pendingDeletesKey(userId), JSON.stringify(ids))
 }

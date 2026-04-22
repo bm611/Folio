@@ -22,6 +22,10 @@ interface FlatItem {
   depth: number
 }
 
+interface NoteListScreenProps {
+  onNoteOpen?: () => void
+}
+
 function buildFlatList(nodes: TreeNode[], expandedFolders: Set<string>, depth = 0): FlatItem[] {
   const items: FlatItem[] = []
   for (const node of nodes) {
@@ -33,7 +37,7 @@ function buildFlatList(nodes: TreeNode[], expandedFolders: Set<string>, depth = 
   return items
 }
 
-export default function NoteListScreen() {
+export default function NoteListScreen({ onNoteOpen }: NoteListScreenProps) {
   const theme = useTheme()
   const navigation = useNavigation<any>()
   const { tree, isLoading, isSyncing, createNote, createFolder, deleteTreeNode, renameTreeNode } = useNotes()
@@ -48,10 +52,12 @@ export default function NoteListScreen() {
 
   function handleCreateNote() {
     const note = createNote(null)
-    navigation.getParent()?.navigate('Editor', { noteId: note.id })
+    onNoteOpen?.()
+    navigation.getParent()?.navigate('Editor', { noteId: note.id, seedNote: note })
   }
 
   function handleFilePress(note: NoteFile) {
+    onNoteOpen?.()
     navigation.getParent()?.navigate('Editor', { noteId: note.id })
   }
 
@@ -90,7 +96,8 @@ export default function NoteListScreen() {
               onPress: () => {
                 const note = createNote(node.id)
                 setExpandedFolders((prev) => new Set([...prev, node.id]))
-                navigation.getParent()?.navigate('Editor', { noteId: note.id })
+                onNoteOpen?.()
+                navigation.getParent()?.navigate('Editor', { noteId: note.id, seedNote: note })
               },
             },
           ]

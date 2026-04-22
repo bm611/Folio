@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useMemo, useState } from 'react'
-import { View, TouchableOpacity, FlatList, StyleSheet, Modal } from 'react-native'
+import { View, TouchableOpacity, FlatList, StyleSheet, Modal, Pressable, useWindowDimensions } from 'react-native'
 import type { NoteFile, TreeNode } from '@folio/shared'
 import { useNotes } from '../contexts/NotesContext'
 import { useAuth } from '../contexts/AuthContext'
@@ -26,6 +26,7 @@ function getGreeting(): string {
 
 export default function HomeScreen({ navigation }: any) {
   const theme = useTheme()
+  const { width } = useWindowDimensions()
   const { tree, createNote } = useNotes()
   const { user } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -41,7 +42,7 @@ export default function HomeScreen({ navigation }: any) {
 
   function handleCreateNote() {
     const note = createNote(null)
-    navigation.getParent()?.navigate('Editor', { noteId: note.id })
+    navigation.getParent()?.navigate('Editor', { noteId: note.id, seedNote: note })
   }
 
   function handleOpenNote(note: NoteFile) {
@@ -198,18 +199,53 @@ export default function HomeScreen({ navigation }: any) {
 
       <Modal
         visible={sidebarOpen}
-        animationType="slide"
-        presentationStyle="pageSheet"
+        animationType="fade"
+        transparent
         onRequestClose={() => setSidebarOpen(false)}
       >
-        <View style={{ flex: 1, backgroundColor: theme.colors.bgDeep }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }}>
-            <Text style={{ fontFamily: theme.fonts.displaySemibold, fontSize: 20, color: theme.colors.textPrimary }}>Notes</Text>
-            <TouchableOpacity onPress={() => setSidebarOpen(false)} hitSlop={8}>
-              <Text style={{ fontSize: 18, color: theme.colors.textMuted }}>✕</Text>
-            </TouchableOpacity>
+        <View style={styles.sidebarOverlay}>
+          <View
+            style={[
+              styles.sidebarPanel,
+              {
+                width: Math.min(width * 0.88, 360),
+                backgroundColor: theme.colors.bgDeep,
+                borderRightColor: theme.colors.borderSubtle,
+              },
+            ]}
+          >
+            <View
+              style={{
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingHorizontal: theme.spacing[4],
+                paddingTop: theme.spacing[6],
+                paddingBottom: theme.spacing[3],
+              }}
+            >
+              <View>
+                <Text
+                  style={{
+                    color: theme.colors.textPrimary,
+                    fontFamily: theme.fonts.displaySemibold,
+                    fontSize: 26,
+                    lineHeight: 32,
+                  }}
+                >
+                  Folio
+                </Text>
+                <Text variant="micro" tone="muted" style={{ marginTop: 2 }}>
+                  Your notes
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setSidebarOpen(false)} hitSlop={8}>
+                <Text style={{ fontSize: 18, color: theme.colors.textMuted }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <NoteListScreen onNoteOpen={() => setSidebarOpen(false)} />
           </View>
-          <NoteListScreen />
+          <Pressable style={styles.sidebarBackdrop} onPress={() => setSidebarOpen(false)} />
         </View>
       </Modal>
     </Screen>
@@ -241,5 +277,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
+  },
+  sidebarOverlay: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+  },
+  sidebarBackdrop: {
+    flex: 1,
+  },
+  sidebarPanel: {
+    flexShrink: 0,
+    borderRightWidth: StyleSheet.hairlineWidth,
   },
 })

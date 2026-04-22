@@ -1,32 +1,44 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { View, TextInput, StyleSheet } from 'react-native'
+import type { NoteFile } from '@folio/shared'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { AppStackParamList } from '../navigation/AppNavigator'
 import { useNotes } from '../contexts/NotesContext'
 import TenTapEditor from '../components/TenTapEditor'
 import { useTheme } from '../theme'
 import { Screen, Text, IconButton } from '../components/ui'
+import { docToMarkdown, markdownToHtml } from '../lib/markdown'
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Editor'>
 
-function countWords(html: string): number {
-  if (!html) return 0
-  const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+function countWords(content: string): number {
+  if (!content) return 0
+  const text = content
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[`*_#[\]()>~-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
   if (!text) return 0
   return text.split(' ').length
 }
 
 export default function EditorScreen({ route, navigation }: Props) {
   const theme = useTheme()
-  const { noteId } = route.params
+  const { noteId, seedNote } = route.params
   const { findNote, updateNote } = useNotes()
 
-  const note = findNote(noteId)
+  const note = (findNote(noteId) ?? seedNote ?? null) as NoteFile | null
   const [title, setTitle] = useState(note?.title || note?.name || '')
   const [content, setContent] = useState(note?.content || '')
+  const [contentDoc, setContentDoc] = useState<Record<string, unknown> | undefined>(
+    note?.contentDoc && typeof note.contentDoc === 'object' ? note.contentDoc : undefined
+  )
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestContent = useRef(note?.content || '')
+  const latestContentDoc = useRef<Record<string, unknown> | undefined>(
+    note?.contentDoc && typeof note.contentDoc === 'object' ? note.contentDoc : undefined
+  )
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,23 +65,28 @@ export default function EditorScreen({ route, navigation }: Props) {
     }
   }, [])
 
-  function scheduleSave(newTitle: string, newContent: string, newContentDoc?: object) {
+  function scheduleSave(newTitle: string, newContent: string, newDoc?: Record<string, unknown>) {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
       updateNote(noteId, {
         title: newTitle,
         name: newTitle,
         content: newContent,
-        ...(newContentDoc ? { contentDoc: newContentDoc as Record<string, unknown>, editorVersion: 2 } : {}),
+        contentDoc: newDoc as Record<string, unknown> | undefined,
+        editorVersion: newDoc ? 2 : undefined,
       })
     }, 500)
   }
 
   const handleContentChange = useCallback(
-    (html: string, json: object) => {
-      latestContent.current = html
-      setContent(html)
-      scheduleSave(title, html, json)
+    (_html: string, json: object) => {
+      const nextDoc = json as Record<string, unknown>
+      const markdown = docToMarkdown(nextDoc)
+      latestContent.current = markdown
+      latestContentDoc.current = nextDoc
+      setContent(markdown)
+      setContentDoc(nextDoc)
+      scheduleSave(title, markdown, nextDoc)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [title]
@@ -97,7 +114,7 @@ export default function EditorScreen({ route, navigation }: Props) {
           value={title}
           onChangeText={(t) => {
             setTitle(t)
-            scheduleSave(t, latestContent.current)
+            scheduleSave(t, latestContent.current, latestContentDoc.current)
           }}
           style={{
             color: theme.colors.textPrimary,
@@ -132,8 +149,8 @@ export default function EditorScreen({ route, navigation }: Props) {
       </View>
 
       <TenTapEditor
-        initialContent={note.content || ''}
-        initialContentDoc={note.contentDoc}
+        initialContent={contentDoc ? '' : markdownToHtml(content)}
+        initialContentDoc={contentDoc}
         onChange={handleContentChange}
         placeholder="Start writing…"
         style={styles.editor}
@@ -157,4 +174,3 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 })
-

@@ -3,6 +3,7 @@
 // This file is pure navigation config with no business logic — nocheck is safe here.
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import type { NoteFile } from '@folio/shared'
 import HomeScreen from '../screens/HomeScreen'
 import EditorScreen from '../screens/EditorScreen'
 import AiChatScreen from '../screens/AiChatScreen'
@@ -20,7 +21,7 @@ export type TabParamList = {
 
 export type AppStackParamList = {
   HomeTabs: NavigatorScreenParams<TabParamList> | undefined
-  Editor: { noteId: string }
+  Editor: { noteId: string; seedNote?: NoteFile }
 }
 
 const Stack = createNativeStackNavigator<AppStackParamList>()

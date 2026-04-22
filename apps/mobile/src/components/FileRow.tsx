@@ -13,11 +13,6 @@ interface Props {
 
 export default function FileRow({ note, depth, onPress, onLongPress }: Props) {
   const theme = useTheme()
-  const excerpt = note.content
-    ?.replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 100) || ''
 
   return (
     <TouchableOpacity
@@ -45,16 +40,6 @@ export default function FileRow({ note, depth, onPress, onLongPress }: Props) {
           <Text variant="body" weight="medium" numberOfLines={1}>
             {note.title || note.name || 'Untitled'}
           </Text>
-          {excerpt ? (
-            <Text
-              variant="small"
-              tone="muted"
-              numberOfLines={1}
-              style={{ marginTop: 3 }}
-            >
-              {excerpt}
-            </Text>
-          ) : null}
         </View>
         <Text variant="micro" tone="muted">
           {formatCreatedAt(note.updatedAt || note.createdAt)}

@@ -162,7 +162,7 @@ export default function TenTapEditor({
   const theme = useTheme()
   const css = useMemo(() => buildEditorCss(theme), [theme])
 
-  const startContent = initialContent || '<p></p>'
+  const startContent = initialContentDoc || initialContent || '<p></p>'
 
   const editor = useEditorBridge({
     autofocus: false,

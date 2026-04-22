@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   View,
   TouchableOpacity,
@@ -13,15 +13,24 @@ import { Button, Input, Screen, Text } from '../components/ui'
 
 type Tab = 'signin' | 'signup'
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation, route }: any) {
   const theme = useTheme()
   const { signInWithEmail, signUpWithEmail } = useAuth()
-  const [tab, setTab] = useState<Tab>('signin')
+  const [tab, setTab] = useState<Tab>(route?.params?.initialTab === 'signup' ? 'signup' : 'signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    const nextTab = route?.params?.initialTab
+    if (nextTab === 'signin' || nextTab === 'signup') {
+      setTab(nextTab)
+      setError(null)
+      setSuccessMsg(null)
+    }
+  }, [route?.params?.initialTab])
 
   async function handleSubmit() {
     setError(null)
@@ -46,19 +55,33 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen>
+    <Screen safeEdges={['top', 'bottom']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.inner} keyboardShouldPersistTaps="handled">
+          {navigation?.canGoBack?.() ? (
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              hitSlop={8}
+              style={{ alignSelf: 'flex-start', marginBottom: 24 }}
+            >
+              <Text variant="small" tone="muted">
+                {'‹ Back'}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+
           <View style={{ alignItems: 'center', marginBottom: 40 }}>
             <Text
               style={{
                 fontFamily: theme.fonts.displaySemibold,
-                fontSize: 52,
+                fontSize: 50,
+                lineHeight: 60,
                 color: theme.colors.textPrimary,
                 letterSpacing: -1,
+                paddingVertical: 6,
               }}
             >
               Folio
@@ -175,9 +198,9 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   inner: {
     flexGrow: 1,
-    justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingVertical: 48,
+    justifyContent: 'center',
+    paddingVertical: 36,
   },
   tabs: {
     flexDirection: 'row',

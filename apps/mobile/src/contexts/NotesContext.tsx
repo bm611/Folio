@@ -35,7 +35,7 @@ export function NotesProvider({ userId, children }: { userId: string; children: 
   const hasLoaded = useRef(false)
   useEffect(() => {
     if (!hasLoaded.current) return
-    saveTree(userId, tm.tree) // fire-and-forget
+    saveTree(userId, tm.tree).catch(() => {})
   }, [tm.tree, userId])
 
   // Load tree on mount
@@ -52,7 +52,7 @@ export function NotesProvider({ userId, children }: { userId: string; children: 
           const notes = await fetchNotes(userId)
           const tree = sortTreeNodes(rebuildTreeFromFlat(notes as Parameters<typeof rebuildTreeFromFlat>[0]))
           tm.setTree(tree)
-          saveTree(userId, tree)
+          await saveTree(userId, tree)
         } catch {
           // offline — start with empty tree
         }
@@ -80,7 +80,7 @@ export function NotesProvider({ userId, children }: { userId: string; children: 
       const deleteIds = await getPendingDeletes(userId)
       if (deleteIds.length > 0) {
         await softDeleteNotes(deleteIds)
-        savePendingDeletes(userId, [])
+        await savePendingDeletes(userId, [])
       }
 
       const pendingUpserts = await getPendingUpserts(userId)
@@ -88,13 +88,13 @@ export function NotesProvider({ userId, children }: { userId: string; children: 
         await upsertNote(note as unknown as Parameters<typeof upsertNote>[0], userId)
       }
       if (pendingUpserts.length > 0) {
-        savePendingUpserts(userId, [])
+        await savePendingUpserts(userId, [])
       }
 
       const notes = await fetchNotes(userId)
       const freshTree = sortTreeNodes(rebuildTreeFromFlat(notes as Parameters<typeof rebuildTreeFromFlat>[0]))
       tm.setTree(freshTree)
-      saveTree(userId, freshTree)
+      await saveTree(userId, freshTree)
     } catch {
       // stay offline silently
     } finally {
@@ -107,18 +107,24 @@ export function NotesProvider({ userId, children }: { userId: string; children: 
   async function queueUpsert(node: NoteFile | NoteFolder) {
     const existing = await getPendingUpserts(userId)
     const without = existing.filter((n) => (n as { id?: string }).id !== node.id)
-    savePendingUpserts(userId, [...without, node as unknown as Record<string, unknown>])
+    await savePendingUpserts(userId, [...without, node as unknown as Record<string, unknown>])
   }
 
   async function queueDelete(subtreeIds: string[]) {
     const existing = await getPendingDeletes(userId)
     const merged = Array.from(new Set([...existing, ...subtreeIds]))
-    savePendingDeletes(userId, merged)
+    await savePendingDeletes(userId, merged)
   }
 
   function afterMutation(node: NoteFile | NoteFolder) {
-    queueUpsert(node).catch(() => {})
-    if (isOnline) syncNow().catch(() => {})
+    queueUpsert(node)
+      .then(() => {
+        if (isOnline) {
+          return syncNow()
+        }
+        return undefined
+      })
+      .catch(() => {})
   }
 
   function createNote(parentId: string | null): NoteFile {
@@ -162,15 +168,27 @@ export function NotesProvider({ userId, children }: { userId: string; children: 
     const existing = tm.findNode(id)
     if (existing && existing.type === 'file') {
       const updated = { ...existing, ...fullUpdates } as NoteFile
-      queueUpsert(updated).catch(() => {})
-      if (isOnline) syncNow().catch(() => {})
+      queueUpsert(updated)
+        .then(() => {
+          if (isOnline) {
+            return syncNow()
+          }
+          return undefined
+        })
+        .catch(() => {})
     }
   }
 
   function deleteTreeNode(id: string, subtreeIds: string[]) {
     tm.deleteNode(id)
-    queueDelete(subtreeIds).catch(() => {})
-    if (isOnline) syncNow().catch(() => {})
+    queueDelete(subtreeIds)
+      .then(() => {
+        if (isOnline) {
+          return syncNow()
+        }
+        return undefined
+      })
+      .catch(() => {})
   }
 
   function renameTreeNode(id: string, name: string) {
