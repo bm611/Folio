@@ -33,16 +33,20 @@ function TipItem({
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
-      className="flex gap-4 p-4 panel-bordered"
+      className="flex gap-3.5 p-3.5 rounded-[10px]"
+      style={{ background: '#f8f9fa' }}
     >
-      <div className="flex-shrink-0 w-10 h-10 border-[1.5px] border-[var(--ink)] bg-[var(--accent)] flex items-center justify-center">
-        <Icon icon={IconComponent} size={18} strokeWidth={2} style={{ color: 'var(--accent-text)' }} />
+      <div
+        className="flex-shrink-0 w-9 h-9 rounded-[8px] flex items-center justify-center"
+        style={{ background: 'var(--accent)' }}
+      >
+        <Icon icon={IconComponent} size={16} strokeWidth={2} style={{ color: 'var(--accent-text)' }} />
       </div>
       <div className="flex-1">
-        <h3 className="text-[14px] font-semibold text-[var(--ink)] mb-1 font-mono uppercase tracking-wider">
+        <h3 className="text-[13px] font-semibold mb-0.5" style={{ color: '#202124', fontFamily: '"Poppins", system-ui, sans-serif' }}>
           {title}
         </h3>
-        <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-mono">
+        <p className="text-[12px] leading-relaxed" style={{ color: '#5f6368', fontFamily: '"Poppins", system-ui, sans-serif' }}>
           {description}
         </p>
       </div>
@@ -86,29 +90,38 @@ export default function WelcomeModal({ open, onClose, onGetStarted }: WelcomeMod
             role="dialog"
             aria-modal="true"
             aria-label="Welcome to Folio"
-            className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 border-[2px] border-[var(--ink)] bg-[var(--bg-elevated)] overflow-hidden"
-            style={{ boxShadow: 'var(--stamp-shadow-lg)' }}
+            className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[20px]"
+            style={{
+              background: '#ffffff',
+              border: '1px solid #e8eaed',
+              boxShadow: '0 24px 60px -12px rgba(32,33,36,0.22), 0 4px 16px -4px rgba(32,33,36,0.08)',
+              fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+            }}
           >
             <div className="p-6 sm:p-8">
               {/* Header */}
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 border-[1.5px] border-[var(--ink)] bg-[var(--accent)] flex items-center justify-center">
-                    <Icon icon={SparklesIcon} size={22} strokeWidth={2} style={{ color: 'var(--accent-text)' }} />
+                  <div
+                    className="w-11 h-11 flex items-center justify-center rounded-[12px]"
+                    style={{ background: 'var(--accent)' }}
+                  >
+                    <Icon icon={SparklesIcon} size={20} strokeWidth={2} style={{ color: 'var(--accent-text)' }} />
                   </div>
                   <div>
-                    <h2 className="title-script text-[36px] leading-none">
+                    <h2 className="text-[22px] font-semibold leading-tight tracking-[-0.02em]" style={{ color: '#202124', fontFamily: '"Poppins", system-ui, sans-serif' }}>
                       Welcome to Folio
                     </h2>
-                    <p className="label-mono mt-1">
-                      Your notes, sharp and bordered.
+                    <p className="text-[12.5px] mt-0.5" style={{ color: '#9aa0a6', fontFamily: '"Poppins", system-ui, sans-serif' }}>
+                      Your notes, beautifully organised.
                     </p>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn-cell"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full hover:bg-[#f1f3f4] active:scale-[0.92]"
+                  style={{ color: '#5f6368', transition: 'transform 160ms cubic-bezier(0.23,1,0.32,1), background-color 150ms ease' }}
                   aria-label="Close"
                 >
                   <Icon icon={Cancel01Icon} size={14} strokeWidth={1.5} />
@@ -153,7 +166,17 @@ export default function WelcomeModal({ open, onClose, onGetStarted }: WelcomeMod
               <button
                 type="button"
                 onClick={handleGetStarted}
-                className="btn-stamp btn-stamp-accent w-full justify-center py-3"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full h-11 text-[14px] font-medium active:scale-[0.97]"
+                style={{
+                  background: '#1a73e8',
+                  color: '#ffffff',
+                  fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+                  transition: 'transform 160ms cubic-bezier(0.23,1,0.32,1), background-color 150ms ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = '#1765cc')}
+                onMouseLeave={(e) => (e.currentTarget.style.background = '#1a73e8')}
               >
                 <Icon icon={SparklesIcon} size={14} strokeWidth={2} />
                 Get Started

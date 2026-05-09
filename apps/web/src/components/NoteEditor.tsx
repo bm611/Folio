@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useRef, useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 import { motion, AnimatePresence, useSpring, useMotionValue } from 'framer-motion';
 
@@ -46,6 +46,38 @@ const LiveMarkdownEditor = lazy(() =>
 		return import('./LiveMarkdownEditor');
 	})
 );
+
+// ─── Material palette (locked — matches HomeScreen/landing page) ─────────────
+
+const GS_SCOPE: CSSProperties = {
+	['--bg-primary' as string]:     '#ffffff',
+	['--bg-surface' as string]:     '#f8f9fa',
+	['--bg-elevated' as string]:    '#ffffff',
+	['--bg-hover' as string]:       '#f1f3f4',
+	['--bg-deep' as string]:        '#e8eaed',
+	['--ink' as string]:            '#202124',
+	['--ink-soft' as string]:       '#3c4043',
+	['--text-primary' as string]:   '#202124',
+	['--text-secondary' as string]: '#3c4043',
+	['--text-muted' as string]:     '#5f6368',
+	['--text-inverse' as string]:   '#ffffff',
+	['--border-subtle' as string]:  '#e8eaed',
+	['--border-default' as string]: '#dadce0',
+	['--accent' as string]:         '#1a73e8',
+	['--accent-hover' as string]:   '#1765cc',
+	['--accent-text' as string]:    '#ffffff',
+	['--accent-soft' as string]:    '#e8f0fe',
+	['--success' as string]:        '#1e8e3e',
+	['--warning' as string]:        '#f29900',
+	['--danger' as string]:         '#d93025',
+	background: '#ffffff',
+	color: '#202124',
+	fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+};
+
+const FONT = '"Poppins", system-ui, -apple-system, sans-serif';
+const MUTED = '#5f6368';
+const DIVIDER = '#e8eaed';
 
 // ─── Animated Word Count ─────────────────────────────────────────────────────
 
@@ -135,29 +167,33 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -4 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-			className="inline-flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] mb-4 px-2 py-1 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] uppercase tracking-[0.06em] font-mono"
+			className="inline-flex items-center gap-1 mb-4"
+			style={{ fontFamily: '"Poppins", system-ui, -apple-system, sans-serif' }}
 		>
 			{/* Folder path */}
 			{folderPath.map((folder, index) => (
-				<span key={folder.id} className="flex items-center gap-1.5">
+				<span key={folder.id} className="flex items-center gap-1">
 					{index > 0 && (
 						<Icon
 							icon={ArrowRight01Icon}
 							size={12}
 							strokeWidth={1.5}
-							className="opacity-40"
+							style={{ color: '#9aa0a6' }}
 						/>
 					)}
 					<motion.button
 						type="button"
 						onClick={() => onSelectNote(folder.id)}
-						className="group inline-flex items-center gap-1 rounded-md px-1 py-0.5 md:px-1.5 transition-[colors,transform] duration-[160ms] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:scale-[1.02] active:scale-[0.97]"
+						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-[background-color,transform] duration-[150ms] active:scale-[0.97]"
+						style={{ fontSize: 12, color: '#5f6368', fontWeight: 500 }}
+						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 					>
 						<Icon
 							icon={Folder01Icon}
 							size={12}
 							strokeWidth={1.5}
-							className="opacity-60 group-hover:opacity-100 transition-opacity"
+							style={{ color: '#9aa0a6' }}
 						/>
 						<span className="max-w-[72px] md:max-w-[120px] truncate">{folder.name}</span>
 					</motion.button>
@@ -169,16 +205,16 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 				icon={ArrowRight01Icon}
 				size={12}
 				strokeWidth={1.5}
-				className="opacity-40"
+				style={{ color: '#9aa0a6' }}
 			/>
 
 			{/* Current note name */}
-			<span className="inline-flex items-center gap-1 text-[var(--text-primary)] font-medium">
+			<span className="inline-flex items-center gap-1" style={{ fontSize: 12, color: '#202124', fontWeight: 500 }}>
 				<Icon
 					icon={File01Icon}
 					size={12}
 					strokeWidth={1.5}
-					className="opacity-60"
+					style={{ color: '#9aa0a6' }}
 				/>
 				<span className="max-w-[120px] md:max-w-[200px] truncate">{noteName}</span>
 			</span>
@@ -390,18 +426,22 @@ export default function NoteEditor({
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
 			transition={{ duration: 0.2 }}
-			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden bg-[var(--bg-primary)]"
+			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden"
+			style={GS_SCOPE}
 		>
 
-			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-5 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]">
+			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-5" style={{ background: '#ffffff', borderBottom: `1px solid ${DIVIDER}` }}>
 				<div className="flex items-center gap-2.5">
 					{/* Back button — Mobile only */}
-						<button
-							type="button"
-							onClick={() => onSelectNote(null)}
-							className="glass-icon md:hidden relative flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-160 hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.97]" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
-							title="Back to Home"
-						>
+					<button
+						type="button"
+						onClick={() => onSelectNote(null)}
+						className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-full active:scale-[0.97]"
+						style={{ background: 'transparent', color: MUTED, transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+						title="Back to Home"
+					>
 						<Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
 					</button>
 
@@ -409,7 +449,10 @@ export default function NoteEditor({
 						<button
 							type="button"
 							onClick={onToggleSidebar}
-							className="glass-icon hidden md:relative md:flex h-10 w-10 items-center justify-center rounded-lg text-[var(--text-muted)] transition-[transform,background-color,color,border-color,box-shadow] duration-160 hover:text-[var(--text-primary)] after:absolute after:-inset-2 active:scale-[0.97]" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
+							className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-full active:scale-[0.97]"
+							style={{ background: 'transparent', color: MUTED, transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+							onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 							title="Open sidebar (Cmd+B)"
 						>
 							<Icon
@@ -420,7 +463,7 @@ export default function NoteEditor({
 							/>
 						</button>
 					) : (
-						<div className="hidden md:block w-10" />
+						<div className="hidden md:block w-9" />
 					)}
 				</div>
 				<div className="flex items-center gap-2">
@@ -561,8 +604,8 @@ export default function NoteEditor({
 				</div>
 			</div>
 
-			{/* Stats bar — bottom strip (brutalist) */}
-			<div className="stats-bar-desktop hidden md:flex items-center gap-3 border-t-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-5 py-2 text-[11px] tabular-nums select-none uppercase tracking-[0.08em]" style={{ fontFamily: 'var(--font-mono)' }}>
+			{/* Stats bar — bottom strip */}
+			<div className="stats-bar-desktop hidden md:flex items-center gap-3 px-5 py-2 text-[11.5px] tabular-nums select-none" style={{ background: '#f8f9fa', borderTop: `1px solid ${DIVIDER}`, fontFamily: FONT, color: MUTED }}>
 				{/* Save status */}
 				<motion.span
 					key={saveStatus.state}
@@ -581,7 +624,7 @@ export default function NoteEditor({
 					{saveLabel}
 				</motion.span>
 
-				<span className="text-[var(--text-muted)] opacity-30">·</span>
+				<span style={{ color: '#dadce0' }}>·</span>
 
 				{/* Session delta */}
 				<AnimatePresence mode="popLayout">
@@ -592,7 +635,8 @@ export default function NoteEditor({
 							animate={{ scale: 1, opacity: 1, y: 0 }}
 							exit={{ scale: 0.7, opacity: 0, y: -6 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-							className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]"
+							className="inline-flex items-center gap-0.5 font-semibold"
+							style={{ color: '#1e8e3e' }}
 						>
 							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}
@@ -600,29 +644,31 @@ export default function NoteEditor({
 					)}
 				</AnimatePresence>
 				{sessionDelta > 0 && (
-					<span className="text-[var(--text-muted)] opacity-30">·</span>
+					<span style={{ color: '#dadce0' }}>·</span>
 				)}
 
 				{/* Word count */}
-				<SpringNumber value={wordCount} className="text-[var(--text-muted)]" />
-				<span className="text-[var(--text-muted)]"> words</span>
+				<SpringNumber value={wordCount} />
+				<span> words</span>
 
 				{readTime && (
 					<>
-						<span className="text-[var(--text-muted)] opacity-30">·</span>
-						<span className="text-[var(--text-muted)]">{readTime}</span>
+						<span style={{ color: '#dadce0' }}>·</span>
+						<span>{readTime}</span>
 					</>
 				)}
 
 				{/* Retry button */}
 				{saveStatus.canRetry && onRetrySync && (
 					<>
-						<span className="text-[var(--text-muted)] opacity-30">·</span>
+						<span style={{ color: '#dadce0' }}>·</span>
 						<button
 							type="button"
 							onClick={onRetrySync}
-							className="rounded-full border border-[var(--border-subtle)] px-2 py-0.5 text-[10px] text-[var(--text-muted)] transition-[color,background-color,transform] duration-[160ms] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] active:scale-[0.97]"
-							style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}
+							className="rounded-full px-2.5 py-0.5 text-[11px] font-medium active:scale-[0.97]"
+							style={{ border: `1px solid ${DIVIDER}`, color: MUTED, background: '#ffffff', transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+							onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
 						>
 							Retry
 						</button>
@@ -630,8 +676,11 @@ export default function NoteEditor({
 				)}
 			</div>
 
-			{/* Mobile stats — brutalist strip (hidden on desktop) */}
-			<div className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-1.5 text-[10px] tabular-nums select-none uppercase tracking-[0.08em] transition-opacity duration-200 ${keyboardOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)', left: '50%', transform: 'translateX(-50%)', fontFamily: 'var(--font-mono)' }}>
+			{/* Mobile stats — floating pill (hidden on desktop) */}
+			<div
+				className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full px-3 py-1.5 text-[11px] tabular-nums select-none transition-opacity duration-200 ${keyboardOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+				style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)', left: '50%', transform: 'translateX(-50%)', fontFamily: FONT, color: MUTED, background: '#ffffff', border: `1px solid ${DIVIDER}`, boxShadow: '0 1px 6px -1px rgba(32,33,36,0.10), 0 2px 8px -2px rgba(32,33,36,0.08)' }}
+			>
 				<span
 					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
 				>
@@ -643,19 +692,20 @@ export default function NoteEditor({
 					/>
 					{saveLabel}
 				</span>
-				<span className="text-[var(--text-muted)] opacity-30">·</span>
-				<span className="text-[var(--text-muted)]">
+				<span style={{ color: '#dadce0' }}>·</span>
+				<span>
 					<SpringNumber value={wordCount} />
 					{' '}words
 				</span>
 				{sessionDelta > 0 && (
 					<>
-						<span className="text-[var(--text-muted)] opacity-30">·</span>
+						<span style={{ color: '#dadce0' }}>·</span>
 						<motion.span
 							initial={{ scale: 0.7, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-							className="inline-flex items-center gap-0.5 font-semibold text-[var(--success)]"
+							className="inline-flex items-center gap-0.5 font-semibold"
+							style={{ color: '#1e8e3e' }}
 						>
 							<Icon icon={FireIcon} size={8} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}

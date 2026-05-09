@@ -1,34 +1,35 @@
 /* ═══════════════════════════════════════════════
-   Settings Menu — Brutalist
+   Settings Menu — Material
    ═══════════════════════════════════════════════ */
 
 .settings-menu-body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 0;
+  padding: 4px 0;
 }
 
 .settings-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   height: 40px;
   padding: 0 14px;
   border: none;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid #e8eaed;
   background: transparent;
   cursor: pointer;
-  color: var(--ink);
-  font-size: 12px;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: #202124;
+  font-size: 13px;
+  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: -0.005em;
   text-align: left;
   width: 100%;
   flex-shrink: 0;
   border-radius: 0;
-  transition: background 80ms, color 80ms;
+  transition: background 120ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -36,12 +37,12 @@
 
 @media (hover: hover) and (pointer: fine) {
   .settings-item:hover {
-    background: var(--bg-hover);
+    background: #f8f9fa;
   }
 }
 
 .settings-item:active {
-  background: var(--bg-deep);
+  background: #f1f3f4;
 }
 
 .settings-icon-wrap {
@@ -51,6 +52,7 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  color: #5f6368;
 }
 
 .settings-item-label {
@@ -61,39 +63,7 @@
 }
 
 .settings-divider {
-  height: 1.5px;
-  margin: 0;
-  background: var(--ink);
-}
-
-/* Font option (legacy — single font now, mostly unused) */
-
-.settings-font-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid transparent;
-  padding: 8px 10px;
-  font-size: 12px;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-  border-radius: 0;
-  transition: background 80ms, border-color 80ms;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .settings-font-option:hover {
-    background: var(--bg-hover);
-    border-color: var(--ink);
-  }
-}
-
-.settings-font-option[data-active] {
-  background: var(--bg-inverse);
-  color: var(--text-inverse);
-  border-color: var(--ink);
+  height: 1px;
+  margin: 4px 0;
+  background: #e8eaed;
 }

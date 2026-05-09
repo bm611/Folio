@@ -815,7 +815,7 @@ export default function Sidebar({
           {/* Tree list */}
           <div className="sb-tree">
             <div className="sb-tree-actions">
-              <span className="text-[15px] font-semibold text-(--text-secondary) select-none font-mono uppercase tracking-[0.12em]" style={{ paddingLeft: 4 }}>Notes</span>
+              <span className="text-[11px] font-semibold text-(--text-secondary) select-none tracking-[0.06em] uppercase" style={{ paddingLeft: 4, fontFamily: '"Poppins", system-ui, sans-serif', letterSpacing: '0.08em', color: '#9aa0a6' }}>Notes</span>
               {!searchQuery.trim() && (
                 <div className="flex items-center gap-0">
                   <button

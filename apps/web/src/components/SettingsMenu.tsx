@@ -113,13 +113,20 @@ export default function SettingsMenu({
       <button
         type="button"
         onClick={() => (open ? closeMenu() : setOpen(true))}
-        className="btn-pill"
+        className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-medium tracking-[-0.005em] hover:bg-[#f1f3f4] active:scale-[0.96]"
+        style={{
+          borderColor: '#e8eaed',
+          background: '#ffffff',
+          color: '#5f6368',
+          fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+          transition: 'transform 160ms cubic-bezier(0.23,1,0.32,1), background-color 150ms ease',
+        }}
         title="Settings"
         aria-label="Open settings"
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <Icon icon={Settings02Icon} size={15} strokeWidth={1.8} />
+        <Icon icon={Settings02Icon} size={13} strokeWidth={1.8} />
         <span>Settings</span>
       </button>
 
@@ -127,19 +134,25 @@ export default function SettingsMenu({
         {open && (
           <motion.div
             ref={panelRef}
-            className="absolute right-0 top-11 z-50 w-64 overflow-hidden border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)]"
+            className="absolute right-0 top-11 z-50 w-60 overflow-hidden rounded-[14px]"
             initial="hidden"
             animate="visible"
             exit="exit"
             variants={POPOVER_VARIANTS}
             transition={POPOVER_TRANSITION}
-            style={{ boxShadow: 'var(--stamp-shadow-lg)', fontFamily: 'var(--font-mono)', transformOrigin: 'top right' }}
+            style={{
+              background: '#ffffff',
+              border: '1px solid #e8eaed',
+              boxShadow: '0 8px 24px -8px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.06)',
+              fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+              transformOrigin: 'top right',
+            }}
           >
             <div className="settings-menu-body">
               <AccentPicker
                 accentId={accentId}
                 onAccentChange={onAccentChange}
-                theme="brutal"
+                theme="material"
                 showLabel
                 hideName
                 className="w-full"
@@ -158,12 +171,13 @@ export default function SettingsMenu({
                     </span>
                     <span className="settings-item-label">Wide Mode</span>
                     <span
-                      className="ml-auto flex h-[16px] w-[28px] items-center border-[1.5px] border-[var(--ink)] p-0.5 transition-colors"
-                      style={{ backgroundColor: wideMode ? 'var(--accent)' : 'var(--bg-elevated)' }}
+                      className="ml-auto flex h-[18px] w-[32px] items-center rounded-full p-0.5 transition-colors duration-200"
+                      style={{ backgroundColor: wideMode ? '#1a73e8' : '#e8eaed' }}
                     >
                       <motion.span
-                        className="h-[10px] w-[10px] bg-[var(--ink)]"
-                        animate={{ x: wideMode ? 12 : 0 }}
+                        className="h-[14px] w-[14px] rounded-full bg-white"
+                        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}
+                        animate={{ x: wideMode ? 14 : 0 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                       />
                     </span>

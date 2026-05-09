@@ -82,24 +82,25 @@
   box-shadow: var(--stamp-shadow-active);
 }
 
-/* ── Icon button ── */
+/* ── Icon button — Material rounded ── */
 
 .glass-icon {
-  background: var(--bg-surface);
-  color: var(--ink);
-  border: 1.5px solid var(--ink);
-  border-radius: 0;
-  transition: background-color 80ms, color 80ms;
+  background: transparent;
+  color: #5f6368;
+  border: none;
+  border-radius: 50%;
+  transition: background-color 150ms ease, color 150ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .glass-icon:hover {
-    background: var(--bg-hover);
+    background: #f1f3f4;
+    color: #202124;
   }
 }
 
 .glass-icon:active {
-  background: var(--bg-deep);
+  background: #e8eaed;
 }
 
 /* ── Sidebar nav rows ── */

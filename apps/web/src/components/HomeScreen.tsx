@@ -161,8 +161,8 @@ function PrimaryAction({
 		<button
 			type="button"
 			onClick={onClick}
-			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-medium tracking-[-0.005em] transition-colors duration-150 active:translate-y-[1px]"
-			style={{ background: BLUE, color: '#ffffff', fontFamily: FONT }}
+			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full px-4 text-[13px] font-medium tracking-[-0.005em] active:scale-[0.96]"
+			style={{ background: BLUE, color: '#ffffff', fontFamily: FONT, transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease' }}
 			onMouseEnter={(e) => (e.currentTarget.style.background = '#1765cc')}
 			onMouseLeave={(e) => (e.currentTarget.style.background = BLUE)}
 		>
@@ -185,8 +185,8 @@ function GhostAction({
 		<button
 			type="button"
 			onClick={onClick}
-			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-[13px] font-medium tracking-[-0.005em] transition-colors duration-150 active:translate-y-[1px]"
-			style={{ borderColor: DIVIDER, background: '#ffffff', color: INK, fontFamily: FONT }}
+			className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full border px-4 text-[13px] font-medium tracking-[-0.005em] active:scale-[0.96]"
+			style={{ borderColor: DIVIDER, background: '#ffffff', color: INK, fontFamily: FONT, transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease' }}
 			onMouseEnter={(e) => (e.currentTarget.style.background = HOVER)}
 			onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
 		>
@@ -283,8 +283,8 @@ function DashboardHeader({
 						<button
 							type="button"
 							onClick={onOpenCommandPalette}
-							className="hidden h-9 items-center gap-2 rounded-full border px-3 text-[12.5px] font-medium tracking-[-0.005em] transition-colors duration-150 sm:inline-flex"
-							style={{ borderColor: DIVIDER, background: '#ffffff', color: MUTED, fontFamily: FONT }}
+							className="hidden h-9 items-center gap-2 rounded-full border px-3 text-[12.5px] font-medium tracking-[-0.005em] sm:inline-flex active:scale-[0.96]"
+							style={{ borderColor: DIVIDER, background: '#ffffff', color: MUTED, fontFamily: FONT, transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease' }}
 							onMouseEnter={(e) => (e.currentTarget.style.background = HOVER)}
 							onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
 						>
@@ -440,7 +440,8 @@ function KPIStrip({
 								<button
 									type="button"
 									onClick={c.onClick}
-									className="block w-full text-left transition-colors duration-150"
+									className="block w-full text-left active:scale-[0.99]"
+									style={{ transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
 									onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE)}
 									onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 								>
@@ -592,7 +593,8 @@ function ContinuePanel({
 			<button
 				type="button"
 				onClick={() => onOpen(note.id)}
-				className="mt-3 flex flex-1 flex-col text-left"
+				className="mt-3 flex flex-1 flex-col text-left group active:scale-[0.99]"
+				style={{ transition: 'transform 200ms cubic-bezier(0.23, 1, 0.32, 1)' }}
 			>
 				<p
 					className="text-[22px] leading-[1.18] tracking-[-0.018em] sm:text-[26px]"
@@ -623,7 +625,7 @@ function ContinuePanel({
 						style={{ color: BLUE, fontFamily: FONT }}
 					>
 						Resume
-						<svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+						<svg width="12" height="12" viewBox="0 0 14 14" fill="none" className="transition-transform duration-200 group-hover:translate-x-0.5" style={{ transitionTimingFunction: 'cubic-bezier(0.23, 1, 0.32, 1)' }}>
 							<path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
 						</svg>
 					</span>
@@ -675,8 +677,10 @@ function PinnedColumn({
 						<button
 							type="button"
 							onClick={() => onSelect(note.id)}
-							className="group flex w-full items-center gap-3 py-2.5 text-left transition-colors duration-150"
-							style={{ borderTop: i === 0 ? 'none' : `1px solid ${DIVIDER}` }}
+							className="group flex w-full items-center gap-3 py-2.5 text-left active:opacity-70"
+							style={{ borderTop: i === 0 ? 'none' : `1px solid ${DIVIDER}`, transition: 'background-color 120ms ease, opacity 100ms ease' }}
+							onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE)}
+							onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 						>
 							<span
 								className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
@@ -786,10 +790,11 @@ function RecentTable({
 									onClick={() => onSelect(note.id)}
 									onMouseEnter={() => onHover(note.id)}
 									onMouseLeave={onLeave}
-									className="grid w-full grid-cols-[2.5rem_minmax(0,1fr)_5rem_4.5rem] items-center gap-3 py-3 text-left transition-colors duration-150 sm:grid-cols-[2.5rem_minmax(0,1fr)_6rem_5rem_4rem]"
+									className="grid w-full grid-cols-[2.5rem_minmax(0,1fr)_5rem_4.5rem] items-center gap-3 py-3 text-left sm:grid-cols-[2.5rem_minmax(0,1fr)_6rem_5rem_4rem] active:opacity-70"
 									style={{
 										borderBottom: `1px solid ${DIVIDER}`,
 										background: isHover ? SURFACE : 'transparent',
+										transition: 'background-color 120ms ease, opacity 100ms ease',
 									}}
 								>
 									<Mono size={11} weight={500} color={SUBTLE}>{String(i + 1).padStart(2, '0')}</Mono>
@@ -871,8 +876,10 @@ function ShortcutsColumn({
 							type="button"
 							onClick={it.onClick}
 							disabled={it.disabled}
-							className="group flex w-full items-center gap-3 py-2.5 text-left transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-							style={{ borderTop: i === 0 ? 'none' : `1px solid ${DIVIDER}` }}
+							className="group flex w-full items-center gap-3 py-2.5 text-left disabled:cursor-not-allowed disabled:opacity-50 active:opacity-70"
+							style={{ borderTop: i === 0 ? 'none' : `1px solid ${DIVIDER}`, transition: 'background-color 120ms ease, opacity 100ms ease' }}
+							onMouseEnter={(e) => !it.disabled && (e.currentTarget.style.background = SURFACE)}
+							onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 						>
 							<span
 								className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors duration-150 group-hover:bg-[var(--accent-soft)]"
@@ -1098,8 +1105,8 @@ export default function HomeScreen({
 					<button
 						type="button"
 						onClick={onToggleSidebar}
-						className="inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-150 hover:bg-[#f1f3f4]"
-						style={{ color: MUTED }}
+						className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f1f3f4] active:scale-[0.90]"
+						style={{ color: MUTED, transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease' }}
 						title="Toggle sidebar"
 						aria-label="Toggle sidebar"
 					>
@@ -1127,8 +1134,8 @@ export default function HomeScreen({
 							<button
 								type="button"
 								onClick={() => setProfileOpen((v) => !v)}
-								className="inline-flex h-9 items-center gap-2 rounded-full px-2 transition-colors duration-150 hover:bg-[#f1f3f4]"
-								style={{ color: INK, fontFamily: FONT }}
+								className="inline-flex h-9 items-center gap-2 rounded-full px-2 hover:bg-[#f1f3f4] active:scale-[0.96]"
+								style={{ color: INK, fontFamily: FONT, transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease' }}
 								title="Profile"
 								aria-expanded={profileOpen}
 							>
@@ -1156,8 +1163,8 @@ export default function HomeScreen({
 						<button
 							type="button"
 							onClick={onOpenAuthModal}
-							className="inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[12.5px] font-medium transition-colors duration-150"
-							style={{ background: BLUE, color: '#ffffff', fontFamily: FONT }}
+							className="inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-[12.5px] font-medium active:scale-[0.96]"
+							style={{ background: BLUE, color: '#ffffff', fontFamily: FONT, transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease' }}
 							onMouseEnter={(e) => (e.currentTarget.style.background = '#1765cc')}
 							onMouseLeave={(e) => (e.currentTarget.style.background = BLUE)}
 						>
