@@ -78,6 +78,8 @@ const GS_SCOPE: CSSProperties = {
 const FONT = '"Poppins", system-ui, -apple-system, sans-serif';
 const MUTED = '#5f6368';
 const DIVIDER = '#e8eaed';
+// Strong ease-out — starts fast, feels instantly responsive (Emil Kowalski)
+const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
 // ─── Animated Word Count ─────────────────────────────────────────────────────
 
@@ -103,10 +105,20 @@ function SpringNumber({ value, className }: SpringNumberProps) {
 	}, [springVal, display]);
 
 	return (
-		<motion.span className={className} aria-label={formatted}>
+		<motion.span
+			className={className}
+			style={{ fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' }}
+			aria-label={formatted}
+		>
 			{formatted}
 		</motion.span>
 	);
+}
+
+// ─── Stat Divider — thin vertical hairline (more refined than bullet dot) ─────
+
+function StatDivider() {
+	return <span aria-hidden className="inline-block w-px h-3 bg-[#e8eaed]" />;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -164,15 +176,21 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 
 	return (
 		<motion.div
-			initial={{ opacity: 0, y: -4 }}
+			initial={{ opacity: 0, y: -6 }}
 			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+			transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
 			className="inline-flex items-center gap-1 mb-4"
 			style={{ fontFamily: '"Poppins", system-ui, -apple-system, sans-serif' }}
 		>
-			{/* Folder path */}
+			{/* Folder path — each item staggers in 40ms apart */}
 			{folderPath.map((folder, index) => (
-				<span key={folder.id} className="flex items-center gap-1">
+				<motion.span
+					key={folder.id}
+					className="flex items-center gap-1"
+					initial={{ opacity: 0, x: -6 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.18, delay: index * 0.04, ease: [0.23, 1, 0.32, 1] }}
+				>
 					{index > 0 && (
 						<Icon
 							icon={ArrowRight01Icon}
@@ -184,8 +202,14 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					<motion.button
 						type="button"
 						onClick={() => onSelectNote(folder.id)}
-						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 transition-[background-color,transform] duration-[150ms] active:scale-[0.97]"
-						style={{ fontSize: 12, color: '#5f6368', fontWeight: 500 }}
+						whileTap={{ scale: 0.95 }}
+						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5"
+						style={{
+							fontSize: 12,
+							color: '#5f6368',
+							fontWeight: 500,
+							transition: `background-color 140ms ${EASE_OUT}`,
+						}}
 						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 					>
@@ -197,19 +221,31 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 						/>
 						<span className="max-w-[72px] md:max-w-[120px] truncate">{folder.name}</span>
 					</motion.button>
-				</span>
+				</motion.span>
 			))}
 
-			{/* Separator before note name */}
-			<Icon
-				icon={ArrowRight01Icon}
-				size={12}
-				strokeWidth={1.5}
-				style={{ color: '#9aa0a6' }}
-			/>
+			{/* Separator before note name — staggered after folders */}
+			<motion.span
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.15, delay: folderPath.length * 0.04, ease: [0.23, 1, 0.32, 1] }}
+			>
+				<Icon
+					icon={ArrowRight01Icon}
+					size={12}
+					strokeWidth={1.5}
+					style={{ color: '#9aa0a6' }}
+				/>
+			</motion.span>
 
 			{/* Current note name */}
-			<span className="inline-flex items-center gap-1" style={{ fontSize: 12, color: '#202124', fontWeight: 500 }}>
+			<motion.span
+				className="inline-flex items-center gap-1"
+				style={{ fontSize: 12, color: '#202124', fontWeight: 500 }}
+				initial={{ opacity: 0, x: -4 }}
+				animate={{ opacity: 1, x: 0 }}
+				transition={{ duration: 0.18, delay: (folderPath.length + 1) * 0.04, ease: [0.23, 1, 0.32, 1] }}
+			>
 				<Icon
 					icon={File01Icon}
 					size={12}
@@ -217,7 +253,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					style={{ color: '#9aa0a6' }}
 				/>
 				<span className="max-w-[120px] md:max-w-[200px] truncate">{noteName}</span>
-			</span>
+			</motion.span>
 		</motion.div>
 	);
 }
@@ -311,7 +347,6 @@ export default function NoteEditor({
 	}, [note]);
 
 	const editorApiRef = useRef<EditorApi | null>(null);
-	// Stagger animations apply when switching notes (CSS animation classes handle timing)
 
 	const handleRegisterEditorApi = useCallback(
 		(api: EditorApi | null) => {
@@ -357,13 +392,13 @@ export default function NoteEditor({
 				shareTimerRef.current = null;
 			}, 3000);
 		}
-	}, [note, onOpenAuthModal, user])
+	}, [note, onOpenAuthModal, user]);
 
 	useEffect(() => {
 		return () => {
-			clearTimeout(shareTimerRef.current ?? undefined)
-		}
-	}, [])
+			clearTimeout(shareTimerRef.current ?? undefined);
+		};
+	}, []);
 
 	const shareLabel = shareStatus === 'sharing'
 		? 'Sharing…'
@@ -417,6 +452,9 @@ export default function NoteEditor({
 	const saveDetail = saveStatus.detail || 'Sign in to save your notes';
 	const saveError = saveStatus.error;
 
+	// Shared button base transition — exact properties only, custom easing (Emil)
+	const btnTransition = `background-color 140ms ${EASE_OUT}, transform 120ms ${EASE_OUT}`;
+
 	// ── Render ───────────────────────────────────────────────────────────────────
 
 	return (
@@ -425,32 +463,51 @@ export default function NoteEditor({
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			exit={{ opacity: 0 }}
-			transition={{ duration: 0.2 }}
+			transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
 			className="relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden"
 			style={GS_SCOPE}
 		>
 
-			<div className="relative z-30 flex items-center justify-between px-4 py-2 md:px-5" style={{ background: '#ffffff', borderBottom: `1px solid ${DIVIDER}` }}>
+			{/* ── Header — liquid glass (design-taste: saturate boost mimics Apple's translucency) ── */}
+			<div
+				className="relative z-30 flex items-center justify-between px-4 py-2.5 md:px-5"
+				style={{
+					background: 'rgba(255, 255, 255, 0.72)',
+					backdropFilter: 'saturate(180%) blur(20px)',
+					WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+					borderBottom: '1px solid rgba(218, 220, 224, 0.45)',
+				}}
+			>
 				<div className="flex items-center gap-2.5">
 					{/* Back button — Mobile only */}
-					<button
+					<motion.button
 						type="button"
 						onClick={() => onSelectNote(null)}
-						className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-full active:scale-[0.97]"
-						style={{ background: 'transparent', color: MUTED, transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+						whileTap={{ scale: 0.93 }}
+						className="md:hidden relative flex h-9 w-9 items-center justify-center rounded-full"
+						style={{
+							background: 'transparent',
+							color: MUTED,
+							transition: btnTransition,
+						}}
 						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 						title="Back to Home"
 					>
 						<Icon icon={ArrowLeft01Icon} size={22} strokeWidth={2} />
-					</button>
+					</motion.button>
 
 					{sidebarCollapsed ? (
-						<button
+						<motion.button
 							type="button"
 							onClick={onToggleSidebar}
-							className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-full active:scale-[0.97]"
-							style={{ background: 'transparent', color: MUTED, transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+							whileTap={{ scale: 0.93 }}
+							className="hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-full"
+							style={{
+								background: 'transparent',
+								color: MUTED,
+								transition: btnTransition,
+							}}
 							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 							onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 							title="Open sidebar (Cmd+B)"
@@ -461,34 +518,61 @@ export default function NoteEditor({
 								strokeWidth={1.5}
 								style={{ transform: 'scaleX(-1)' }}
 							/>
-						</button>
+						</motion.button>
 					) : (
 						<div className="hidden md:block w-9" />
 					)}
 				</div>
+
 				<div className="flex items-center gap-2">
 					{/* Home button — desktop only */}
-					<button
+					<motion.button
 						type="button"
 						onClick={() => onSelectNote(null)}
+						whileTap={{ scale: 0.95 }}
 						className="btn-pill hidden md:inline-flex"
-						style={{ padding: '0 10px' }}
+						style={{ padding: '0 10px', transition: btnTransition }}
 						title="Home"
 					>
 						<Icon icon={Home01Icon} size={14} strokeWidth={1.5} />
-					</button>
+					</motion.button>
 
-					{/* Share button */}
-					<button
+					{/* Share button — blur transition on label swap (Emil: blur masks imperfect crossfades) */}
+					<motion.button
 						type="button"
 						onClick={handleShareNote}
 						disabled={shareStatus === 'sharing'}
+						whileTap={{ scale: 0.95 }}
 						className="btn-pill"
+						style={{
+							transition: btnTransition,
+							color:
+								shareStatus === 'copied'
+									? '#1e8e3e'
+									: shareStatus === 'error'
+										? '#d93025'
+										: undefined,
+						}}
 						title={shareTitle}
 					>
-						<Icon icon={shareStatus === 'copied' ? Copy01Icon : Share01Icon} size={14} strokeWidth={1.5} />
-						<span className="hidden md:inline ml-1">{shareLabel}</span>
-					</button>
+						<AnimatePresence mode="popLayout" initial={false}>
+							<motion.span
+								key={shareStatus}
+								initial={{ opacity: 0, scale: 0.85, filter: 'blur(4px)' }}
+								animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+								exit={{ opacity: 0, scale: 0.85, filter: 'blur(4px)' }}
+								transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+								className="flex items-center gap-1"
+							>
+								<Icon
+									icon={shareStatus === 'copied' ? Copy01Icon : Share01Icon}
+									size={14}
+									strokeWidth={1.5}
+								/>
+								<span className="hidden md:inline">{shareLabel}</span>
+							</motion.span>
+						</AnimatePresence>
+					</motion.button>
 
 					<SettingsMenu
 						theme={theme}
@@ -508,10 +592,12 @@ export default function NoteEditor({
 					{/* Auth: sign-in pill or user pill with ProfilePanel */}
 					{user ? (
 						<div ref={profileAnchorRef} className="relative">
-							<button
+							<motion.button
 								type="button"
 								onClick={() => setProfileOpen((v) => !v)}
+								whileTap={{ scale: 0.95 }}
 								className="btn-pill gap-2"
+								style={{ transition: btnTransition }}
 								title="Profile"
 								aria-expanded={profileOpen}
 							>
@@ -525,7 +611,7 @@ export default function NoteEditor({
 								<span className="max-w-[96px] truncate hidden md:inline">
 									{user.user_metadata?.display_name || user.email?.split('@')[0]}
 								</span>
-							</button>
+							</motion.button>
 							<AnimatePresence>
 								{profileOpen && (
 									<ProfilePanel onClose={() => setProfileOpen(false)} />
@@ -533,15 +619,17 @@ export default function NoteEditor({
 							</AnimatePresence>
 						</div>
 					) : (
-						<button
+						<motion.button
 							type="button"
 							onClick={onOpenAuthModal}
+							whileTap={{ scale: 0.95 }}
 							className="btn-pill btn-pill-accent"
+							style={{ transition: btnTransition }}
 							title="Sign in to sync your notes"
 						>
 							<Icon icon={CloudUploadIcon} size={14} strokeWidth={1.5} />
 							Sign in
-						</button>
+						</motion.button>
 					)}
 				</div>
 			</div>
@@ -551,9 +639,8 @@ export default function NoteEditor({
 
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
-				
 
-			<div className={wideMode ? 'w-full px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12' : 'mx-auto max-w-4xl px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12'}> 
+				<div className={wideMode ? 'w-full px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12' : 'mx-auto max-w-4xl px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12'}>
 					<div className="editor-stagger-1">
 						<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 					</div>
@@ -573,7 +660,7 @@ export default function NoteEditor({
 									/>
 									<div className="flex flex-wrap items-center gap-3 mt-2">
 										<span className="label-mono">{createdAtLabel}</span>
-										<span className="text-[var(--text-muted)] opacity-40">·</span>
+										<StatDivider />
 										<TagInput
 											tags={note.tags || []}
 											onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
@@ -604,29 +691,41 @@ export default function NoteEditor({
 				</div>
 			</div>
 
-			{/* Stats bar — bottom strip */}
-			<div className="stats-bar-desktop hidden md:flex items-center justify-end gap-3 px-5 py-2 text-[11.5px] tabular-nums select-none" style={{ background: 'transparent', fontFamily: FONT, color: MUTED }}>
-				{/* Save status */}
-				<motion.span
-					key={saveStatus.state}
-					initial={saveStatus.state === 'syncing' ? { scale: 0.92 } : undefined}
-					animate={saveStatus.state === 'syncing' ? { scale: [0.92, 1.05, 1] } : undefined}
-					transition={saveStatus.state === 'syncing' ? { duration: 0.25, ease: [0.23, 1, 0.32, 1] } : undefined}
-					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
-					title={saveError || (lastSavedAt ? `Last saved ${formatRelativeSaveTime(lastSavedAt)}` : saveDetail)}
-				>
-					<Icon
-						icon={saveBadgeMeta.icon}
-						size={11}
-						strokeWidth={1.8}
-						className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
-					/>
-					{saveLabel}
-				</motion.span>
+			{/* ── Stats bar — bottom strip (desktop) ── */}
+			<div
+				className="stats-bar-desktop hidden md:flex items-center justify-end gap-3 px-5 py-2.5 select-none"
+				style={{
+					background: 'transparent',
+					fontFamily: FONT,
+					color: MUTED,
+					fontSize: 12,
+					letterSpacing: '0.005em',
+				}}
+			>
+				{/* Save status — spring entrance on state change (Emil: scale(0.95) not scale(0)) */}
+				<AnimatePresence mode="popLayout" initial={false}>
+					<motion.span
+						key={saveStatus.state}
+						initial={{ opacity: 0, scale: 0.88, y: 4 }}
+						animate={{ opacity: 1, scale: 1, y: 0 }}
+						exit={{ opacity: 0, scale: 0.88, y: -4 }}
+						transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+						className={`inline-flex items-center gap-1 font-medium tabular-nums ${getSaveTextClass(saveStatus.state)}`}
+						title={saveError || (lastSavedAt ? `Last saved ${formatRelativeSaveTime(lastSavedAt)}` : saveDetail)}
+					>
+						<Icon
+							icon={saveBadgeMeta.icon}
+							size={11}
+							strokeWidth={1.8}
+							className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
+						/>
+						{saveLabel}
+					</motion.span>
+				</AnimatePresence>
 
-				<span style={{ color: '#dadce0' }}>·</span>
+				<StatDivider />
 
-				{/* Session delta */}
+				{/* Session delta — spring pop-in */}
 				<AnimatePresence mode="popLayout">
 					{sessionDelta > 0 && (
 						<motion.span
@@ -635,7 +734,7 @@ export default function NoteEditor({
 							animate={{ scale: 1, opacity: 1, y: 0 }}
 							exit={{ scale: 0.7, opacity: 0, y: -6 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-							className="inline-flex items-center gap-0.5 font-semibold"
+							className="inline-flex items-center gap-0.5 font-semibold tabular-nums"
 							style={{ color: '#1e8e3e' }}
 						>
 							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
@@ -644,16 +743,18 @@ export default function NoteEditor({
 					)}
 				</AnimatePresence>
 				{sessionDelta > 0 && (
-					<span style={{ color: '#dadce0' }}>·</span>
+					<StatDivider />
 				)}
 
-				{/* Word count */}
-				<SpringNumber value={wordCount} />
-				<span> words</span>
+				{/* Word count — monospace numerals (design-taste: tabular-nums for data density) */}
+				<span style={{ fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' }}>
+					<SpringNumber value={wordCount} />
+				</span>
+				<span>words</span>
 
 				{readTime && (
 					<>
-						<span style={{ color: '#dadce0' }}>·</span>
+						<StatDivider />
 						<span>{readTime}</span>
 					</>
 				)}
@@ -661,50 +762,86 @@ export default function NoteEditor({
 				{/* Retry button */}
 				{saveStatus.canRetry && onRetrySync && (
 					<>
-						<span style={{ color: '#dadce0' }}>·</span>
-						<button
+						<StatDivider />
+						<motion.button
 							type="button"
 							onClick={onRetrySync}
-							className="rounded-full px-2.5 py-0.5 text-[11px] font-medium active:scale-[0.97]"
-							style={{ border: `1px solid ${DIVIDER}`, color: MUTED, background: '#ffffff', transition: 'background-color 150ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1)' }}
+							whileTap={{ scale: 0.95 }}
+							className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+							style={{
+								border: `1px solid ${DIVIDER}`,
+								color: MUTED,
+								background: '#ffffff',
+								transition: `background-color 140ms ${EASE_OUT}, transform 120ms ${EASE_OUT}`,
+							}}
 							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 							onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
 						>
 							Retry
-						</button>
+						</motion.button>
 					</>
 				)}
 			</div>
 
-			{/* Mobile stats — floating pill (hidden on desktop) */}
-			<div
-				className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full px-3 py-1.5 text-[11px] tabular-nums select-none transition-opacity duration-200 ${keyboardOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-				style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)', left: '50%', transform: 'translateX(-50%)', fontFamily: FONT, color: MUTED, background: '#ffffff', border: `1px solid ${DIVIDER}`, boxShadow: '0 1px 6px -1px rgba(32,33,36,0.10), 0 2px 8px -2px rgba(32,33,36,0.08)' }}
+			{/* ── Mobile stats — liquid glass floating pill ── */}
+			<motion.div
+				className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full px-3 py-1.5 text-[11px] tabular-nums select-none`}
+				animate={{ opacity: keyboardOpen ? 0 : 1 }}
+				transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
+				style={{
+					bottom: 'calc(env(safe-area-inset-bottom, 0px) + 4.5rem)',
+					left: '50%',
+					transform: 'translateX(-50%)',
+					fontFamily: FONT,
+					color: MUTED,
+					pointerEvents: keyboardOpen ? 'none' : 'auto',
+					// Liquid glass: semi-transparent + blur + inner border refraction (design-taste)
+					background: 'rgba(255, 255, 255, 0.82)',
+					backdropFilter: 'blur(16px)',
+					WebkitBackdropFilter: 'blur(16px)',
+					border: `1px solid rgba(232, 234, 237, 0.8)`,
+					boxShadow: `
+						0 1px 8px -2px rgba(32, 33, 36, 0.10),
+						0 4px 16px -4px rgba(32, 33, 36, 0.08),
+						inset 0 1px 0 rgba(255, 255, 255, 0.9)
+					`,
+				}}
 			>
-				<span
-					className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
-				>
-					<Icon
-						icon={saveBadgeMeta.icon}
-						size={10}
-						strokeWidth={1.8}
-						className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
-					/>
-					{saveLabel}
-				</span>
-				<span style={{ color: '#dadce0' }}>·</span>
-				<span>
+				{/* Save status */}
+				<AnimatePresence mode="popLayout" initial={false}>
+					<motion.span
+						key={saveStatus.state}
+						initial={{ opacity: 0, scale: 0.88 }}
+						animate={{ opacity: 1, scale: 1 }}
+						exit={{ opacity: 0, scale: 0.88 }}
+						transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+						className={`inline-flex items-center gap-1 font-medium ${getSaveTextClass(saveStatus.state)}`}
+					>
+						<Icon
+							icon={saveBadgeMeta.icon}
+							size={10}
+							strokeWidth={1.8}
+							className={saveBadgeMeta.spin ? 'sync-spin' : undefined}
+						/>
+						{saveLabel}
+					</motion.span>
+				</AnimatePresence>
+
+				<StatDivider />
+
+				<span style={{ fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' }}>
 					<SpringNumber value={wordCount} />
 					{' '}words
 				</span>
+
 				{sessionDelta > 0 && (
 					<>
-						<span style={{ color: '#dadce0' }}>·</span>
+						<StatDivider />
 						<motion.span
 							initial={{ scale: 0.7, opacity: 0 }}
 							animate={{ scale: 1, opacity: 1 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-							className="inline-flex items-center gap-0.5 font-semibold"
+							className="inline-flex items-center gap-0.5 font-semibold tabular-nums"
 							style={{ color: '#1e8e3e' }}
 						>
 							<Icon icon={FireIcon} size={8} strokeWidth={2.2} />
@@ -712,7 +849,7 @@ export default function NoteEditor({
 						</motion.span>
 					</>
 				)}
-			</div>
+			</motion.div>
 
 		</motion.div>
 	);
