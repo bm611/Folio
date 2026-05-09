@@ -430,7 +430,7 @@ export default function NoteEditor({
 			style={GS_SCOPE}
 		>
 
-			<div className="relative z-20 flex items-center justify-between px-4 py-2 md:px-5" style={{ background: '#ffffff', borderBottom: `1px solid ${DIVIDER}` }}>
+			<div className="relative z-30 flex items-center justify-between px-4 py-2 md:px-5" style={{ background: '#ffffff', borderBottom: `1px solid ${DIVIDER}` }}>
 				<div className="flex items-center gap-2.5">
 					{/* Back button — Mobile only */}
 					<button
@@ -605,7 +605,7 @@ export default function NoteEditor({
 			</div>
 
 			{/* Stats bar — bottom strip */}
-			<div className="stats-bar-desktop hidden md:flex items-center gap-3 px-5 py-2 text-[11.5px] tabular-nums select-none" style={{ background: '#f8f9fa', borderTop: `1px solid ${DIVIDER}`, fontFamily: FONT, color: MUTED }}>
+			<div className="stats-bar-desktop hidden md:flex items-center justify-end gap-3 px-5 py-2 text-[11.5px] tabular-nums select-none" style={{ background: 'transparent', fontFamily: FONT, color: MUTED }}>
 				{/* Save status */}
 				<motion.span
 					key={saveStatus.state}
