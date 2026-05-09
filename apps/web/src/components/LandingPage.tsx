@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { motion, useInView, useReducedMotion } from 'framer-motion';
+import { useRef, useEffect, useState, memo } from 'react';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 
 import {
   ArrowRight01Icon,
@@ -8,10 +8,10 @@ import {
   LockPasswordIcon,
   WifiOff01Icon,
   CheckmarkCircle01Icon,
-  AlertCircleIcon,
   PencilEdit01Icon,
-  FireIcon,
   TextFontIcon,
+  Settings02Icon,
+  Search01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -21,28 +21,62 @@ interface LandingPageProps {
   onSignIn: () => void;
 }
 
-// ─── Shared animation helpers ────────────────────────────────────────────────
+// ─── Google Store palette (scoped to this page only) ─────────────────────────
+//
+// White canvas, warm-gray section rhythm, single saturated accent.
+// All `style` overrides on the root cascade through every child.
+//
+const GS = {
+  '--gs-canvas':      '#ffffff',        // primary background — 80%+ of viewport
+  '--gs-canvas-alt':  '#f8f9fa',        // alternating section rhythm + product tile
+  '--gs-ink':         '#202124',        // primary headlines & body
+  '--gs-ink-soft':    '#3c4043',        // dense body
+  '--gs-ink-muted':   '#5f6368',        // taglines, prefixes, footnotes
+  '--gs-ink-subtle':  '#80868b',        // metadata, icons
+  '--gs-divider':     '#e8eaed',        // hairline rules
+  '--gs-blue':        '#1a73e8',        // singular accent: text links + rare filled CTA
+  '--gs-blue-hover':  '#1765cc',
+  '--gs-blue-tint':   '#e8f0fe',        // tonal surface
+  // product-derived tints — borrowed from device colorways
+  '--gs-tint-lavender': '#eee7f7',
+  '--gs-tint-jade':     '#e0efe5',
+  '--gs-tint-stone':    '#efece6',
+  '--gs-tint-rose':     '#f7e9ea',
+  '--gs-tint-sky':      '#e3edf6',
+  // type — Google Sans is proprietary; Poppins is a Google-hosted geometric
+  // sans that closely matches its rhythm and round shoulders.
+  '--gs-display':     '"Poppins", system-ui, -apple-system, sans-serif',
+  '--gs-text':        '"Poppins", system-ui, -apple-system, sans-serif',
+  '--gs-mono':        '"IBM Plex Mono", ui-monospace, monospace',
+} as React.CSSProperties;
 
-const spring = { type: 'spring', duration: 0.4, bounce: 0 } as const;
+// ─── Motion primitives ───────────────────────────────────────────────────────
+//
+// Restrained per Google Store's "recessive UI". One spring config; transforms
+// + opacity only; no blur, no rotation, no scale. Reduced-motion respected.
+//
+const SPRING = { type: 'spring', stiffness: 110, damping: 22, mass: 0.9 } as const;
 
-function FadeUp({
+function Reveal({
   children,
   delay = 0,
   className = '',
+  y = 14,
 }: {
   children: React.ReactNode;
   delay?: number;
   className?: string;
+  y?: number;
 }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
+  const inView = useInView(ref, { once: true, margin: '-72px' });
   const reduced = useReducedMotion();
   return (
     <motion.div
       ref={ref}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, transform: 'translateY(12px)' }}
-      animate={inView ? (reduced ? { opacity: 1 } : { opacity: 1, transform: 'translateY(0px)' }) : {}}
-      transition={{ ...spring, delay }}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, y }}
+      animate={inView ? (reduced ? { opacity: 1 } : { opacity: 1, y: 0 }) : {}}
+      transition={{ ...SPRING, delay }}
       className={className}
     >
       {children}
@@ -50,624 +84,1052 @@ function FadeUp({
   );
 }
 
-function FadeBlur({
-  children,
-  delay = 0,
-  className = '',
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-60px' });
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      ref={ref}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, transform: 'translateY(16px)', filter: 'blur(4px)' }}
-      animate={inView ? (reduced ? { opacity: 1 } : { opacity: 1, transform: 'translateY(0px)', filter: 'blur(0px)' }) : {}}
-      transition={{ ...spring, delay }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
+// ─── Reusable atoms ──────────────────────────────────────────────────────────
 
-// ─── Section label ────────────────────────────────────────────────────────────
-
-function Label({ children }: { children: React.ReactNode }) {
+function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
     <span
-      className="mb-4 inline-block border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-1 label-mono-strong shadow-[var(--stamp-shadow)]"
+      className="text-[13px] font-medium uppercase tracking-[0.14em]"
+      style={{ color: 'var(--gs-ink-muted)' }}
     >
       {children}
     </span>
   );
 }
 
-// ─── Grain overlay (reused across sections) ──────────────────────────────────
-
-const GRAIN_SVG =
-  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='%23000'/%3E%3C/svg%3E\")";
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 1 — Editor
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function EditorMock() {
+function H2({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className="w-full overflow-hidden panel-bordered-thick">
-      {/* Chrome bar */}
-      <div className="flex items-center gap-1.5 border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-3">
-        <span className="h-2.5 w-2.5 border-[1px] border-[var(--ink)] bg-[var(--danger)]" />
-        <span className="h-2.5 w-2.5 border-[1px] border-[var(--ink)] bg-[var(--warning)]" />
-        <span className="h-2.5 w-2.5 border-[1px] border-[var(--ink)] bg-[var(--success)]" />
-        <span className="ml-4 text-[11px] text-[var(--text-muted)]">Weekly Planning</span>
+    <h2
+      className={`text-[40px] leading-[1.12] tracking-[-0.02em] sm:text-[52px] ${className}`}
+      style={{ fontFamily: 'var(--gs-display)', color: 'var(--gs-ink)', fontWeight: 400 }}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function Lede({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <p
+      className={`text-[17px] leading-[1.55] sm:text-[18px] ${className}`}
+      style={{ color: 'var(--gs-ink-muted)' }}
+    >
+      {children}
+    </p>
+  );
+}
+
+// Plain text-link CTA in Google Blue — primary affordance per the design language.
+function TextLink({
+  children,
+  onClick,
+  href,
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  href?: string;
+}) {
+  const Component: any = href ? 'a' : 'button';
+  return (
+    <Component
+      onClick={onClick}
+      href={href}
+      className="group inline-flex items-center gap-1.5 text-[15px] font-medium tracking-[-0.005em] transition-colors duration-150"
+      style={{ color: 'var(--gs-blue)' }}
+    >
+      <span className="relative">
+        {children}
+        <span
+          className="absolute -bottom-0.5 left-0 h-[1.5px] w-full origin-left scale-x-0 transition-transform duration-200 group-hover:scale-x-100"
+          style={{ background: 'var(--gs-blue)' }}
+        />
+      </span>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        fill="none"
+        className="transition-transform duration-200 group-hover:translate-x-0.5"
+      >
+        <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </Component>
+  );
+}
+
+// Pill filled button — used sparingly per Google Store.
+function PillButton({
+  children,
+  onClick,
+  variant = 'filled',
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'filled' | 'ghost';
+}) {
+  const base =
+    'inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-[15px] font-medium tracking-[-0.005em] transition-all duration-200 active:scale-[0.985]';
+  if (variant === 'filled') {
+    return (
+      <button
+        onClick={onClick}
+        className={base}
+        style={{ background: 'var(--gs-blue)', color: '#ffffff' }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--gs-blue-hover)')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--gs-blue)')}
+      >
+        {children}
+      </button>
+    );
+  }
+  return (
+    <button
+      onClick={onClick}
+      className={`${base} border`}
+      style={{ borderColor: 'var(--gs-divider)', color: 'var(--gs-ink)', background: 'transparent' }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HERO — left-aligned content, right-side product showcase on tinted surface
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function Hero({ onStart, onSignIn }: LandingPageProps) {
+  const reduced = useReducedMotion();
+  const heroRef = useRef<HTMLDivElement>(null);
+  // Subtle parallax on the showcase tile — only when motion is allowed.
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const tileY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -40]);
+
+  return (
+    <section
+      ref={heroRef}
+      className="relative w-full overflow-hidden"
+      style={{ background: 'var(--gs-canvas)', minHeight: '100dvh' }}
+    >
+      {/* Top utility row — borrowed from Google Store's mega-nav cleanliness */}
+      <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between px-6 pt-8 sm:px-10">
+        <span
+          className="text-[20px] tracking-[-0.02em]"
+          style={{ fontFamily: 'var(--gs-display)', fontWeight: 500, color: 'var(--gs-ink)' }}
+        >
+          Folio
+        </span>
+        <nav className="hidden items-center gap-8 md:flex">
+          {['Editor', 'AI', 'Sync', 'Personalize'].map((label) => (
+            <a
+              key={label}
+              href={`#${label.toLowerCase()}`}
+              className="text-[14px] font-medium tracking-[-0.005em] transition-colors duration-150"
+              style={{ color: 'var(--gs-ink)' }}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+        <button
+          onClick={onSignIn}
+          className="text-[14px] font-medium tracking-[-0.005em] transition-colors duration-150"
+          style={{ color: 'var(--gs-blue)' }}
+        >
+          Sign in
+        </button>
       </div>
 
-      {/* Editor body */}
-      <div className="space-y-4 p-6 text-sm leading-relaxed">
-        {/* H1 */}
-        <div className="text-2xl font-bold tracking-tight" style={{ color: 'var(--accent)', fontFamily: 'var(--font-display)' }}>
-          Weekly Planning
+      {/* Main hero grid — 5/7 split, asymmetric whitespace */}
+      <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-12 px-6 pb-20 pt-16 sm:px-10 lg:grid-cols-12 lg:gap-10 lg:pb-32 lg:pt-28">
+        {/* Left — copy */}
+        <div className="lg:col-span-5">
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ ...SPRING, delay: 0.05 }}
+          >
+            <Eyebrow>New · Folio 2.0</Eyebrow>
+          </motion.div>
+
+          <motion.h1
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 16 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ ...SPRING, delay: 0.12 }}
+            className="mt-4 text-[44px] leading-[1.05] tracking-[-0.025em] sm:text-[64px] lg:text-[68px]"
+            style={{ fontFamily: 'var(--gs-display)', fontWeight: 400, color: 'var(--gs-ink)' }}
+          >
+            Notes built for the{' '}
+            <span style={{ color: 'var(--gs-blue)' }}>way you think.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 14 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ ...SPRING, delay: 0.2 }}
+            className="mt-6 max-w-[440px] text-[17px] leading-[1.55]"
+            style={{ color: 'var(--gs-ink-muted)' }}
+          >
+            A local-first writing surface with a quiet AI inside. Open the app and
+            start typing — sync to the cloud only when you choose.
+          </motion.p>
+
+          <motion.div
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ ...SPRING, delay: 0.28 }}
+            className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4"
+          >
+            <PillButton onClick={onStart}>
+              Start writing
+              <Icon icon={ArrowRight01Icon} size={16} stroke={1.8} />
+            </PillButton>
+            <TextLink onClick={onSignIn}>Sign in to sync</TextLink>
+          </motion.div>
+
+          {/* Spec strip — three small data points, no card chrome */}
+          <motion.dl
+            initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10 }}
+            animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            transition={{ ...SPRING, delay: 0.36 }}
+            className="mt-14 grid max-w-[440px] grid-cols-3 gap-6"
+          >
+            {[
+              { v: '0 ms', l: 'time to first keystroke' },
+              { v: '36', l: 'syntax languages' },
+              { v: '14', l: 'callout types' },
+            ].map(({ v, l }) => (
+              <div key={l}>
+                <dt
+                  className="text-[24px] leading-none tracking-[-0.02em]"
+                  style={{ fontFamily: 'var(--gs-display)', fontWeight: 400, color: 'var(--gs-ink)' }}
+                >
+                  {v}
+                </dt>
+                <dd className="mt-2 text-[12px] leading-[1.4]" style={{ color: 'var(--gs-ink-muted)' }}>
+                  {l}
+                </dd>
+              </div>
+            ))}
+          </motion.dl>
         </div>
 
-        {/* Callout — tip */}
-        <div className="flex gap-3 border-[1.5px] border-[var(--ink)] bg-[#5ea8c8]/10 px-4 py-3 shadow-[var(--stamp-shadow)]">
-          <span className="mt-0.5 shrink-0 text-[#5ea8c8]">
-            <Icon icon={FireIcon} size={15} strokeWidth={1.5} />
-          </span>
-          <div>
-            <span className="text-xs font-semibold text-[#5ea8c8]">Tip</span>
-            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Use <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-hover)] px-1 text-[var(--accent)] shadow-[2px_2px_0_var(--ink)]">/</code> to insert any block — headings, tables, code, callouts and more.</p>
+        {/* Right — product showcase on lavender tint */}
+        <motion.div
+          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 24 }}
+          animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+          transition={{ ...SPRING, delay: 0.18 }}
+          style={{ y: tileY }}
+          className="lg:col-span-7"
+        >
+          <div
+            className="relative aspect-[5/4] w-full overflow-hidden rounded-[28px]"
+            style={{ background: 'var(--gs-tint-lavender)' }}
+          >
+            <HeroEditorShowcase />
           </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// Editor showcase floating inside the hero tint.
+const HeroEditorShowcase = memo(function HeroEditorShowcase() {
+  const reduced = useReducedMotion();
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-8 sm:p-12 lg:p-16">
+      <div
+        className="relative w-full max-w-[520px] overflow-hidden rounded-[14px]"
+        style={{ background: '#ffffff', boxShadow: '0 24px 60px -28px rgba(32,33,36,0.18)' }}
+      >
+        {/* Window chrome — minimal */}
+        <div
+          className="flex items-center gap-4 px-5 py-3"
+          style={{ borderBottom: '1px solid var(--gs-divider)' }}
+        >
+          <div className="flex gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#e8eaed' }} />
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#e8eaed' }} />
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#e8eaed' }} />
+          </div>
+          <span className="text-[12px]" style={{ color: 'var(--gs-ink-subtle)' }}>
+            Weekly review · just now
+          </span>
         </div>
 
-        {/* H2 */}
-        <div className="pt-1 text-base font-semibold" style={{ color: 'var(--color-h2)' }}>
-          This week's focus
+        {/* Body */}
+        <div className="px-7 py-7 sm:px-9">
+          <p
+            className="text-[24px] leading-[1.15] tracking-[-0.015em]"
+            style={{ fontFamily: 'var(--gs-display)', color: 'var(--gs-ink)', fontWeight: 500 }}
+          >
+            What I learned this week
+          </p>
+          <p className="mt-3 text-[14px] leading-[1.6]" style={{ color: 'var(--gs-ink-soft)' }}>
+            Three things stood out — clarity beats throughput, async writing
+            compounds, and the team
+          </p>
+
+          {/* AI block */}
+          <div
+            className="mt-5 rounded-[10px] p-4"
+            style={{ background: 'var(--gs-blue-tint)' }}
+          >
+            <div className="mb-2 flex items-center gap-2">
+              <span style={{ color: 'var(--gs-blue)' }}>
+                <Icon icon={SparklesIcon} size={13} stroke={1.6} />
+              </span>
+              <span className="text-[11px] font-medium tracking-[0.04em]" style={{ color: 'var(--gs-blue)' }}>
+                FOLIO AI
+              </span>
+              <motion.span
+                animate={reduced ? {} : { opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                className="ml-auto text-[11px]"
+                style={{ color: 'var(--gs-ink-muted)' }}
+              >
+                Drafting…
+              </motion.span>
+            </div>
+            <p className="text-[13px] leading-[1.55]" style={{ color: 'var(--gs-ink-soft)' }}>
+              Continue with: <span style={{ color: 'var(--gs-ink)' }}>"shipped two ideas that needed
+              another pair of eyes — write them up before Monday."</span>
+            </p>
+          </div>
+
+          {/* Inline checklist */}
+          <ul className="mt-5 space-y-2.5">
+            {[
+              { done: true, t: 'Draft Q3 narrative' },
+              { done: true, t: 'Share with Mira' },
+              { done: false, t: 'Pin to home' },
+            ].map((it) => (
+              <li key={it.t} className="flex items-center gap-3">
+                <span
+                  className="flex h-4 w-4 items-center justify-center rounded-[3px]"
+                  style={{
+                    background: it.done ? 'var(--gs-blue)' : 'transparent',
+                    border: it.done ? '0' : '1.5px solid var(--gs-ink-subtle)',
+                  }}
+                >
+                  {it.done && (
+                    <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+                      <path
+                        d="M1.5 4.6L3.6 6.7 7.5 2.5"
+                        stroke="#fff"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </span>
+                <span
+                  className="text-[13px]"
+                  style={{
+                    color: it.done ? 'var(--gs-ink-subtle)' : 'var(--gs-ink-soft)',
+                    textDecoration: it.done ? 'line-through' : 'none',
+                  }}
+                >
+                  {it.t}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SHOWCASE — generic zigzag block (image left | text right OR reversed)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function Showcase({
+  id,
+  eyebrow,
+  title,
+  description,
+  ctaLabel,
+  onCta,
+  bullets,
+  visual,
+  reverse = false,
+  tint,
+  background,
+}: {
+  id?: string;
+  eyebrow: string;
+  title: React.ReactNode;
+  description: string;
+  ctaLabel?: string;
+  onCta?: () => void;
+  bullets?: { label: string; desc: string }[];
+  visual: React.ReactNode;
+  reverse?: boolean;
+  tint: string;
+  background?: string;
+}) {
+  return (
+    <section
+      id={id}
+      className="relative w-full"
+      style={{ background: background ?? 'var(--gs-canvas)' }}
+    >
+      <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-12 px-6 py-20 sm:px-10 sm:py-24 lg:grid-cols-12 lg:gap-16 lg:py-32">
+        {/* Visual */}
+        <div className={`lg:col-span-7 ${reverse ? 'lg:order-2' : ''}`}>
+          <Reveal y={20}>
+            <div
+              className="relative aspect-[5/4] w-full overflow-hidden rounded-[28px]"
+              style={{ background: tint }}
+            >
+              {visual}
+            </div>
+          </Reveal>
         </div>
 
-        {/* Task list */}
-        <div className="space-y-2">
-          {[
-            { done: true,  text: 'Finish Q2 roadmap document' },
-            { done: true,  text: 'Review pull requests' },
-            { done: false, text: 'Write release notes' },
-            { done: false, text: 'Sync with design team' },
-          ].map((t, i) => (
-            <div key={i} className="flex items-center gap-2.5">
-              <span
-                className="flex h-4 w-4 shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)]"
+        {/* Copy */}
+        <div className={`lg:col-span-5 ${reverse ? 'lg:order-1' : ''}`}>
+          <Reveal delay={0.05}>
+            <Eyebrow>{eyebrow}</Eyebrow>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <H2 className="mt-3">{title}</H2>
+          </Reveal>
+          <Reveal delay={0.16}>
+            <Lede className="mt-5 max-w-[460px]">{description}</Lede>
+          </Reveal>
+
+          {bullets && (
+            <Reveal delay={0.22}>
+              <ul className="mt-8 space-y-5">
+                {bullets.map((b) => (
+                  <li key={b.label}>
+                    <p
+                      className="text-[15px] tracking-[-0.005em]"
+                      style={{ color: 'var(--gs-ink)', fontWeight: 500 }}
+                    >
+                      {b.label}
+                    </p>
+                    <p
+                      className="mt-1 text-[14px] leading-[1.55]"
+                      style={{ color: 'var(--gs-ink-muted)' }}
+                    >
+                      {b.desc}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          )}
+
+          {ctaLabel && (
+            <Reveal delay={0.3}>
+              <div className="mt-9">
+                <TextLink onClick={onCta}>{ctaLabel}</TextLink>
+              </div>
+            </Reveal>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Visual mocks for showcases ──────────────────────────────────────────────
+
+const EditorVisual = memo(function EditorVisual() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-8 sm:p-12 lg:p-14">
+      <div
+        className="relative w-full max-w-[480px] overflow-hidden rounded-[14px]"
+        style={{ background: '#ffffff', boxShadow: '0 24px 60px -28px rgba(32,33,36,0.16)' }}
+      >
+        <div className="px-7 py-7">
+          <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--gs-ink-subtle)' }}>
+            <Icon icon={PencilEdit01Icon} size={12} stroke={1.6} />
+            <span>Slash menu</span>
+          </div>
+          <p
+            className="mt-4 text-[20px] leading-[1.2] tracking-[-0.015em]"
+            style={{ fontFamily: 'var(--gs-display)', color: 'var(--gs-ink)', fontWeight: 500 }}
+          >
+            Paste, type, or just /
+          </p>
+
+          <div className="mt-6 space-y-1.5">
+            {[
+              { label: 'Heading',     hint: 'h1' },
+              { label: 'Callout',     hint: '/call', active: true },
+              { label: 'Code block',  hint: '```' },
+              { label: 'Task list',   hint: '[]' },
+              { label: 'Table',       hint: '/tbl' },
+            ].map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center justify-between rounded-[8px] px-3 py-2 text-[13px]"
                 style={{
-                  background: t.done ? 'var(--accent)' : 'transparent',
-                  border: t.done ? 'none' : '1.5px solid var(--border-default)',
+                  background: row.active ? 'var(--gs-blue-tint)' : 'transparent',
+                  color: row.active ? 'var(--gs-blue)' : 'var(--gs-ink-soft)',
                 }}
               >
-                {t.done && (
-                  <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
-                    <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </span>
-              <span className={t.done ? 'text-xs text-[var(--text-muted)] line-through' : 'text-xs text-[var(--text-secondary)]'}>
-                {t.text}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* H2 */}
-        <div className="pt-1 text-base font-semibold" style={{ color: 'var(--color-h2)' }}>
-          Notes
-        </div>
-
-        {/* Callout — warning */}
-        <div className="flex gap-3 border-[1.5px] border-[var(--ink)] bg-[var(--accent)]/10 px-4 py-3 shadow-[var(--stamp-shadow)]">
-          <span className="mt-0.5 shrink-0" style={{ color: 'var(--accent)' }}>
-            <Icon icon={AlertCircleIcon} size={15} strokeWidth={1.5} />
-          </span>
-          <div>
-            <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Important</span>
-            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Deadline moved to Friday — confirm with stakeholders before EOD.</p>
-          </div>
-        </div>
-
-        {/* Code block */}
-        <div className="overflow-hidden border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] shadow-[var(--stamp-shadow)]">
-          <div className="flex items-center justify-between border-b-[1.5px] border-[var(--ink)] px-3 py-2">
-            <span className="text-[10px] font-medium text-[var(--text-muted)]">typescript</span>
-          </div>
-          <pre className="px-4 py-3 text-[11px] leading-relaxed text-[var(--text-secondary)]">
-            <span style={{ color: 'var(--success)' }}>const</span>
-            <span style={{ color: 'var(--text-primary)' }}> note </span>
-            <span style={{ color: 'var(--accent)' }}>=</span>
-            <span style={{ color: 'var(--color-h2)' }}> await</span>
-            <span style={{ color: 'var(--text-primary)' }}> getNotes(userId)</span>
-          </pre>
-        </div>
-
-        {/* Blinking cursor */}
-        <div className="flex items-center gap-0.5 text-xs text-[var(--text-muted)]">
-          <span>Type something</span>
-          <span className="inline-block h-3.5 w-0.5 animate-[blink_1s_step-end_infinite] bg-[var(--accent)]" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionEditor() {
-  return (
-    <section className="relative px-6 py-32 sm:px-16 lg:px-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
-          {/* Left — copy */}
-          <div>
-            <FadeUp delay={0}>
-              <Label>Editor</Label>
-            </FadeUp>
-            <FadeUp delay={0.06}>
-              <h2
-                className="mt-3 mb-6 text-4xl leading-[1.1] tracking-tight text-[var(--text-primary)] sm:text-5xl"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                Write without<br />
-                <span style={{ color: 'var(--accent)' }}>friction.</span>
-              </h2>
-            </FadeUp>
-            <FadeUp delay={0.12}>
-              <p className="mb-10 max-w-md text-base leading-relaxed text-[var(--text-secondary)]">
-                A rich text editor that stays out of your way. Type <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm text-[var(--accent)] shadow-[2px_2px_0_var(--ink)]">/</code> for slash commands, paste Markdown and watch it transform, or just write.
-              </p>
-            </FadeUp>
-            <FadeUp delay={0.18}>
-              <div className="space-y-4">
-                {[
-                  { icon: PencilEdit01Icon, label: 'Callouts', desc: '14 types — tip, warning, bug, quote and more. Foldable too.' },
-                  { icon: CheckmarkCircle01Icon, label: 'Task lists', desc: 'Nested checkboxes with Tab indent and slash command insert.' },
-                  { icon: TextFontIcon, label: 'Code blocks', desc: 'Syntax highlighting across 36 languages with a language picker.' },
-                ].map(({ icon, label, desc }) => (
-                  <div key={label} className="flex gap-4">
-                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] text-[var(--accent)] shadow-[var(--stamp-shadow)]">
-                      <Icon icon={icon} size={15} strokeWidth={1.5} />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">{label}</p>
-                      <p className="text-sm text-[var(--text-muted)]">{desc}</p>
-                    </div>
-                  </div>
-                ))}
+                <span style={{ fontWeight: row.active ? 500 : 400 }}>{row.label}</span>
+                <span
+                  className="text-[11px]"
+                  style={{
+                    color: row.active ? 'var(--gs-blue)' : 'var(--gs-ink-subtle)',
+                    fontFamily: 'var(--gs-mono)',
+                  }}
+                >
+                  {row.hint}
+                </span>
               </div>
-            </FadeUp>
+            ))}
           </div>
 
-          {/* Right — mock */}
-          <FadeBlur delay={0.1}>
-            <EditorMock />
-          </FadeBlur>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 2 — AI Assistant
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function AiMock() {
-  return (
-    <div className="mx-auto w-full max-w-lg overflow-hidden panel-bordered-thick">
-      {/* Prompt input */}
-      <div className="border-b-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-4 py-3">
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {['Q2 Roadmap', 'Meeting Notes'].map((note) => (
-            <span
-              key={note}
-              className="inline-flex items-center gap-1 border-[1px] border-[var(--ink)] bg-[var(--accent)] px-2.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--bg-primary)] shadow-[2px_2px_0_var(--ink)]"
-            >
-              <span className="opacity-60">@</span>{note}
-            </span>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <span className="flex-1">Summarise the key risks across these notes</span>
-          <span className="inline-block h-3.5 w-0.5 animate-[blink_1s_step-end_infinite] bg-[var(--accent)]" />
-        </div>
-      </div>
-
-      {/* Streamed response */}
-      <div className="space-y-4 p-5 text-sm">
-        <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-h2)]">
-          <Icon icon={SparklesIcon} size={13} strokeWidth={1.5} />
-          <span>Folio AI</span>
-          <span className="ml-auto border-[1.5px] border-[var(--ink)] bg-[var(--success)] px-2 py-0.5 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-[var(--bg-primary)] shadow-[2px_2px_0_var(--ink)]">Streaming…</span>
-        </div>
-
-        {/* Callout in response */}
-        <div className="flex gap-3 border-[1.5px] border-[var(--ink)] bg-[var(--accent)]/10 px-3.5 py-3 shadow-[var(--stamp-shadow)]">
-          <span className="mt-0.5 shrink-0" style={{ color: 'var(--accent)' }}>
-            <Icon icon={AlertCircleIcon} size={14} strokeWidth={1.5} />
-          </span>
-          <div>
-            <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Important</span>
-            <p className="mt-0.5 text-xs text-[var(--text-secondary)]">Deadline risk identified across both documents. Stakeholder sign-off not yet confirmed.</p>
-          </div>
-        </div>
-
-        {/* Bullet summary */}
-        <div className="space-y-2">
-          {[
-            'Q2 scope has grown — 3 unplanned features added since last sync',
-            'Design handoff blocked on font licensing approval',
-            'No fallback plan documented for the API migration',
-          ].map((item, i) => (
-            <div key={i} className="flex gap-2.5 text-xs text-[var(--text-secondary)]">
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-[var(--text-muted)]" />
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Fading trail at bottom to imply more content */}
-        <div className="h-8 bg-gradient-to-b from-transparent to-[var(--bg-primary)]" />
-      </div>
-    </div>
-  );
-}
-
-function SectionAI() {
-  return (
-    <section className="relative overflow-hidden px-6 py-32 sm:px-16 lg:px-24">
-      {/* Lavender glow */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.06]"
-        style={{ background: 'radial-gradient(circle, var(--color-h2) 0%, transparent 70%)' }}
-      />
-
-      <div className="relative mx-auto max-w-6xl">
-        {/* Heading — centered */}
-        <div className="mb-16 text-center">
-          <FadeUp delay={0}>
-            <Label>AI Assistant</Label>
-          </FadeUp>
-          <FadeUp delay={0.07}>
-            <h2
-              className="mt-3 mb-5 text-4xl leading-[1.1] tracking-tight text-[var(--text-primary)] sm:text-5xl"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              Your notes,{' '}
-              <span style={{ color: 'var(--color-h2)' }}>amplified.</span>
-            </h2>
-          </FadeUp>
-          <FadeUp delay={0.13}>
-            <p className="mx-auto max-w-xl text-base leading-relaxed text-[var(--text-secondary)]">
-              Type <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm shadow-[2px_2px_0_var(--ink)]" style={{ color: 'var(--color-h2)' }}>/ai</code> anywhere in a note, <code className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 text-sm text-[var(--accent)] shadow-[2px_2px_0_var(--ink)]">@mention</code> other notes as context, and get a streamed response that replaces the block with rich formatted content.
+          {/* Output preview underneath */}
+          <div className="mt-6 rounded-[10px] p-4" style={{ background: 'var(--gs-canvas-alt)' }}>
+            <p className="text-[11px] font-medium" style={{ color: 'var(--gs-ink-muted)' }}>
+              TIP
             </p>
-          </FadeUp>
-        </div>
-
-        {/* Mock */}
-        <FadeBlur delay={0.1}>
-          <AiMock />
-        </FadeBlur>
-
-        {/* Three capabilities below */}
-        <div className="mt-16 grid gap-8 sm:grid-cols-3">
-          {[
-            { title: '@mention context', desc: 'Attach any of your notes as context. The AI reads them so you don\'t have to copy-paste.' },
-            { title: 'Streams inline', desc: 'Response appears token by token directly in the document. Cancel anytime mid-stream.' },
-            { title: 'Renders rich', desc: 'Output is converted to full editor nodes — headings, callouts, code blocks, lists.' },
-          ].map(({ title, desc }, i) => (
-            <FadeUp key={title} delay={0.08 * i}>
-              <div className="border-t border-[var(--border-subtle)] pt-6">
-                <p className="mb-2 text-sm font-semibold text-[var(--text-primary)]">{title}</p>
-                <p className="text-sm leading-relaxed text-[var(--text-muted)]">{desc}</p>
-              </div>
-            </FadeUp>
-          ))}
+            <p className="mt-1.5 text-[13px] leading-[1.55]" style={{ color: 'var(--gs-ink-soft)' }}>
+              Press <code style={{ fontFamily: 'var(--gs-mono)', color: 'var(--gs-blue)' }}>/</code> on a
+              new line for any block — headings, tables, callouts, and code.
+            </p>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+});
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 3 — Command Palette
-// ═══════════════════════════════════════════════════════════════════════════════
+const AIVisual = memo(function AIVisual() {
+  const reduced = useReducedMotion();
+  const prompts = [
+    'Summarise this week of standups',
+    'Pull out the unresolved questions',
+    'Draft a release note from these PRs',
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (reduced) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % prompts.length), 2800);
+    return () => clearInterval(t);
+  }, [reduced]);
 
-function PaletteMock() {
-  const groups = [
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-8 sm:p-12 lg:p-14">
+      <div
+        className="relative w-full max-w-[480px] overflow-hidden rounded-[14px]"
+        style={{ background: '#ffffff', boxShadow: '0 24px 60px -28px rgba(32,33,36,0.16)' }}
+      >
+        {/* Prompt */}
+        <div className="px-6 py-5" style={{ borderBottom: '1px solid var(--gs-divider)' }}>
+          <div className="mb-2 flex flex-wrap gap-1.5">
+            {['@Q3-roadmap', '@team-sync'].map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+                style={{ background: 'var(--gs-blue-tint)', color: 'var(--gs-blue)', fontFamily: 'var(--gs-mono)' }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center gap-1.5 text-[14px]" style={{ color: 'var(--gs-ink)' }}>
+            <motion.span
+              key={idx}
+              initial={reduced ? {} : { opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {prompts[idx]}
+            </motion.span>
+            <motion.span
+              animate={reduced ? {} : { opacity: [1, 0, 1] }}
+              transition={{ duration: 1.05, repeat: Infinity, ease: 'linear' }}
+              className="inline-block h-[14px] w-[1.5px]"
+              style={{ background: 'var(--gs-blue)' }}
+            />
+          </div>
+        </div>
+
+        {/* Stream */}
+        <div className="px-6 py-5">
+          <div className="mb-3 flex items-center gap-2">
+            <span style={{ color: 'var(--gs-blue)' }}>
+              <Icon icon={SparklesIcon} size={13} stroke={1.6} />
+            </span>
+            <span className="text-[11px] font-medium tracking-[0.04em]" style={{ color: 'var(--gs-blue)' }}>
+              FOLIO AI
+            </span>
+            <span className="ml-auto text-[11px]" style={{ color: 'var(--gs-ink-subtle)' }}>
+              streaming
+            </span>
+          </div>
+
+          <p
+            className="text-[14px] leading-[1.55]"
+            style={{ color: 'var(--gs-ink-soft)' }}
+          >
+            Three threads moved this week:
+          </p>
+          <ul className="mt-2.5 space-y-1.5">
+            {[
+              'Auth migration — unblocked, owner Mira',
+              'Pricing page — copy locked, design in review',
+              'Mobile editor — needs spec by Friday',
+            ].map((line, i) => (
+              <motion.li
+                key={line}
+                initial={reduced ? {} : { opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 * i, ...SPRING }}
+                className="flex gap-2 text-[13px]"
+                style={{ color: 'var(--gs-ink-soft)' }}
+              >
+                <span
+                  className="mt-1.5 inline-block h-1 w-1 rounded-full"
+                  style={{ background: 'var(--gs-ink-subtle)' }}
+                />
+                <span>{line}</span>
+              </motion.li>
+            ))}
+            <motion.li
+              animate={reduced ? {} : { opacity: [0.3, 0.8, 0.3] }}
+              transition={{ duration: 1.4, repeat: Infinity }}
+              className="ml-3 mt-2 h-2 w-24 rounded-full"
+              style={{ background: 'var(--gs-divider)' }}
+            />
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const PaletteVisual = memo(function PaletteVisual() {
+  const groups: { label: string; items: { name: string; kbd?: string }[] }[] = [
     {
       label: 'Actions',
-      color: 'var(--accent)',
-      items: ['New note', 'Open search', 'Export .md'],
+      items: [
+        { name: 'New note', kbd: 'N' },
+        { name: 'Open search', kbd: '/' },
+        { name: 'Export markdown', kbd: 'E' },
+      ],
     },
     {
       label: 'Notes',
-      color: 'var(--success)',
-      items: ['Q2 Roadmap', 'Weekly Planning', 'Interview Prep'],
-    },
-    {
-      label: 'Insert',
-      color: 'var(--color-h2)',
-      items: ['Callout — Tip', 'Code block', 'Table'],
+      items: [
+        { name: 'Q3 roadmap' },
+        { name: 'Hiring loop · Hannelore' },
+        { name: 'Reading queue' },
+      ],
     },
   ];
 
   return (
-    <div className="w-full overflow-hidden panel-bordered-thick">
-      {/* Search bar */}
-      <div className="flex items-center gap-3 border-b-[1.5px] border-[var(--ink)] px-4 py-3.5">
-        <svg className="h-4 w-4 shrink-0 text-[var(--text-muted)]" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}>
-          <circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5L14 14" strokeLinecap="round" />
-        </svg>
-        <span className="flex-1 text-sm text-[var(--text-muted)]">Search or type a command…</span>
-        <kbd className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 label-mono shadow-[2px_2px_0_var(--ink)]">⌘K</kbd>
-      </div>
+    <div className="absolute inset-0 flex items-center justify-center p-8 sm:p-12 lg:p-14">
+      <div
+        className="relative w-full max-w-[480px] overflow-hidden rounded-[14px]"
+        style={{ background: '#ffffff', boxShadow: '0 24px 60px -28px rgba(32,33,36,0.16)' }}
+      >
+        {/* Search */}
+        <div
+          className="flex items-center gap-3 px-5 py-4"
+          style={{ borderBottom: '1px solid var(--gs-divider)' }}
+        >
+          <Icon icon={Search01Icon} size={15} stroke={1.6} color="var(--gs-ink-subtle)" />
+          <input
+            readOnly
+            value="open r"
+            className="flex-1 bg-transparent text-[14px] outline-none"
+            style={{ color: 'var(--gs-ink)' }}
+          />
+          <span
+            className="rounded-md px-2 py-0.5 text-[11px]"
+            style={{
+              background: 'var(--gs-canvas-alt)',
+              color: 'var(--gs-ink-muted)',
+              fontFamily: 'var(--gs-mono)',
+            }}
+          >
+            ⌘K
+          </span>
+        </div>
 
-      {/* Results */}
-      <div className="py-2">
-        {groups.map((group, gi) => (
-          <div key={group.label} className="px-2 pb-1">
-            <p className="px-2 pb-1 pt-3 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
-              {group.label}
-            </p>
-            {group.items.map((item, ii) => (
-              <div
-                key={item}
-                className={`flex items-center gap-2.5 px-2 py-2 text-xs font-mono uppercase tracking-wide border-[1px] border-transparent ${gi === 0 && ii === 0 ? "surface-inverse border-[var(--ink)]" : "text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"}`}
+        {/* Results */}
+        <div className="py-2">
+          {groups.map((g) => (
+            <div key={g.label} className="px-2 pb-1">
+              <p
+                className="px-3 pb-1 pt-3 text-[10px] font-medium uppercase tracking-[0.12em]"
+                style={{ color: 'var(--gs-ink-subtle)' }}
               >
-                <span
-                  className="h-1.5 w-1.5"
-                  style={{ background: group.color, opacity: 0.7 }}
-                />
-                {item}
-                {gi === 0 && ii === 0 && (
-                  <kbd className="ml-auto border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-1.5 py-0.5 label-mono shadow-[2px_2px_0_var(--ink)]">↵</kbd>
-                )}
+                {g.label}
+              </p>
+              {g.items.map((it, i) => (
+                <div
+                  key={it.name}
+                  className="flex items-center justify-between rounded-[8px] px-3 py-2 text-[13px]"
+                  style={{
+                    background: g.label === 'Notes' && i === 0 ? 'var(--gs-blue-tint)' : 'transparent',
+                    color: g.label === 'Notes' && i === 0 ? 'var(--gs-blue)' : 'var(--gs-ink-soft)',
+                  }}
+                >
+                  <span style={{ fontWeight: g.label === 'Notes' && i === 0 ? 500 : 400 }}>
+                    {it.name}
+                  </span>
+                  {it.kbd && (
+                    <span
+                      className="text-[11px]"
+                      style={{ color: 'var(--gs-ink-subtle)', fontFamily: 'var(--gs-mono)' }}
+                    >
+                      ⌘{it.kbd}
+                    </span>
+                  )}
+                  {g.label === 'Notes' && i === 0 && (
+                    <span
+                      className="text-[11px]"
+                      style={{ color: 'var(--gs-blue)', fontFamily: 'var(--gs-mono)' }}
+                    >
+                      ↵
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VALUE PROPOSITION STRIP — icon + text row, no card chrome
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function ValuePropStrip() {
+  const props = [
+    { icon: WifiOff01Icon,        title: 'Works offline',     desc: 'Every keystroke saved locally first.' },
+    { icon: LockPasswordIcon,     title: 'Yours by default',  desc: 'No telemetry, no third-party analytics.' },
+    { icon: CloudIcon,            title: 'Sync when ready',   desc: 'Optional Supabase backend with row-level security.' },
+    { icon: CheckmarkCircle01Icon,title: 'Open formats',      desc: 'Export the full library to Markdown anytime.' },
+  ];
+
+  return (
+    <section
+      className="w-full"
+      style={{ background: 'var(--gs-canvas-alt)', borderTop: '1px solid var(--gs-divider)', borderBottom: '1px solid var(--gs-divider)' }}
+    >
+      <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-10 px-6 py-14 sm:px-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-16">
+        {props.map((p, i) => (
+          <Reveal key={p.title} delay={0.05 * i} y={10}>
+            <div className="flex items-start gap-4">
+              <span
+                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                style={{ background: 'var(--gs-canvas)', color: 'var(--gs-ink)' }}
+              >
+                <Icon icon={p.icon} size={16} stroke={1.6} />
+              </span>
+              <div>
+                <p
+                  className="text-[15px] tracking-[-0.005em]"
+                  style={{ color: 'var(--gs-ink)', fontWeight: 500 }}
+                >
+                  {p.title}
+                </p>
+                <p className="mt-1 text-[13px] leading-[1.5]" style={{ color: 'var(--gs-ink-muted)' }}>
+                  {p.desc}
+                </p>
               </div>
-            ))}
-          </div>
+            </div>
+          </Reveal>
         ))}
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRODUCT GRID — borderless cards, tinted image rectangles, vertical stack
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function ShopGrid() {
+  const cards = [
+    {
+      tag: 'Theme',
+      name: 'Linen',
+      tagline: 'Warm parchment palette, hand-set monospace numerals.',
+      tint: 'var(--gs-tint-stone)',
+      ink: '#7a6e58',
+    },
+    {
+      tag: 'Theme',
+      name: 'Lavender',
+      tagline: 'Quiet violet accent on a near-white canvas. Reads at a distance.',
+      tint: 'var(--gs-tint-lavender)',
+      ink: '#5f4b8b',
+    },
+    {
+      tag: 'Theme',
+      name: 'Jade',
+      tagline: 'Cool botanical accent. Designed for long writing sessions.',
+      tint: 'var(--gs-tint-jade)',
+      ink: '#3a7a52',
+    },
+    {
+      tag: 'Theme',
+      name: 'Sky',
+      tagline: 'Cool, professional. The default for most teams.',
+      tint: 'var(--gs-tint-sky)',
+      ink: '#1a73e8',
+    },
+  ];
+
+  return (
+    <section className="w-full" style={{ background: 'var(--gs-canvas)' }} id="personalize">
+      <div className="mx-auto w-full max-w-[1200px] px-6 py-24 sm:px-10 lg:py-32">
+        <div className="mb-12 flex items-end justify-between gap-8">
+          <div>
+            <Reveal>
+              <Eyebrow>Make it yours</Eyebrow>
+            </Reveal>
+            <Reveal delay={0.06}>
+              <H2 className="mt-3">Themes, the way you like to read.</H2>
+            </Reveal>
+          </div>
+          <Reveal delay={0.12} className="hidden md:block">
+            <TextLink>Browse all themes</TextLink>
+          </Reveal>
+        </div>
+
+        <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.map((c, i) => (
+            <Reveal key={c.name} delay={0.06 * i}>
+              <article className="group">
+                <div
+                  className="relative aspect-[4/5] w-full overflow-hidden rounded-[20px]"
+                  style={{ background: c.tint }}
+                >
+                  <ThemeTile ink={c.ink} name={c.name} />
+                </div>
+                <div className="mt-5">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--gs-ink-muted)' }}>
+                    {c.tag}
+                  </p>
+                  <p
+                    className="mt-1.5 text-[18px] tracking-[-0.01em]"
+                    style={{ color: 'var(--gs-ink)', fontWeight: 500 }}
+                  >
+                    {c.name}
+                  </p>
+                  <p className="mt-1.5 text-[13px] leading-[1.55]" style={{ color: 'var(--gs-ink-muted)' }}>
+                    {c.tagline}
+                  </p>
+                  <div className="mt-4">
+                    <TextLink>Apply theme</TextLink>
+                  </div>
+                </div>
+              </article>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Miniature “theme product” preview — a tiny card-of-text floating on the tint.
+function ThemeTile({ ink, name }: { ink: string; name: string }) {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center p-6">
+      <div
+        className="w-full max-w-[220px] rounded-[10px] bg-white p-4"
+        style={{ boxShadow: '0 18px 36px -22px rgba(32,33,36,0.18)' }}
+      >
+        <p
+          className="text-[14px] tracking-[-0.01em]"
+          style={{ color: ink, fontFamily: 'var(--gs-display)', fontWeight: 500 }}
+        >
+          {name} preview
+        </p>
+        <div className="mt-3 space-y-1.5">
+          <span className="block h-1.5 w-full rounded-full" style={{ background: 'var(--gs-divider)' }} />
+          <span className="block h-1.5 w-[88%] rounded-full" style={{ background: 'var(--gs-divider)' }} />
+          <span className="block h-1.5 w-[64%] rounded-full" style={{ background: ink, opacity: 0.35 }} />
+        </div>
+        <div className="mt-3 flex gap-1.5">
+          {[0.9, 0.55, 0.3].map((o, i) => (
+            <span
+              key={i}
+              className="h-3.5 w-3.5 rounded-[3px]"
+              style={{ background: ink, opacity: o }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
-function SectionPalette() {
-  return (
-    <section className="relative px-6 py-32 sm:px-16 lg:px-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
-          {/* Left — mock (order reversed on desktop) */}
-          <FadeBlur delay={0.08} className="order-2 lg:order-1">
-            <PaletteMock />
-          </FadeBlur>
-
-          {/* Right — copy */}
-          <div className="order-1 lg:order-2">
-            <FadeUp delay={0}>
-              <Label>Command Palette</Label>
-            </FadeUp>
-            <FadeUp delay={0.07}>
-              <h2
-                className="mt-3 mb-6 text-4xl leading-[1.1] tracking-tight text-[var(--text-primary)] sm:text-5xl"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                One keystroke<br />
-                <span style={{ color: 'var(--success)' }}>away.</span>
-              </h2>
-            </FadeUp>
-            <FadeUp delay={0.13}>
-              <p className="mb-10 max-w-md text-base leading-relaxed text-[var(--text-secondary)]">
-                Press <kbd className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-2 py-0.5 label-mono-strong shadow-[2px_2px_0_var(--ink)]">⌘K</kbd> to open a spotlight-style palette. Navigate notes, run actions, and insert blocks — all without touching the mouse.
-              </p>
-            </FadeUp>
-            <FadeUp delay={0.18}>
-              <div className="flex flex-wrap gap-2">
-                {['New note', 'Search notes', 'Insert block', 'Export .md'].map((cap) => (
-                  <span
-                    key={cap}
-                    className="border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] px-3 py-1 label-mono shadow-[var(--stamp-shadow)]"
-                  >
-                    {cap}
-                  </span>
-                ))}
-              </div>
-            </FadeUp>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 4 — Sync & Privacy
+// CATEGORY BANNER — landscape lifestyle card with text overlay
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function SectionSync() {
-  const pillars = [
-    {
-      icon: WifiOff01Icon,
-      color: 'var(--accent)',
-      title: 'No account required',
-      desc: 'Everything lives in your browser first. Open the app, start writing. Sign in only when you want to sync across devices.',
-    },
-    {
-      icon: CloudIcon,
-      color: 'var(--success)',
-      title: 'Offline resilient',
-      desc: 'Go offline mid-session — every keystroke is queued locally and flushed the moment your connection returns. A live sync badge keeps you informed.',
-    },
-    {
-      icon: LockPasswordIcon,
-      color: 'var(--color-h2)',
-      title: 'Your data, your cloud',
-      desc: 'Sync runs through Supabase with row-level security enforced. No telemetry. No third-party analytics. Your notes never touch a shared server.',
-    },
-  ];
-
+function CategoryBanner({ onStart }: { onStart: () => void }) {
   return (
-    <section className="relative overflow-hidden px-6 py-32 sm:px-16 lg:px-24">
-      {/* Subtle tonal background shift */}
-      <div className="pointer-events-none absolute inset-0 bg-[var(--bg-surface)] opacity-40" />
-
-      <div className="relative mx-auto max-w-6xl">
-        <div className="mb-16 text-center">
-          <FadeUp delay={0}>
-            <Label>Sync & Privacy</Label>
-          </FadeUp>
-          <FadeUp delay={0.07}>
-            <h2
-              className="mt-3 text-4xl leading-[1.1] tracking-tight text-[var(--text-primary)] sm:text-5xl"
-              style={{ fontFamily: 'var(--font-display)' }}
-            >
-              Local first.{' '}
-              <span style={{ color: 'var(--accent)' }}>Cloud when you want it.</span>
-            </h2>
-          </FadeUp>
-        </div>
-
-        <div className="grid gap-0 lg:grid-cols-3">
-          {pillars.map(({ icon, color, title, desc }, i) => (
-            <FadeUp key={title} delay={0.1 * i}>
-              <div className={`px-0 py-8 lg:px-10 ${i > 0 ? 'border-t border-[var(--border-subtle)] lg:border-t-0 lg:border-l' : ''}`}>
-                <span
-                  className="mb-5 flex h-10 w-10 items-center justify-center border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] shadow-[var(--stamp-shadow)]"
-                  style={{ color }}
+    <section className="w-full" style={{ background: 'var(--gs-canvas)' }}>
+      <div className="mx-auto w-full max-w-[1200px] px-6 pb-24 sm:px-10 lg:pb-32">
+        <Reveal>
+          <div
+            className="relative overflow-hidden rounded-[28px]"
+            style={{
+              background:
+                'linear-gradient(135deg, var(--gs-tint-jade) 0%, var(--gs-tint-sky) 100%)',
+            }}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              <div className="px-8 pb-10 pt-10 sm:px-12 sm:pb-14 sm:pt-14 lg:py-20 lg:pl-16">
+                <Eyebrow>Workspace</Eyebrow>
+                <h3
+                  className="mt-3 text-[34px] leading-[1.1] tracking-[-0.02em] sm:text-[42px]"
+                  style={{ fontFamily: 'var(--gs-display)', color: 'var(--gs-ink)', fontWeight: 400 }}
                 >
-                  <Icon icon={icon} size={18} strokeWidth={1.5} />
-                </span>
-                <h3 className="mb-3 text-base font-semibold text-[var(--text-primary)]">{title}</h3>
-                <p className="text-sm leading-relaxed text-[var(--text-muted)]">{desc}</p>
+                  A quiet desk, every time you open a file.
+                </h3>
+                <p className="mt-4 max-w-[420px] text-[15px] leading-[1.55]" style={{ color: 'var(--gs-ink-muted)' }}>
+                  Wide layout, distraction-free toolbar, and a sidebar that gets out
+                  of the way the moment you start typing.
+                </p>
+                <div className="mt-7 flex flex-wrap gap-x-8 gap-y-3">
+                  <PillButton onClick={onStart}>Start a workspace</PillButton>
+                  <TextLink>See the tour</TextLink>
+                </div>
               </div>
-            </FadeUp>
-          ))}
-        </div>
 
-        {/* Sync status strip */}
-        <FadeUp delay={0.3}>
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-3">
-            {[
-              { dot: 'var(--success)', label: 'Saved' },
-              { dot: 'var(--accent)', label: 'Syncing…', spin: true },
-              { dot: 'var(--warning)', label: 'Offline — queuing writes' },
-            ].map(({ dot, label }) => (
-              <div
-                key={label}
-                className="flex items-center gap-2 border-[1.5px] border-[var(--ink)] bg-[var(--bg-elevated)] px-4 py-2 label-mono shadow-[var(--stamp-shadow)]"
-              >
-                <span className="h-1.5 w-1.5" style={{ background: dot }} />
-                {label}
-              </div>
-            ))}
-          </div>
-        </FadeUp>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 5 — Personalization
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const ACCENT_SWATCHES = [
-  { label: 'Rose',     color: '#e07a8a' },
-  { label: 'Lavender', color: '#a893ce' },
-  { label: 'Teal',     color: '#5ea8c8' },
-  { label: 'Amber',    color: '#d4a24e' },
-  { label: 'Sage',     color: '#7abc8a' },
-];
-
-
-
-function SectionPersonalization() {
-  const swatchRef = useRef(null);
-  const swatchInView = useInView(swatchRef, { once: true, margin: '-60px' });
-
-  return (
-    <section className="relative px-6 py-32 sm:px-16 lg:px-24">
-      <div className="mx-auto max-w-6xl">
-        <div className="grid items-center gap-16 lg:grid-cols-2 lg:gap-24">
-          {/* Left — copy */}
-          <div>
-            <FadeUp delay={0}>
-              <Label>Personalization</Label>
-            </FadeUp>
-            <FadeUp delay={0.07}>
-              <h2
-                className="mt-3 mb-6 text-4xl leading-[1.1] tracking-tight text-[var(--text-primary)] sm:text-5xl"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                Make it<br />
-                <span style={{ color: 'var(--color-h2)' }}>yours.</span>
-              </h2>
-            </FadeUp>
-            <FadeUp delay={0.13}>
-              <p className="mb-10 max-w-md text-base leading-relaxed text-[var(--text-secondary)]">
-                Five accent palettes and a wide layout toggle. Every preference is saved locally — no account needed.
-              </p>
-            </FadeUp>
-
-            {/* Accent swatches */}
-            <FadeUp delay={0.18}>
-              <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Accent</p>
-              <div ref={swatchRef} className="mb-8 flex gap-3">
-                {ACCENT_SWATCHES.map(({ label, color }, i) => (
-                  <motion.div
-                    key={label}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={swatchInView ? { opacity: 1, scale: 1 } : {}}
-                    transition={{ ...spring, delay: 0.22 + i * 0.07 }}
-                    title={label}
-                    className="group relative cursor-default"
-                  >
+              <div className="relative min-h-[260px] lg:min-h-[420px]">
+                {/* Layered cards — abstract “workspace” preview */}
+                <div className="absolute inset-0 flex items-center justify-center p-8">
+                  <div className="relative h-full w-full max-w-[440px]">
                     <div
-                      className="h-8 w-8 border-[1.5px] border-[var(--ink)] transition-transform duration-200 group-hover:-translate-y-1 shadow-[var(--stamp-shadow)]"
-                      style={{ background: color, ['--tw-ring-color' as string]: color }}
-                    />
-                    <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[9px] text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100">
-                      {label}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            </FadeUp>
+                      className="absolute right-0 top-4 w-[78%] rounded-[12px] bg-white p-4"
+                      style={{ boxShadow: '0 16px 36px -22px rgba(32,33,36,0.22)' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon icon={Settings02Icon} size={12} stroke={1.6} color="var(--gs-ink-subtle)" />
+                        <span className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--gs-ink-subtle)' }}>
+                          Preferences
+                        </span>
+                      </div>
+                      {[
+                        { l: 'Wide layout', on: true },
+                        { l: 'Show line numbers', on: false },
+                        { l: 'Auto-collapse sidebar', on: true },
+                      ].map((r) => (
+                        <div key={r.l} className="mt-3 flex items-center justify-between">
+                          <span className="text-[12px]" style={{ color: 'var(--gs-ink-soft)' }}>
+                            {r.l}
+                          </span>
+                          <span
+                            className="flex h-4 w-7 items-center rounded-full px-0.5"
+                            style={{ background: r.on ? 'var(--gs-blue)' : 'var(--gs-divider)' }}
+                          >
+                            <span
+                              className="h-3 w-3 rounded-full bg-white transition-transform duration-200"
+                              style={{ transform: r.on ? 'translateX(12px)' : 'translateX(0)' }}
+                            />
+                          </span>
+                        </div>
+                      ))}
+                    </div>
 
-          </div>
-
-          {/* Right — theme toggle mock */}
-          <FadeBlur delay={0.1}>
-            <div className="overflow-hidden panel-bordered-thick p-8">
-              <p className="mb-5 text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Appearance</p>
-
-              {/* Wide mode */}
-              <div className="mt-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">Wide mode</p>
-                  <p className="text-xs text-[var(--text-muted)]">Full-width editor layout</p>
-                </div>
-                <div className="flex h-5 w-9 items-center border-[1.5px] border-[var(--ink)] bg-[var(--accent)] px-0.5 shadow-[2px_2px_0_var(--ink)]">
-                  <div className="ml-auto h-3.5 w-3.5 border-[1px] border-[var(--ink)] bg-white" />
-                </div>
-              </div>
-
-              {/* Icon preview */}
-              <div className="mt-6 border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] p-4 shadow-[var(--stamp-shadow)]">
-                <p className="mb-3 label-mono">Active accent</p>
-                <div className="flex items-center gap-3">
-                  <div className="h-5 w-5 border-[1.5px] border-[var(--ink)] shadow-[2px_2px_0_var(--ink)]" style={{ background: "var(--accent)" }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--accent)' }}>Rose</span>
-                  <span className="ml-auto text-xs text-[var(--text-muted)]">#e07a8a</span>
+                    <div
+                      className="absolute bottom-0 left-0 w-[68%] rounded-[12px] bg-white p-4"
+                      style={{ boxShadow: '0 18px 38px -22px rgba(32,33,36,0.22)' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span style={{ color: 'var(--gs-blue)' }}>
+                          <Icon icon={TextFontIcon} size={12} stroke={1.6} />
+                        </span>
+                        <span className="text-[10px] font-medium uppercase tracking-[0.12em]" style={{ color: 'var(--gs-ink-subtle)' }}>
+                          Reading mode
+                        </span>
+                      </div>
+                      <p
+                        className="mt-3 text-[12px] leading-[1.5]"
+                        style={{ color: 'var(--gs-ink-soft)' }}
+                      >
+                        Increase line-height, hide the chrome, and let the page
+                        breathe.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </FadeBlur>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CTA BOOKEND — minimal centered, single primary action
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function ClosingCTA({ onStart, onSignIn }: LandingPageProps) {
+  return (
+    <section
+      className="w-full"
+      style={{ background: 'var(--gs-canvas-alt)', borderTop: '1px solid var(--gs-divider)' }}
+    >
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col items-center px-6 py-24 text-center sm:px-10 lg:py-32">
+        <Reveal>
+          <Eyebrow>Get started</Eyebrow>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <H2 className="mt-4 max-w-[640px]">
+            Open Folio. <span style={{ color: 'var(--gs-blue)' }}>Start writing in three seconds.</span>
+          </H2>
+        </Reveal>
+        <Reveal delay={0.16}>
+          <p
+            className="mt-5 max-w-[480px] text-[16px] leading-[1.55]"
+            style={{ color: 'var(--gs-ink-muted)' }}
+          >
+            No download. No account required. Sign in only when you want your notes
+            available on every device.
+          </p>
+        </Reveal>
+        <Reveal delay={0.24}>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+            <PillButton onClick={onStart}>
+              Open the editor
+              <Icon icon={ArrowRight01Icon} size={16} stroke={1.8} />
+            </PillButton>
+            <TextLink onClick={onSignIn}>Sign in to sync</TextLink>
+          </div>
+        </Reveal>
+      </div>
+
+      {/* Footer hairline */}
+      <div className="mx-auto w-full max-w-[1200px] px-6 sm:px-10">
+        <div style={{ borderTop: '1px solid var(--gs-divider)' }} />
+        <div className="flex flex-wrap items-center justify-between gap-4 py-6 text-[13px]" style={{ color: 'var(--gs-ink-muted)' }}>
+          <span>© {new Date().getFullYear()} Folio</span>
+          <div className="flex gap-6">
+            <a href="#" style={{ color: 'inherit' }}>Privacy</a>
+            <a href="#" style={{ color: 'inherit' }}>Terms</a>
+            <a href="#" style={{ color: 'inherit' }}>Changelog</a>
+          </div>
         </div>
       </div>
     </section>
@@ -675,263 +1137,86 @@ function SectionPersonalization() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 6 — CTA (closing bookend)
-// ═══════════════════════════════════════════════════════════════════════════════
-
-function SectionCTA({ onStart, onSignIn }: { onStart: () => void; onSignIn: () => void }) {
-  return (
-    <section className="relative flex min-h-[60vh] items-center justify-center overflow-hidden px-6 py-32">
-      {/* Ambient orbs — mirrors hero */}
-      <div className="pointer-events-none absolute inset-0 z-0 opacity-25 mix-blend-screen">
-        <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="cta-orb1" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="cta-orb2" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="var(--color-h2)" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <circle cx="35%" cy="60%" r="45%">
-            <animate attributeName="cx" values="35%;40%;35%" dur="18s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="60%;55%;60%" dur="22s" repeatCount="indefinite" />
-            <animate attributeName="fill" values="url(#cta-orb1);url(#cta-orb1)" dur="1s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="65%" cy="40%" r="40%" fill="url(#cta-orb2)">
-            <animate attributeName="cx" values="65%;60%;65%" dur="20s" repeatCount="indefinite" />
-          </circle>
-        </svg>
-      </div>
-
-      <div className="relative z-10 text-center">
-        <FadeUp delay={0}>
-          <p
-            className="mb-4 text-[5rem] leading-none tracking-tight sm:text-[8rem]"
-            style={{ fontFamily: 'var(--font-logo)', color: 'var(--accent)' }}
-          >
-            Folio.
-          </p>
-        </FadeUp>
-        <FadeUp delay={0.1}>
-          <p className="mb-12 text-lg text-[var(--text-secondary)] sm:text-xl">
-            Local-first notes. No cloud, no clutter, no compromise.
-          </p>
-        </FadeUp>
-        <FadeUp delay={0.18}>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <button
-              onClick={onStart}
-              className="btn-stamp btn-stamp-accent group inline-flex items-center gap-3 px-8 py-4 text-base"
-            >
-              <span className="text-base font-semibold tracking-wide">Get Started</span>
-              <div className="flex h-8 w-8 items-center justify-center transition-[transform] duration-150 group-hover:translate-x-1">
-                <Icon icon={ArrowRight01Icon} size={16} stroke={2} />
-              </div>
-            </button>
-
-            <button
-              onClick={onSignIn}
-              className="btn-stamp btn-stamp-ghost group inline-flex items-center gap-2.5 px-6 py-3.5"
-            >
-              <Icon icon={CloudIcon} size={16} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
-              <span>Sign in to sync</span>
-            </button>
-          </div>
-        </FadeUp>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ROOT COMPONENT
+// ROOT
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
-  const contentTransition = { type: 'spring', duration: 0.3, bounce: 0 } as const;
-
   return (
-    <div className="relative w-screen bg-[var(--bg-deep)] text-[var(--text-primary)] selection:bg-[var(--accent)]/30">
-      {/* ── Persistent grain overlay across all sections ── */}
-      <div
-        className="pointer-events-none fixed inset-0 z-[5] opacity-[0.03]"
-        style={{ backgroundImage: GRAIN_SVG }}
-        aria-hidden="true"
+    <div
+      className="relative w-full"
+      style={{ ...GS, background: 'var(--gs-canvas)', color: 'var(--gs-ink)', fontFamily: 'var(--gs-text)' }}
+    >
+      <Hero onStart={onStart} onSignIn={onSignIn} />
+
+      <Showcase
+        id="editor"
+        eyebrow="Editor"
+        title={
+          <>
+            Write the way<br />
+            <span style={{ color: 'var(--gs-blue)' }}>your hands move.</span>
+          </>
+        }
+        description="A rich-text editor with a slash menu, drag-handle blocks, and 14 callout types. Paste markdown and watch it transform — or just type."
+        ctaLabel="See every block"
+        bullets={[
+          { label: 'Slash commands',  desc: 'Press / for any block — heading, code, table, callout, embed.' },
+          { label: 'Drag and reorder', desc: 'Grab a block from its handle and drop it anywhere in the page.' },
+          { label: '36 syntax languages', desc: 'Code blocks ship with a language picker and inline highlighting.' },
+        ]}
+        visual={<EditorVisual />}
+        tint="var(--gs-tint-lavender)"
       />
 
-      {/* ══ HERO (unchanged, exactly first viewport) ══ */}
-      <div className="relative flex h-[100dvh] w-full overflow-hidden">
-        {/* Background Ambient SVG */}
-        <div className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-screen">
-          <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <radialGradient id="orb1" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
-              </radialGradient>
-              <radialGradient id="orb2" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--success)" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
-              </radialGradient>
-              <radialGradient id="orb3" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--color-h2)" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="var(--bg-deep)" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            <circle cx="20%" cy="80%" r="50%" fill="url(#orb1)">
-              <animate attributeName="cx" values="20%;25%;20%" dur="20s" repeatCount="indefinite" />
-              <animate attributeName="cy" values="80%;75%;80%" dur="25s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="80%" cy="20%" r="45%" fill="url(#orb2)">
-              <animate attributeName="cx" values="80%;75%;80%" dur="22s" repeatCount="indefinite" />
-              <animate attributeName="cy" values="20%;25%;20%" dur="18s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="50%" cy="50%" r="60%" fill="url(#orb3)">
-              <animate attributeName="r" values="60%;65%;60%" dur="15s" repeatCount="indefinite" />
-            </circle>
-          </svg>
-        </div>
+      <ValuePropStrip />
 
-        <div className="relative z-20 grid w-full grid-cols-1 lg:grid-cols-2">
-          {/* Left Content */}
-          <div className="flex flex-col justify-between py-24 px-6 sm:px-16 lg:justify-center lg:py-0 lg:px-24">
-            <div className="mt-12 lg:mt-0">
-              <motion.h1
-                initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ ...contentTransition, delay: 0.08 }}
-                className="mb-6 max-w-2xl text-[5.5rem] leading-[0.95] tracking-tighter text-[var(--accent)] sm:text-7xl lg:text-8xl xl:text-[10rem]"
-                style={{ fontFamily: 'var(--font-logo)', textWrap: 'balance' }}
-              >
-                Folio.
-              </motion.h1>
+      <Showcase
+        id="ai"
+        eyebrow="Folio AI"
+        title={
+          <>
+            Quiet intelligence,<br />
+            <span style={{ color: 'var(--gs-blue)' }}>on tap.</span>
+          </>
+        }
+        description="Type /ai anywhere in a note. @-mention other notes for context. The response streams inline as fully formatted blocks — not a chat bubble."
+        ctaLabel="Read the AI guide"
+        bullets={[
+          { label: '@mention notes',  desc: 'Pull any note in as context. The AI reads them so you don’t have to copy and paste.' },
+          { label: 'Inline streaming', desc: 'Tokens land directly in the document. Cancel mid-stream with Esc.' },
+          { label: 'Renders rich',     desc: 'Output becomes real editor nodes — headings, callouts, code, lists.' },
+        ]}
+        visual={<AIVisual />}
+        reverse
+        tint="var(--gs-tint-jade)"
+        background="var(--gs-canvas-alt)"
+      />
 
-              <motion.p
-                initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ ...contentTransition, delay: 0.18 }}
-                className="mb-8 max-w-lg text-xl leading-relaxed text-[var(--text-secondary)] sm:text-2xl lg:mb-14 lg:text-xl"
-                style={{ textWrap: 'pretty' }}
-              >
-                Write it. Own it. Local-first by default — sync to the cloud when you choose.
-              </motion.p>
-            </div>
+      <Showcase
+        id="sync"
+        eyebrow="Command palette"
+        title={
+          <>
+            Anything in the app,<br />
+            <span style={{ color: 'var(--gs-blue)' }}>two keys away.</span>
+          </>
+        }
+        description="Press ⌘K to open a spotlight palette. Search notes, jump between files, or run any action without lifting your hands from the keyboard."
+        ctaLabel="See all shortcuts"
+        bullets={[
+          { label: 'Fuzzy search',    desc: 'Match across titles, tags, and recent activity.' },
+          { label: 'Action grouping', desc: 'Notes, actions, and inserts are grouped — never one long list.' },
+          { label: 'Always one key',  desc: 'Open from anywhere. Closes when you start typing.' },
+        ]}
+        visual={<PaletteVisual />}
+        tint="var(--gs-tint-sky)"
+      />
 
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ ...contentTransition, delay: 0.28 }}
-              className="mb-8 flex flex-col gap-6 lg:mb-0 lg:gap-4"
-            >
-              <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
-                <button
-                  onClick={onStart}
-                  className="btn-stamp btn-stamp-accent group flex h-16 w-full items-center justify-between px-6 text-lg sm:w-auto sm:px-8 lg:h-auto lg:justify-center lg:py-4 lg:text-base"
-                >
-                  <span className="font-bold tracking-wide">Get Started</span>
-                  <div className="flex h-8 w-8 items-center justify-center transition-[transform] duration-150 group-hover:translate-x-1">
-                    <Icon icon={ArrowRight01Icon} size={22} stroke={2.5} />
-                  </div>
-                </button>
+      <ShopGrid />
 
-                <button
-                  onClick={onSignIn}
-                  className="btn-stamp btn-stamp-ghost group flex h-16 w-full items-center justify-center gap-3 px-6 text-lg sm:w-auto sm:px-6 lg:h-auto lg:py-3.5 lg:text-base"
-                >
-                  <Icon icon={CloudIcon} size={22} stroke={1.5} className="transition-colors duration-150 group-hover:text-[var(--accent)]" />
-                  <span className="font-bold tracking-wide">Sign in to sync</span>
-                </button>
-              </div>
+      <CategoryBanner onStart={onStart} />
 
-              {/* Scroll hint */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2, duration: 0.6 }}
-                className="mt-4 flex items-center justify-center gap-2 text-sm text-[var(--text-muted)] sm:justify-start lg:mt-6 lg:text-xs"
-              >
-                <svg className="h-5 w-5 animate-bounce lg:h-4 lg:w-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth={1.5}>
-                  <path d="M8 3v10M4 9l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span>Explore features</span>
-              </motion.div>
-            </motion.div>
-          </div>
-
-          {/* Right Abstract Art */}
-          <div className="pointer-events-none relative hidden items-center justify-center lg:flex">
-            <motion.div
-              initial={{ opacity: 0, y: 12, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ ...contentTransition, delay: 0.38 }}
-              className="absolute inset-0 h-full w-full"
-            >
-              <svg width="100%" height="100%" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
-                <g filter="url(#glow)">
-                  <path d="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z" fill="none" stroke="var(--success)" strokeWidth="2" strokeOpacity="0.5">
-                    <animate attributeName="d"
-                      values="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z;
-                              M 400 250 C 650 150, 750 450, 550 650 C 350 850, 150 650, 250 450 C 350 250, 150 350, 400 250 Z;
-                              M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z"
-                      dur="20s" repeatCount="indefinite" />
-                  </path>
-                  <path d="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeOpacity="0.6">
-                    <animate attributeName="d"
-                      values="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z;
-                              M 400 200 C 500 150, 700 350, 600 550 C 500 750, 200 600, 200 450 C 200 300, 300 250, 400 200 Z;
-                              M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z"
-                      dur="15s" repeatCount="indefinite" />
-                  </path>
-                  <path d="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z" fill="none" stroke="var(--color-h2)" strokeWidth="1" strokeOpacity="0.7">
-                    <animate attributeName="d"
-                      values="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z;
-                              M 400 350 C 550 250, 550 450, 450 550 C 350 650, 250 500, 350 400 C 450 300, 250 400, 400 350 Z;
-                              M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z"
-                      dur="10s" repeatCount="indefinite" />
-                  </path>
-                </g>
-                <defs>
-                  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="15" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                </defs>
-              </svg>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ FEATURE SECTIONS ══ */}
-      <SectionEditor />
-
-      {/* Thin divider */}
-      <div className="mx-auto max-w-6xl px-6 sm:px-16 lg:px-24">
-        <div className="h-px bg-[var(--border-subtle)]" />
-      </div>
-
-      <SectionAI />
-
-      <div className="mx-auto max-w-6xl px-6 sm:px-16 lg:px-24">
-        <div className="h-px bg-[var(--border-subtle)]" />
-      </div>
-
-      <SectionPalette />
-
-      <SectionSync />
-
-      <div className="mx-auto max-w-6xl px-6 sm:px-16 lg:px-24">
-        <div className="h-px bg-[var(--border-subtle)]" />
-      </div>
-
-      <SectionPersonalization />
-
-      {/* Full-width divider before CTA */}
-      <div className="h-px bg-[var(--border-subtle)]" />
-
-      <SectionCTA onStart={onStart} onSignIn={onSignIn} />
+      <ClosingCTA onStart={onStart} onSignIn={onSignIn} />
     </div>
   );
 }

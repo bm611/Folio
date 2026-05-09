@@ -1,33 +1,60 @@
 /* ═══════════════════════════════════════════════
-   Sidebar — Brutalist
+   Sidebar — Google Store design language
+   • Poppins typography
+   • Hairline dividers, no stamp shadows
+   • Rounded nav items with soft tonal active states
+   • Reductive surfaces
    ═══════════════════════════════════════════════ */
 
 .sidebar-vs {
-  background: var(--bg-primary);
+  /* Lock the Google Store palette here, independent of the user's theme.
+     Mirrors the override applied on HomeScreen + LandingPage. */
+  --bg-primary: #ffffff;
+  --bg-surface: #f8f9fa;
+  --bg-elevated: #ffffff;
+  --bg-hover: #f1f3f4;
+  --bg-deep: #e8eaed;
+  --bg-inverse: #202124;
+  --ink: #202124;
+  --ink-soft: #3c4043;
+  --text-primary: #202124;
+  --text-secondary: #3c4043;
+  --text-muted: #5f6368;
+  --text-inverse: #ffffff;
+  --border-subtle: #e8eaed;
+  --border-default: #dadce0;
+  --accent: #1a73e8;
+  --accent-hover: #1765cc;
+  --accent-text: #ffffff;
+  --accent-soft: #e8f0fe;
+  --danger: #d93025;
+
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   user-select: none;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
+  color: #202124;
+  font-family: "Poppins", system-ui, -apple-system, sans-serif;
   position: relative;
   z-index: auto;
   height: 100dvh;
   flex-shrink: 0;
-  transition: width 300ms ease-out;
+  transition: width 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  border-right: 1px solid #e8eaed;
 }
 
 @media (max-width: 1023px) {
   .sidebar-vs {
     background: var(--bg-primary);
-    border-right: 1.5px solid var(--ink);
-    box-shadow: 4px 0 0 var(--ink);
+    border-right: 1px solid var(--border-subtle);
+    box-shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.18);
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 40;
     width: min(22rem, 86vw);
     transform: translateX(0);
-    transition: transform 300ms ease-out;
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .sidebar-vs.is-collapsed {
@@ -35,37 +62,35 @@
   }
 }
 
-/* ── Header — logo row with avatar tile ── */
+/* ── Header — app name only, no chrome ── */
 
 .sb-header-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 16px 16px;
   flex-shrink: 0;
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--bg-surface);
-  min-height: 56px;
+  background: var(--bg-primary);
+  min-height: 60px;
 }
 
 .sb-app-name {
-  font-size: 30px;
-  font-family: var(--font-script);
-  font-weight: 600;
+  font-size: 22px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-weight: 500;
   color: var(--ink);
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
   line-height: 1;
-  padding-left: 0;
+  padding-left: 4px;
 }
 
-/* ── Nav items ── */
+/* ── Nav items — rounded pills, soft hover, tonal active ── */
 
 .sb-nav-items {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0;
-  border-bottom: 1.5px solid var(--ink);
+  gap: 2px;
+  padding: 4px 8px 12px;
   background: var(--bg-primary);
   flex-shrink: 0;
 }
@@ -74,76 +99,67 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 48px;
-  padding: 0 16px;
+  height: 40px;
+  padding: 0 12px;
   border: none;
-  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
   cursor: pointer;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-family: "Poppins", system-ui, sans-serif;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  transition: background 80ms, color 80ms;
+  letter-spacing: -0.005em;
+  transition:
+    background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 180ms cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
   width: 100%;
   flex-shrink: 0;
-  border-radius: 0;
-}
-
-.sb-nav-item:last-child {
-  border-bottom: none;
+  border-radius: 10px;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .sb-nav-item:hover {
     background: var(--bg-hover);
+    color: var(--ink);
   }
 }
 
 .sb-nav-item:active {
-  background: var(--bg-deep);
+  transform: scale(0.985);
 }
 
 .sb-nav-item.is-active {
-  background: var(--bg-inverse);
-  color: var(--text-inverse);
-  font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-weight: 500;
   position: relative;
 }
 
 .sb-nav-item.is-active::after {
-  content: "";
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 0;
+  content: none;
 }
 
 .sb-nav-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
 .sb-nav-label {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-transform: none;
+  letter-spacing: -0.005em;
 }
 
-/* ── Search nav item ── */
+/* ── Search nav item — soft expanded state ── */
 
 .sb-nav-search {
   cursor: text;
@@ -156,50 +172,56 @@
   border: none;
   outline: none;
   color: var(--ink);
-  font-size: 13px;
-  font-family: var(--font-mono);
+  font-size: 14px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.005em;
   padding: 0;
 }
 
 .sb-nav-search input::placeholder {
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 11px;
+  text-transform: none;
+  letter-spacing: -0.005em;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .sb-nav-search.is-expanded {
   background: var(--bg-surface);
-  border-bottom-color: var(--ink);
 }
 
 .sb-nav-search-clear {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--ink);
-  background: var(--bg-elevated);
-  color: var(--ink);
+  border: none;
+  background: var(--bg-hover);
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: 0;
+  border-radius: 999px;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .sb-nav-search-clear:hover {
-    background: var(--ink);
-    color: var(--bg-elevated);
+    background: var(--accent);
+    color: var(--accent-text);
   }
 }
 
 /* ── Sync indicator (kept for compatibility) ── */
 
 .sb-sync-indicator {
-  font-family: var(--font-mono);
-  font-size: 10px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.14em;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
@@ -209,26 +231,26 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 4px 0 16px;
+  padding: 4px 8px 16px;
   background: var(--bg-primary);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .sb-tree-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px 10px;
-  border-bottom: 1.5px solid var(--ink);
+  padding: 16px 8px 8px 12px;
   margin-bottom: 0;
 }
 
 .sb-tree-actions > span {
-  font-family: var(--font-mono) !important;
-  font-size: 11px !important;
+  font-family: "Poppins", system-ui, sans-serif !important;
+  font-size: 12px !important;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-weight: 600 !important;
-  color: var(--ink) !important;
+  letter-spacing: 0.14em;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
 }
 
 .sb-tree-action-btn {
@@ -238,71 +260,70 @@
   width: 28px;
   height: 28px;
   background: transparent;
-  border: 1px solid transparent;
+  border: none;
   color: var(--text-muted);
   cursor: pointer;
-  transition: background 80ms, color 80ms, border-color 80ms;
-  border-radius: 0;
+  transition:
+    background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 8px;
   position: relative;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .sb-tree-action-btn:hover {
     background: var(--bg-hover);
-    border-color: var(--ink);
     color: var(--ink);
   }
 }
 
-/* ── Tree node ── */
+/* ── Tree node — rounded soft surfaces, blue tonal active ── */
 
 .tree-node {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 16px 0 12px;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px 0 10px;
   cursor: pointer;
   border: none;
-  border-bottom: 1px solid var(--border-subtle);
   background: transparent;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-family: "Poppins", system-ui, sans-serif;
   font-weight: 400;
-  transition: background 80ms, color 80ms, font-weight 80ms;
+  letter-spacing: -0.005em;
+  transition:
+    background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 160ms cubic-bezier(0.16, 1, 0.3, 1);
   text-align: left;
   width: 100%;
   position: relative;
-  border-radius: 0;
+  border-radius: 8px;
+  margin: 1px 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .tree-node:hover {
     background: var(--bg-hover);
+    color: var(--ink);
   }
 }
 
 .tree-node.active {
-  background: var(--bg-inverse);
-  color: var(--text-inverse);
-  font-weight: 600;
-  box-shadow: inset 3px 0 0 var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-weight: 500;
+  box-shadow: none;
 }
 
-/* Pinned note — accent left bar + subtle tinted background */
+/* Pinned note — soft accent tint, no harsh bar */
 .tree-node.is-pinned:not(.active) {
   background: color-mix(in srgb, var(--accent) 5%, transparent);
 }
 
 .tree-node.is-pinned:not(.active)::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--accent);
+  content: none;
 }
 
 .tn-arrow {
@@ -313,10 +334,15 @@
   height: 16px;
   flex-shrink: 0;
   color: var(--text-muted);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tn-arrow.open {
+  transform: rotate(90deg);
 }
 
 .tree-node.active .tn-arrow {
-  color: var(--text-inverse);
+  color: var(--accent);
 }
 
 .tn-icon {
@@ -326,6 +352,11 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.tree-node.active .tn-icon {
+  color: var(--accent);
 }
 
 .tn-name {
@@ -333,8 +364,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 13px;
-  font-family: var(--font-mono);
+  font-size: 13.5px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-weight: inherit;
+  letter-spacing: -0.005em;
 }
 
 .tn-actions {
@@ -342,7 +375,7 @@
   align-items: center;
   gap: 2px;
   opacity: 0;
-  transition: opacity 80ms;
+  transition: opacity 160ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -362,20 +395,22 @@
   border: none;
   color: inherit;
   cursor: pointer;
-  border-radius: 0;
-  opacity: 0.65;
-  transition: opacity 80ms, background 80ms;
+  border-radius: 6px;
+  opacity: 0.7;
+  transition:
+    opacity 160ms ease,
+    background-color 160ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .tn-actions button:hover {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.12);
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
   }
 }
 
-.tree-node:not(.active) .tn-actions button:hover {
-  background: var(--bg-deep);
+.tree-node.active .tn-actions button:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .tn-children {
@@ -391,20 +426,23 @@
 }
 
 .tn-show-more {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: -0.005em;
+  font-weight: 500;
+  color: var(--accent);
   background: transparent;
   border: none;
   padding: 6px 16px;
   cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 160ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .tn-show-more:hover {
-    color: var(--ink);
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
   }
 }
 
@@ -414,29 +452,33 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 4px 10px;
   background: var(--bg-surface);
+  border-radius: 8px;
+  margin: 1px 0;
 }
 
 .ren-input {
   flex: 1;
   background: var(--bg-elevated);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--border-subtle);
   color: var(--ink);
-  padding: 4px 8px;
-  font-size: 13px;
-  font-family: var(--font-mono);
+  padding: 6px 10px;
+  font-size: 13.5px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.005em;
   outline: none;
-  border-radius: 0;
+  border-radius: 8px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .ren-input:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1.5px;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
-/* ── Context menu (right-click / ⋯) ── */
+/* ── Context menu — soft elevation, no stamp ── */
 
 .ctx-menu-overlay {
   position: fixed;
@@ -449,12 +491,12 @@
   position: fixed;
   z-index: 61;
   background: var(--bg-elevated);
-  border: 1.5px solid var(--ink);
-  box-shadow: var(--stamp-shadow-lg);
-  border-radius: 0;
-  min-width: 180px;
-  padding: 4px 0;
-  font-family: var(--font-mono);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.18);
+  border-radius: 12px;
+  min-width: 200px;
+  padding: 6px;
+  font-family: "Poppins", system-ui, sans-serif;
 }
 
 .ctx-menu button {
@@ -462,18 +504,21 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 8px 14px;
+  padding: 8px 12px;
   background: transparent;
   border: none;
   color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  text-transform: none;
   cursor: pointer;
   text-align: left;
-  border-radius: 0;
-  transition: background 80ms, color 80ms;
+  border-radius: 8px;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -494,8 +539,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .ctx-danger:hover {
-    background: var(--danger) !important;
-    color: var(--bg-elevated) !important;
+    background: color-mix(in srgb, var(--danger) 12%, transparent) !important;
+    color: var(--danger) !important;
   }
 }
 
@@ -510,6 +555,7 @@
   cursor: col-resize;
   background: transparent;
   z-index: 10;
+  transition: background-color 160ms ease;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -531,18 +577,19 @@
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
-  background: var(--bg-inverse);
-  color: var(--text-inverse);
-  padding: 4px 8px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border: 1px solid var(--ink);
-  border-radius: 0;
+  background: var(--ink);
+  color: var(--bg-primary);
+  padding: 5px 10px;
+  font-family: "Poppins", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: -0.005em;
+  border: none;
+  border-radius: 6px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 80ms;
+  transition: opacity 140ms ease;
   z-index: 50;
 }
 
