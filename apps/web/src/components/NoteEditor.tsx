@@ -189,75 +189,21 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 // ─── Editor Fallback ──────────────────────────────────────────────────────────
 
 function EditorFallback() {
-	return (
-		<div className="flex min-h-[40vh] w-full items-center justify-center">
-			<svg
-				width="100%"
-				height="100%"
-				viewBox="0 0 800 800"
-				xmlns="http://www.w3.org/2000/svg"
-				aria-hidden="true"
-				style={{ maxWidth: '600px', maxHeight: '600px' }}
-			>
-				<g filter="url(#editor-fallback-glow)">
-					<path
-						d="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z"
-						fill="none"
-						stroke="var(--success)"
-						strokeWidth="2"
-						strokeOpacity="0.5"
-					>
-						<animate
-							attributeName="d"
-							values="M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z;
-                      M 400 250 C 650 150, 750 450, 550 650 C 350 850, 150 650, 250 450 C 350 250, 150 350, 400 250 Z;
-                      M 400 200 C 600 200, 700 400, 600 600 C 500 800, 200 700, 200 500 C 200 300, 200 200, 400 200 Z"
-							dur="20s"
-							repeatCount="indefinite"
-						/>
-					</path>
-					<path
-						d="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z"
-						fill="none"
-						stroke="var(--accent)"
-						strokeWidth="1.5"
-						strokeOpacity="0.6"
-					>
-						<animate
-							attributeName="d"
-							values="M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z;
-                      M 400 200 C 500 150, 700 350, 600 550 C 500 750, 200 600, 200 450 C 200 300, 300 250, 400 200 Z;
-                      M 400 250 C 550 250, 650 400, 550 550 C 450 700, 250 650, 250 500 C 250 350, 250 250, 400 250 Z"
-							dur="15s"
-							repeatCount="indefinite"
-						/>
-					</path>
-					<path
-						d="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z"
-						fill="none"
-						stroke="var(--color-h2)"
-						strokeWidth="1"
-						strokeOpacity="0.7"
-					>
-						<animate
-							attributeName="d"
-							values="M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z;
-                      M 400 350 C 550 250, 550 450, 450 550 C 350 650, 250 500, 350 400 C 450 300, 250 400, 400 350 Z;
-                      M 400 300 C 500 300, 600 400, 500 500 C 400 600, 300 550, 300 450 C 300 350, 300 300, 400 300 Z"
-							dur="10s"
-							repeatCount="indefinite"
-						/>
-					</path>
-				</g>
-				<defs>
-					<filter id="editor-fallback-glow" x="-20%" y="-20%" width="140%" height="140%">
-						<feGaussianBlur stdDeviation="15" result="blur" />
-						<feComposite in="SourceGraphic" in2="blur" operator="over" />
-					</filter>
-				</defs>
-			</svg>
-		</div>
-	);
+  return (
+    <div className="flex min-h-[40vh] w-full flex-col gap-3 px-4 animate-[skeleton-in_0.3s_ease-out]">
+      <div className="skeleton skeleton-heading" style={{ width: '45%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '100%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '92%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '78%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '85%' }} />
+      <div className="mt-6 skeleton skeleton-heading" style={{ width: '32%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '95%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '88%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '62%' }} />
+      <div className="skeleton skeleton-text" style={{ width: '70%' }} />
+      <div className="mt-4 skeleton skeleton-block" style={{ width: '100%', height: '120px' }} />
+    </div>
+  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -564,7 +510,7 @@ export default function NoteEditor({
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
 				
 
-				<div className={wideMode ? 'w-full px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8' : 'mx-auto max-w-4xl px-4 pb-28 pt-4 sm:px-6 md:px-10 md:pb-36 md:pt-8'}>
+			<div className={wideMode ? 'w-full px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12' : 'mx-auto max-w-4xl px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12'}> 
 					<div className="editor-stagger-1">
 						<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 					</div>

@@ -145,16 +145,16 @@ function CompactHeroPanel({
 }
 
 function MobileStat({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="flex flex-col items-start gap-1.5">
-			<span className="font-mono font-light text-[24px] leading-none tracking-[-0.04em] text-[var(--ink)] tabular-nums">
-				{value}
-			</span>
-			<span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
-				{label}
-			</span>
-		</div>
-	);
+  return (
+    <div className="flex flex-col items-start gap-1.5">
+      <span className="font-mono font-light text-[32px] leading-none tracking-[-0.04em] text-[var(--ink)] tabular-nums">
+        {value}
+      </span>
+      <span className="font-mono text-[9.5px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+        {label}
+      </span>
+    </div>
+  );
 }
 
 
@@ -413,7 +413,7 @@ export default function HomeScreen({
 
 			<div className="hidden lg:flex lg:flex-1 lg:min-h-0 lg:flex-col overflow-y-auto">
 				{/* ── Editorial hero: eyebrow → greeting → stats → actions ── */}
-				<div className="home-section-in border-b border-[var(--border-subtle)]">
+				<div className="home-section-in border-b-[1.5px] border-[var(--ink)]">
 					<div className="mx-auto w-full max-w-[1180px] px-10 xl:px-14 pt-14 pb-12">
 						<div className="grid grid-cols-12 gap-10 items-end">
 							{/* Greeting block — left 7 cols */}
@@ -428,7 +428,7 @@ export default function HomeScreen({
 										{dayOfWeek} <span className="text-[var(--text-muted)] opacity-50 mx-0.5">·</span> {dayNumber} {monthYear}
 									</p>
 								</div>
-								<h1 className="font-[var(--font-prose)] font-extralight text-[44px] leading-[1.05] tracking-[-0.025em] text-[var(--ink)]">
+								<h1 className="font-[var(--font-prose)] font-extralight text-[48px] sm:text-[56px] xl:text-[64px] leading-[1.0] tracking-[-0.03em] text-[var(--ink)]">
 									{greeting}
 									{displayName && (
 										<>
@@ -515,9 +515,9 @@ export default function HomeScreen({
 					</div>
 
 					{/* Preview pane */}
-					<div className="flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] overflow-hidden min-h-0 self-start sticky top-10">
-						<div className="flex items-center justify-between px-7 py-4 border-b border-[var(--border-subtle)]">
-							<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--ink)] font-medium">Preview</span>
+					<div className="flex flex-col border-[1.5px] border-[var(--ink)] bg-[var(--bg-surface)] overflow-hidden min-h-0 self-start sticky top-10"> 
+						<div className="flex items-center justify-between px-7 py-4 border-b-[1.5px] border-[var(--ink)]">
+							<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--ink)] font-semibold">Preview</span>
 							{previewNote && (
 								<button
 									type="button"
@@ -542,16 +542,16 @@ export default function HomeScreen({
 }
 
 function AiryStat({ label, value }: { label: string; value: string }) {
-	return (
-		<div className="flex flex-col items-start gap-2">
-			<span className="font-mono font-light text-[32px] leading-none tracking-[-0.04em] text-[var(--ink)] tabular-nums">
-				{value}
-			</span>
-			<span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
-				{label}
-			</span>
-		</div>
-	);
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <span className="font-mono font-light text-[40px] leading-none tracking-[-0.04em] text-[var(--ink)] tabular-nums">
+        {value}
+      </span>
+      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--text-muted)]">
+        {label}
+      </span>
+    </div>
+  );
 }
 
 function PinnedRow({

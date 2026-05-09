@@ -302,10 +302,12 @@
   min-width: 0;
   box-sizing: border-box;
   border: 1.5px solid var(--ink);
+  border-top: 3px solid var(--accent);
   background: var(--bg-primary);
   min-height: 0;
   height: calc(100dvh - 24px);
   overflow: hidden;
+  box-shadow: var(--stamp-shadow-lg);
 }
 
 @media (max-width: 1023px) {

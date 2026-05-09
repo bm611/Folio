@@ -10,7 +10,7 @@
   --bg-elevated:  #ffffff;
   --bg-hover:     #e8e2d2;
   --bg-inverse:   #0a0a0a;
-  --grain-opacity: 0;
+  --grain-opacity: 0.03;
 
   /* ── Ink ── */
   --ink:        #0a0a0a;
@@ -60,10 +60,11 @@
   --neu-btn-shadow-active: none;
 
   /* ── Hard offset stamp shadow (no blur) ── */
-  --stamp-shadow:        2px 2px 0 var(--ink);
-  --stamp-shadow-hover:  3px 3px 0 var(--ink);
-  --stamp-shadow-active: 0 0 0 var(--ink);
-  --stamp-shadow-lg:     6px 6px 0 var(--ink);
+  --stamp-ink:          #0f0e0c;
+  --stamp-shadow:       2px 2px 0 var(--stamp-ink, var(--ink));
+  --stamp-shadow-hover: 3px 3px 0 var(--stamp-ink, var(--ink));
+  --stamp-shadow-active: 0 0 0 var(--stamp-ink, var(--ink));
+  --stamp-shadow-lg:    6px 6px 0 var(--stamp-ink, var(--ink));
 
   /* ── Glass tokens kept as no-op aliases for legacy class users ── */
   --glass-bg:        var(--bg-surface);
