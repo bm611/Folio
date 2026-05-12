@@ -297,10 +297,44 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  background: var(--bg-primary);
+  /* Neutral light-grey gutter that the main surface "floats" on. Matches
+     the sidebar's Google-store palette so the two surfaces feel related. */
+  background: #e8eaed;
   min-height: 0;
   height: 100dvh;
   overflow: hidden;
+}
+
+/* ── Main content "card" sits on top of the ambient gutter ── */
+.app-main {
+  display: flex;
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+}
+
+.app-main-surface {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  background: #ffffff;
+}
+
+@media (min-width: 1024px) {
+  .app-main {
+    padding: 8px 8px 8px 8px;
+  }
+
+  .app-main-surface {
+    border: 1px solid #e0e2e6;
+    border-radius: 10px;
+    overflow: hidden;
+  }
 }
 
 @media (max-width: 1023px) {

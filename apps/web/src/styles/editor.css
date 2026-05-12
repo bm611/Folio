@@ -24,12 +24,75 @@
 
 /* ── Note title block — accent bar + inline title ── */
 
+/* M3 expressive title card — surface-container-low with primary accent rail */
 .note-title-block {
-  border-left: 4px solid var(--accent);
-  padding-left: 20px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  margin-top: -6px;
+  position: relative;
+  padding: 22px 26px 20px 30px;
+  margin: 4px 0 8px;
+  border-radius: 20px;
+  background: var(--bg-surface, #f6f5f3);
+  border: 1px solid color-mix(in srgb, var(--border-subtle, #cbc7c5) 60%, transparent);
+  box-shadow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.6) inset,
+    0 1px 2px 0 rgba(28, 27, 26, 0.04);
+  isolation: isolate;
+  overflow: hidden;
+  transition: border-color 200ms cubic-bezier(0.23, 1, 0.32, 1),
+              box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Compact title card on mobile — reclaim vertical space */
+@media (max-width: 767px) {
+  .note-title-block {
+    padding: 12px 14px 12px 20px;
+    margin: 2px 0 4px;
+    border-radius: 14px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .note-title-block:hover {
+    border-color: color-mix(in srgb, var(--accent) 25%, var(--border-subtle));
+    box-shadow:
+      0 0 0 0.5px rgba(255, 255, 255, 0.6) inset,
+      0 2px 6px 0 rgba(28, 27, 26, 0.06);
+  }
+}
+
+/* Accent rail — full-height, tonal */
+.note-title-block::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 12px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg,
+    var(--accent) 0%,
+    color-mix(in srgb, var(--accent) 55%, transparent) 100%);
+}
+
+@media (max-width: 767px) {
+  .note-title-block::before {
+    top: 10px;
+    bottom: 10px;
+    left: 8px;
+    width: 3px;
+  }
+}
+
+/* Subtle primary tint wash */
+.note-title-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 100% at 0% 0%,
+    color-mix(in srgb, var(--accent) 4%, transparent) 0%,
+    transparent 60%);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .banner-title-input {
@@ -40,14 +103,23 @@
   outline: none;
   resize: none;
   overflow: hidden;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: "Canela", "Canela Deck", "Cormorant Garamond", "Fraunces", Georgia, ui-serif, serif;
+  font-optical-sizing: auto;
+  font-size: clamp(2rem, 4.6vw, 3rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.022em;
   color: var(--text-primary);
   padding: 0;
   text-wrap: balance;
+}
+
+@media (max-width: 767px) {
+  .banner-title-input {
+    font-size: 1.6rem;
+    line-height: 1.15;
+    font-variation-settings: "opsz" 96, "SOFT" 50;
+  }
 }
 
 .banner-title-input::placeholder {
@@ -161,9 +233,11 @@
   min-height: 45vh;
   outline: none;
   color: var(--text-primary);
-  font-family: var(--body-font);
-  font-size: 1rem;
-  line-height: 1.68;
+  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-feature-settings: "kern" 1, "liga" 0, "calt" 1;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  letter-spacing: -0.01em;
 }
 
 @media (max-width: 767px) {
@@ -183,29 +257,39 @@
 .folio-editor .ProseMirror h1,
 .folio-editor .ProseMirror h2,
 .folio-editor .ProseMirror h3 {
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: "Canela", "Canela Deck", "Cormorant Garamond", "Fraunces", Georgia, ui-serif, serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  letter-spacing: -0.018em;
   color: var(--text-primary);
   text-wrap: balance;
 }
 
 .folio-editor .ProseMirror h1 {
-  margin: 2.4rem 0 0.4rem;
-  font-size: clamp(1.8rem, 1.6rem + 1vw, 2.4rem);
-  line-height: 1.15;
+  margin: 2.6rem 0 0.5rem;
+  font-size: clamp(2rem, 1.7rem + 1.2vw, 2.65rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.024em;
   color: var(--color-h1);
 }
 
 .folio-editor .ProseMirror h2 {
-  margin: 2rem 0 0.3rem;
-  font-size: clamp(1.35rem, 1.25rem + 0.5vw, 1.75rem);
+  margin: 2.1rem 0 0.35rem;
+  font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.95rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.018em;
   color: var(--color-h2);
 }
 
 .folio-editor .ProseMirror h3 {
-  margin: 1.6rem 0 0.2rem;
-  font-size: 1.15rem;
+  margin: 1.7rem 0 0.25rem;
+  font-size: 1.28rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.012em;
+  font-style: italic;
   color: var(--color-h3);
 }
 

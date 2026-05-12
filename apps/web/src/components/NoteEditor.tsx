@@ -47,37 +47,51 @@ const LiveMarkdownEditor = lazy(() =>
 	})
 );
 
-// ─── Material palette (locked — matches HomeScreen/landing page) ─────────────
+// ─── Material 3 palette — tonal surfaces, expressive typography ──────────────
 
 const GS_SCOPE: CSSProperties = {
-	['--bg-primary' as string]:     '#ffffff',
-	['--bg-surface' as string]:     '#f8f9fa',
-	['--bg-elevated' as string]:    '#ffffff',
-	['--bg-hover' as string]:       '#f1f3f4',
-	['--bg-deep' as string]:        '#e8eaed',
-	['--ink' as string]:            '#202124',
-	['--ink-soft' as string]:       '#3c4043',
-	['--text-primary' as string]:   '#202124',
-	['--text-secondary' as string]: '#3c4043',
-	['--text-muted' as string]:     '#5f6368',
-	['--text-inverse' as string]:   '#ffffff',
-	['--border-subtle' as string]:  '#e8eaed',
-	['--border-default' as string]: '#dadce0',
-	['--accent' as string]:         '#1a73e8',
-	['--accent-hover' as string]:   '#1765cc',
-	['--accent-text' as string]:    '#ffffff',
-	['--accent-soft' as string]:    '#e8f0fe',
-	['--success' as string]:        '#1e8e3e',
-	['--warning' as string]:        '#f29900',
-	['--danger' as string]:         '#d93025',
-	background: '#ffffff',
-	color: '#202124',
+	// M3 neutral surface tonal hierarchy (lowest → highest container)
+	['--bg-primary' as string]:           '#fdfcfb',  // surface (neutral)
+	['--bg-surface' as string]:           '#f6f5f3',  // surface-container-low
+	['--bg-elevated' as string]:          '#f1f0ee',  // surface-container
+	['--bg-hover' as string]:             '#ebeae8',  // surface-container-high
+	['--bg-deep' as string]:              '#e5e4e2',  // surface-container-highest
+	// M3 on-surface ink (neutral)
+	['--ink' as string]:                  '#1c1b1a',
+	['--ink-soft' as string]:             '#48464a',
+	['--text-primary' as string]:         '#1c1b1a',  // on-surface
+	['--text-secondary' as string]:       '#48464a',  // on-surface-variant
+	['--text-muted' as string]:           '#7a7779',  // outline
+	['--text-inverse' as string]:         '#f4f1ef',
+	['--border-subtle' as string]:        '#cbc7c5',  // outline-variant
+	['--border-default' as string]:       '#7a7779',  // outline
+	// M3 primary tonal
+	['--accent' as string]:               '#6750a4',  // primary
+	['--accent-hover' as string]:         '#5b46a0',
+	['--accent-text' as string]:          '#ffffff',  // on-primary
+	['--accent-soft' as string]:          '#eaddff',  // primary-container
+	// M3 secondary / tertiary signals
+	['--success' as string]:              '#386a20',
+	['--warning' as string]:              '#7d5800',
+	['--danger' as string]:               '#b3261e',  // error
+	// M3 shape system
+	['--m3-shape-xs' as string]:          '4px',
+	['--m3-shape-sm' as string]:          '8px',
+	['--m3-shape-md' as string]:          '12px',
+	['--m3-shape-lg' as string]:          '16px',
+	['--m3-shape-xl' as string]:          '28px',
+	['--m3-shape-full' as string]:        '9999px',
+	background: '#fdfcfb',
+	color: '#1c1b1a',
 	fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
 };
 
 const FONT = '"Poppins", system-ui, -apple-system, sans-serif';
-const MUTED = '#5f6368';
-const DIVIDER = '#e8eaed';
+const MUTED = '#48464a';
+const DIVIDER = '#cbc7c5';
+// M3 neutral surface-container with translucency for top app bar
+const M3_SURFACE_CONTAINER = 'rgba(241, 240, 238, 0.78)';
+const M3_OUTLINE_VARIANT = 'rgba(203, 199, 197, 0.6)';
 // Strong ease-out — starts fast, feels instantly responsive (Emil Kowalski)
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
@@ -118,7 +132,7 @@ function SpringNumber({ value, className }: SpringNumberProps) {
 // ─── Stat Divider — thin vertical hairline (more refined than bullet dot) ─────
 
 function StatDivider() {
-	return <span aria-hidden className="inline-block w-px h-3 bg-[#e8eaed]" />;
+	return <span aria-hidden className="inline-block w-px h-3 bg-[#cbc7c5]" />;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -179,7 +193,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 			initial={{ opacity: 0, y: -6 }}
 			animate={{ opacity: 1, y: 0 }}
 			transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-			className="inline-flex items-center gap-1 mb-4"
+			className="inline-flex items-center gap-1 mb-2 md:mb-4"
 			style={{ fontFamily: '"Poppins", system-ui, -apple-system, sans-serif' }}
 		>
 			{/* Folder path — each item staggers in 40ms apart */}
@@ -196,7 +210,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 							icon={ArrowRight01Icon}
 							size={12}
 							strokeWidth={1.5}
-							style={{ color: '#9aa0a6' }}
+							style={{ color: '#7a7779' }}
 						/>
 					)}
 					<motion.button
@@ -206,18 +220,18 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5"
 						style={{
 							fontSize: 12,
-							color: '#5f6368',
+							color: '#48464a',
 							fontWeight: 500,
 							transition: `background-color 140ms ${EASE_OUT}`,
 						}}
-						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+						onMouseEnter={(e) => (e.currentTarget.style.background = '#ebeae8')}
 						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 					>
 						<Icon
 							icon={Folder01Icon}
 							size={12}
 							strokeWidth={1.5}
-							style={{ color: '#9aa0a6' }}
+							style={{ color: '#7a7779' }}
 						/>
 						<span className="max-w-[72px] md:max-w-[120px] truncate">{folder.name}</span>
 					</motion.button>
@@ -234,14 +248,14 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					icon={ArrowRight01Icon}
 					size={12}
 					strokeWidth={1.5}
-					style={{ color: '#9aa0a6' }}
+					style={{ color: '#7a7779' }}
 				/>
 			</motion.span>
 
 			{/* Current note name */}
 			<motion.span
 				className="inline-flex items-center gap-1"
-				style={{ fontSize: 12, color: '#202124', fontWeight: 500 }}
+				style={{ fontSize: 12, color: '#1c1b1a', fontWeight: 500 }}
 				initial={{ opacity: 0, x: -4 }}
 				animate={{ opacity: 1, x: 0 }}
 				transition={{ duration: 0.18, delay: (folderPath.length + 1) * 0.04, ease: [0.23, 1, 0.32, 1] }}
@@ -250,7 +264,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					icon={File01Icon}
 					size={12}
 					strokeWidth={1.5}
-					style={{ color: '#9aa0a6' }}
+					style={{ color: '#7a7779' }}
 				/>
 				<span className="max-w-[120px] md:max-w-[200px] truncate">{noteName}</span>
 			</motion.span>
@@ -468,14 +482,14 @@ export default function NoteEditor({
 			style={GS_SCOPE}
 		>
 
-			{/* ── Header — liquid glass (design-taste: saturate boost mimics Apple's translucency) ── */}
+			{/* ── M3 Top App Bar — surface-container tonal elevation with translucency ── */}
 			<div
-				className="relative z-30 flex items-center justify-between px-4 py-2.5 md:px-5"
+				className="relative z-30 flex items-center justify-between px-3 py-2.5 md:px-4"
 				style={{
-					background: 'rgba(255, 255, 255, 0.72)',
+					background: M3_SURFACE_CONTAINER,
 					backdropFilter: 'saturate(180%) blur(20px)',
 					WebkitBackdropFilter: 'saturate(180%) blur(20px)',
-					borderBottom: '1px solid rgba(218, 220, 224, 0.45)',
+					borderBottom: `1px solid ${M3_OUTLINE_VARIANT}`,
 				}}
 			>
 				<div className="flex items-center gap-2.5">
@@ -490,7 +504,7 @@ export default function NoteEditor({
 							color: MUTED,
 							transition: btnTransition,
 						}}
-						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+						onMouseEnter={(e) => (e.currentTarget.style.background = '#ebeae8')}
 						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 						title="Back to Home"
 					>
@@ -508,7 +522,7 @@ export default function NoteEditor({
 								color: MUTED,
 								transition: btnTransition,
 							}}
-							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
+							onMouseEnter={(e) => (e.currentTarget.style.background = '#ebeae8')}
 							onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 							title="Open sidebar (Cmd+B)"
 						>
@@ -548,9 +562,9 @@ export default function NoteEditor({
 							transition: btnTransition,
 							color:
 								shareStatus === 'copied'
-									? '#1e8e3e'
+									? '#386a20'
 									: shareStatus === 'error'
-										? '#d93025'
+										? '#b3261e'
 										: undefined,
 						}}
 						title={shareTitle}
@@ -640,7 +654,7 @@ export default function NoteEditor({
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
 
-				<div className={wideMode ? 'w-full px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12' : 'mx-auto max-w-4xl px-4 pb-28 pt-6 sm:px-6 md:px-10 md:pb-40 md:pt-12'}>
+				<div className={wideMode ? 'w-full px-3 pb-28 pt-3 sm:px-6 md:px-10 md:pb-40 md:pt-12' : 'mx-auto max-w-4xl px-3 pb-28 pt-3 sm:px-6 md:px-10 md:pb-40 md:pt-12'}>
 					<div className="editor-stagger-1">
 						<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
 					</div>
@@ -658,13 +672,15 @@ export default function NoteEditor({
 										onTitleChange={(title) => onUpdateNote(note.id, { title })}
 										onTitleKeyDown={handleTitleKeyDown}
 									/>
-									<div className="flex flex-wrap items-center gap-3 mt-2">
-										<span className="label-mono">{createdAtLabel}</span>
+									<div className="flex flex-nowrap items-center gap-2 mt-1 md:gap-3 md:mt-2 min-w-0 overflow-x-auto">
+										<span className="label-mono text-[10px] md:text-xs whitespace-nowrap shrink-0">{createdAtLabel}</span>
 										<StatDivider />
-										<TagInput
-											tags={note.tags || []}
-											onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-										/>
+										<div className="min-w-0 flex-1">
+											<TagInput
+												tags={note.tags || []}
+												onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+											/>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -735,7 +751,7 @@ export default function NoteEditor({
 							exit={{ scale: 0.7, opacity: 0, y: -6 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
 							className="inline-flex items-center gap-0.5 font-semibold tabular-nums"
-							style={{ color: '#1e8e3e' }}
+							style={{ color: '#386a20' }}
 						>
 							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}
@@ -767,15 +783,15 @@ export default function NoteEditor({
 							type="button"
 							onClick={onRetrySync}
 							whileTap={{ scale: 0.95 }}
-							className="rounded-full px-2.5 py-0.5 text-[11px] font-medium"
+							className="rounded-full px-3 py-1 text-[11px] font-medium"
 							style={{
 								border: `1px solid ${DIVIDER}`,
-								color: MUTED,
-								background: '#ffffff',
+								color: '#6750a4',
+								background: '#eaddff',
 								transition: `background-color 140ms ${EASE_OUT}, transform 120ms ${EASE_OUT}`,
 							}}
-							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
-							onMouseLeave={(e) => (e.currentTarget.style.background = '#ffffff')}
+							onMouseEnter={(e) => (e.currentTarget.style.background = '#d0bcff')}
+							onMouseLeave={(e) => (e.currentTarget.style.background = '#eaddff')}
 						>
 							Retry
 						</motion.button>
@@ -783,9 +799,9 @@ export default function NoteEditor({
 				)}
 			</div>
 
-			{/* ── Mobile stats — liquid glass floating pill ── */}
+			{/* ── M3 Mobile stats — surface-container floating pill (elevation 2) ── */}
 			<motion.div
-				className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full px-3 py-1.5 text-[11px] tabular-nums select-none`}
+				className={`stats-bar-mobile flex md:hidden fixed z-20 items-center gap-2 rounded-full px-3.5 py-2 text-[11px] tabular-nums select-none`}
 				animate={{ opacity: keyboardOpen ? 0 : 1 }}
 				transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
 				style={{
@@ -795,15 +811,14 @@ export default function NoteEditor({
 					fontFamily: FONT,
 					color: MUTED,
 					pointerEvents: keyboardOpen ? 'none' : 'auto',
-					// Liquid glass: semi-transparent + blur + inner border refraction (design-taste)
-					background: 'rgba(255, 255, 255, 0.82)',
-					backdropFilter: 'blur(16px)',
-					WebkitBackdropFilter: 'blur(16px)',
-					border: `1px solid rgba(232, 234, 237, 0.8)`,
+					// M3 surface-container with translucency, no border (M3 prefers tonal layers over outlines)
+					background: 'rgba(241, 240, 238, 0.86)',
+					backdropFilter: 'saturate(180%) blur(18px)',
+					WebkitBackdropFilter: 'saturate(180%) blur(18px)',
+					// M3 elevation level 2 shadow
 					boxShadow: `
-						0 1px 8px -2px rgba(32, 33, 36, 0.10),
-						0 4px 16px -4px rgba(32, 33, 36, 0.08),
-						inset 0 1px 0 rgba(255, 255, 255, 0.9)
+						0 1px 2px 0 rgba(28, 27, 26, 0.30),
+						0 2px 6px 2px rgba(28, 27, 26, 0.15)
 					`,
 				}}
 			>
@@ -842,7 +857,7 @@ export default function NoteEditor({
 							animate={{ scale: 1, opacity: 1 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
 							className="inline-flex items-center gap-0.5 font-semibold tabular-nums"
-							style={{ color: '#1e8e3e' }}
+							style={{ color: '#386a20' }}
 						>
 							<Icon icon={FireIcon} size={8} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}

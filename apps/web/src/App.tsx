@@ -1901,7 +1901,8 @@ function AppInner() {
           }}
         />
 
-        <div className="flex flex-1 min-w-0 w-full max-w-full lg:border-l-[1.5px] border-[var(--ink)]">
+        <div className="app-main">
+          <div className="app-main-surface">
           {activeView === 'chat' ? (
             <AiChatPage
               notes={notes.filter((n): n is NoteFile => n.type === 'file' && !n.deletedAt)}
@@ -1964,6 +1965,7 @@ function AppInner() {
               onWideModeChange={setWideMode}
             />
           )}
+          </div>
         </div>
         </div>
       </div>
