@@ -9,9 +9,7 @@
     "dev": "npm run dev --workspace=apps/web",
     "build": "npm run build --workspace=apps/web",
     "test": "npm run test --workspace=apps/web",
-    "lint": "npm run lint --workspace=apps/web",
-    "tauri:dev": "npm run tauri:dev --workspace=apps/web",
-    "tauri:build": "npm run tauri:build --workspace=apps/web"
+    "lint": "npm run lint --workspace=apps/web"
   },
   "overrides": {
     "brace-expansion": "1.1.13"

@@ -9,12 +9,7 @@ export default defineConfig({
     tailwindcss(),
   ].filter(Boolean),
 
-  // Tauri expects the dev server on all interfaces so the webview can reach it
-  clearScreen: false,
   server: {
-    host: process.env.TAURI_DEV_HOST || false,
-    port: 5173,
-    strictPort: true,
     proxy: {
       '/.netlify/functions/chat': {
         target: 'http://localhost:9898',

@@ -10,10 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "preview": "vite preview",
-    "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.1",
@@ -26,9 +23,6 @@
     "@hugeicons/core-free-icons": "^4.0.0",
     "@hugeicons/react": "^1.1.6",
     "@supabase/supabase-js": "^2.99.1",
-    "@tauri-apps/api": "^2.10.1",
-    "@tauri-apps/plugin-dialog": "^2.6.0",
-    "@tauri-apps/plugin-fs": "^2.4.5",
     "@tiptap/extension-code-block-lowlight": "^3.20.1",
     "@tiptap/extension-color": "^3.22.3",
     "@tiptap/extension-link": "^3.20.1",
@@ -67,7 +61,6 @@
     "@eslint/js": "^9.39.1",
     "@netlify/functions": "^5.1.5",
     "@tailwindcss/vite": "^4.2.1",
-    "@tauri-apps/cli": "^2.10.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/markdown-it": "^14.1.2",

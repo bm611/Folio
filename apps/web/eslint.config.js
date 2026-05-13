@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'src-tauri/target', 'benchmark.js']),
+  globalIgnores(['dist', 'benchmark.js']),
   {
     files: ['vite.config.js', 'netlify/dev-server.js', 'benchmark.cjs'],
     languageOptions: {
