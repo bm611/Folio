@@ -209,8 +209,10 @@
     position: relative;
     width: 100%;
     z-index: 20;
-    border-bottom: 1px solid #e8eaed;
-    background: #ffffff;
+    border-bottom: 1px solid var(--border-subtle, #e8eaed);
+    background: color-mix(in srgb, var(--bg-primary, #ffffff) 92%, transparent);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-bar-inner {
@@ -220,7 +222,7 @@
     width: 100%;
     padding: 0;
     border-radius: 0;
-    background: #ffffff;
+    background: transparent;
     border: none;
     box-shadow: none;
     backdrop-filter: none;
@@ -257,7 +259,7 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: #5f6368;
+    color: #5b5854;
     cursor: pointer;
     transition:
       color 150ms ease,
@@ -266,18 +268,18 @@
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-btn:hover {
-    color: #202124;
-    background: #f1f3f4;
+    color: #1a1a1a;
+    background: color-mix(in srgb, var(--accent, #c8694b) 8%, transparent);
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-btn:active {
-    background: #e8eaed;
+    background: color-mix(in srgb, var(--accent, #c8694b) 16%, transparent);
     transform: scale(0.94);
   }
 
   .mobile-action-bar--editor.mobile-action-bar--editor-desktop .mobile-editor-toolbar-btn.is-active {
-    color: #1a73e8;
-    background: #e8f0fe;
+    color: var(--accent, #c8694b);
+    background: color-mix(in srgb, var(--accent, #c8694b) 14%, transparent);
   }
 }
 

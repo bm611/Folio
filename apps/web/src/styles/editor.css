@@ -105,10 +105,10 @@
   overflow: hidden;
   font-family: "Canela", "Canela Deck", "Cormorant Garamond", "Fraunces", Georgia, ui-serif, serif;
   font-optical-sizing: auto;
-  font-size: clamp(2rem, 4.6vw, 3rem);
+  font-size: clamp(2.4rem, 5.6vw, 4rem);
   font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.022em;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
   color: var(--text-primary);
   padding: 0;
   text-wrap: balance;
@@ -116,8 +116,8 @@
 
 @media (max-width: 767px) {
   .banner-title-input {
-    font-size: 1.6rem;
-    line-height: 1.15;
+    font-size: 2rem;
+    line-height: 1.1;
     font-variation-settings: "opsz" 96, "SOFT" 50;
   }
 }

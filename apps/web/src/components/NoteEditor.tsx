@@ -14,6 +14,10 @@ import {
 	SidebarLeftIcon,
 	Share01Icon,
 	Copy01Icon,
+	Calendar03Icon,
+	Clock01Icon,
+	Tag01Icon,
+	BookOpen01Icon,
 } from '@hugeicons/core-free-icons';
 
 import Icon from './Icon';
@@ -49,49 +53,40 @@ const LiveMarkdownEditor = lazy(() =>
 
 // ─── Material 3 palette — tonal surfaces, expressive typography ──────────────
 
+// Editor scope: matches HomeScreen's Google-Store palette so transitioning
+// between Home and an open note feels like a single continuous surface.
 const GS_SCOPE: CSSProperties = {
-	// M3 neutral surface tonal hierarchy (lowest → highest container)
-	['--bg-primary' as string]:           '#fdfcfb',  // surface (neutral)
-	['--bg-surface' as string]:           '#f6f5f3',  // surface-container-low
-	['--bg-elevated' as string]:          '#f1f0ee',  // surface-container
-	['--bg-hover' as string]:             '#ebeae8',  // surface-container-high
-	['--bg-deep' as string]:              '#e5e4e2',  // surface-container-highest
-	// M3 on-surface ink (neutral)
-	['--ink' as string]:                  '#1c1b1a',
-	['--ink-soft' as string]:             '#48464a',
-	['--text-primary' as string]:         '#1c1b1a',  // on-surface
-	['--text-secondary' as string]:       '#48464a',  // on-surface-variant
-	['--text-muted' as string]:           '#7a7779',  // outline
-	['--text-inverse' as string]:         '#f4f1ef',
-	['--border-subtle' as string]:        '#cbc7c5',  // outline-variant
-	['--border-default' as string]:       '#7a7779',  // outline
-	// M3 primary tonal
-	['--accent' as string]:               '#6750a4',  // primary
-	['--accent-hover' as string]:         '#5b46a0',
-	['--accent-text' as string]:          '#ffffff',  // on-primary
-	['--accent-soft' as string]:          '#eaddff',  // primary-container
-	// M3 secondary / tertiary signals
-	['--success' as string]:              '#386a20',
-	['--warning' as string]:              '#7d5800',
-	['--danger' as string]:               '#b3261e',  // error
-	// M3 shape system
-	['--m3-shape-xs' as string]:          '4px',
-	['--m3-shape-sm' as string]:          '8px',
-	['--m3-shape-md' as string]:          '12px',
-	['--m3-shape-lg' as string]:          '16px',
-	['--m3-shape-xl' as string]:          '28px',
-	['--m3-shape-full' as string]:        '9999px',
-	background: '#fdfcfb',
-	color: '#1c1b1a',
+	['--bg-primary' as string]:           '#ffffff',
+	['--bg-surface' as string]:           '#f8f9fa',
+	['--bg-elevated' as string]:          '#ffffff',
+	['--bg-hover' as string]:             '#f1f3f4',
+	['--bg-deep' as string]:              '#e8eaed',
+	['--ink' as string]:                  '#202124',
+	['--ink-soft' as string]:             '#3c4043',
+	['--text-primary' as string]:         '#202124',
+	['--text-secondary' as string]:       '#3c4043',
+	['--text-muted' as string]:           '#5f6368',
+	['--text-inverse' as string]:         '#ffffff',
+	['--border-subtle' as string]:        '#e8eaed',
+	['--border-default' as string]:       '#dadce0',
+	['--accent' as string]:               '#1a73e8',
+	['--accent-hover' as string]:         '#1765cc',
+	['--accent-text' as string]:          '#ffffff',
+	['--accent-soft' as string]:          '#e8f0fe',
+	['--success' as string]:              '#1e8e3e',
+	['--warning' as string]:              '#f29900',
+	['--danger' as string]:               '#d93025',
+	background: '#ffffff',
+	color: '#202124',
 	fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
 };
 
 const FONT = '"Poppins", system-ui, -apple-system, sans-serif';
-const MUTED = '#48464a';
-const DIVIDER = '#cbc7c5';
-// M3 neutral surface-container with translucency for top app bar
-const M3_SURFACE_CONTAINER = 'rgba(241, 240, 238, 0.78)';
-const M3_OUTLINE_VARIANT = 'rgba(203, 199, 197, 0.6)';
+const MUTED = '#5f6368';
+const DIVIDER = '#e8eaed';
+// Top app bar — translucent white to match HomeScreen's sticky header
+const M3_SURFACE_CONTAINER = 'rgba(255, 255, 255, 0.85)';
+const M3_OUTLINE_VARIANT = 'rgba(232, 234, 237, 0.9)';
 // Strong ease-out — starts fast, feels instantly responsive (Emil Kowalski)
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
 
@@ -132,7 +127,177 @@ function SpringNumber({ value, className }: SpringNumberProps) {
 // ─── Stat Divider — thin vertical hairline (more refined than bullet dot) ─────
 
 function StatDivider() {
-	return <span aria-hidden className="inline-block w-px h-3 bg-[#cbc7c5]" />;
+	return <span aria-hidden className="inline-block w-px h-3" style={{ background: DIVIDER }} />;
+}
+
+// ─── Hero Art — procedural SVG block that fills the space below the title ────
+//
+// The right metadata column leaves a wide empty area below the title. This
+// component renders a tasteful, deterministic SVG illustration (selected from
+// note.id) inside a rounded warm-tone container — visually similar to an
+// editorial article banner. If the note has an emoji icon, it's used as the
+// focal element; otherwise an abstract geometric pattern is drawn.
+
+const HERO_PALETTES = [
+	{ bg: '#c8694b', ink: '#2a1810', soft: '#f4dcd1' }, // terracotta
+	{ bg: '#5b7c63', ink: '#1f2a23', soft: '#dfe9d8' }, // sage
+	{ bg: '#d4a574', ink: '#3a2812', soft: '#f5e8d3' }, // ochre
+	{ bg: '#7a6b8a', ink: '#221b2c', soft: '#e6dff0' }, // mauve
+	{ bg: '#3d5a6c', ink: '#0e1a25', soft: '#d8e2ea' }, // slate-blue
+	{ bg: '#a85a47', ink: '#2a1208', soft: '#f0d4cb' }, // rust
+];
+
+function hashString(s: string): number {
+	let h = 5381;
+	for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+	return Math.abs(h);
+}
+
+interface HeroArtProps {
+	noteId: string;
+	icon?: string | null;
+}
+
+function HeroArt({ noteId, icon }: HeroArtProps) {
+	const seed = hashString(noteId);
+	const palette = HERO_PALETTES[seed % HERO_PALETTES.length];
+	const variant = seed % 4;
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, y: 8, scale: 0.98 }}
+			animate={{ opacity: 1, y: 0, scale: 1 }}
+			transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1], delay: 0.08 }}
+			aria-hidden
+			className="relative overflow-hidden select-none"
+			style={{
+				width: 140,
+				height: 140,
+				borderRadius: 20,
+				background: palette.bg,
+				marginTop: 24,
+				boxShadow: `
+					0 1px 2px 0 rgba(60, 50, 35, 0.10),
+					0 8px 24px -8px rgba(60, 50, 35, 0.18),
+					inset 0 0 0 1px rgba(255, 255, 255, 0.06)
+				`,
+			}}
+		>
+			{/* Soft inner highlight — adds a tactile, premium feel */}
+			<div
+				aria-hidden
+				className="absolute inset-0 pointer-events-none"
+				style={{
+					background: `radial-gradient(120% 90% at 20% 0%, ${palette.soft}22 0%, transparent 55%)`,
+				}}
+			/>
+
+			{icon ? (
+				// User-set emoji icon centered in the box
+				<div
+					className="absolute inset-0 flex items-center justify-center"
+					style={{ fontSize: 72, lineHeight: 1, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.18))' }}
+				>
+					{icon}
+				</div>
+			) : (
+				// Procedural SVG art — varies by note hash for variety across notes
+				<svg
+					viewBox="0 0 220 220"
+					width="140"
+					height="140"
+					className="absolute inset-0"
+					style={{ display: 'block' }}
+				>
+					{variant === 0 && (
+						// Stacked editorial blocks (echo of the screenshot's brick motif)
+						<g stroke={palette.ink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round">
+							<rect x="62" y="120" width="44" height="34" rx="3" />
+							<rect x="114" y="120" width="44" height="34" rx="3" />
+							<rect x="88" y="80" width="44" height="34" rx="3" />
+							<path d="M 82 78 L 102 64 L 118 70" />
+							<circle cx="118" cy="70" r="3" fill={palette.ink} />
+						</g>
+					)}
+					{variant === 1 && (
+						// Open page / document with folded corner
+						<g stroke={palette.ink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M 70 60 L 130 60 L 150 80 L 150 160 L 70 160 Z" />
+							<path d="M 130 60 L 130 80 L 150 80" />
+							<line x1="84" y1="100" x2="138" y2="100" />
+							<line x1="84" y1="115" x2="138" y2="115" />
+							<line x1="84" y1="130" x2="120" y2="130" />
+							<line x1="84" y1="145" x2="128" y2="145" />
+						</g>
+					)}
+					{variant === 2 && (
+						// Concentric arcs / sun rising — abstract hopeful motif
+						<g stroke={palette.ink} strokeWidth={2.5} fill="none" strokeLinecap="round">
+							<path d="M 50 150 Q 110 70, 170 150" />
+							<path d="M 65 150 Q 110 90, 155 150" />
+							<path d="M 80 150 Q 110 110, 140 150" />
+							<line x1="40" y1="160" x2="180" y2="160" />
+							<circle cx="110" cy="65" r="6" fill={palette.ink} />
+						</g>
+					)}
+					{variant === 3 && (
+						// Folded paper / origami feather
+						<g stroke={palette.ink} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M 60 150 L 100 60 L 160 90 L 130 160 Z" />
+							<path d="M 100 60 L 130 160" />
+							<path d="M 60 150 L 160 90" />
+							<circle cx="160" cy="90" r="3" fill={palette.ink} />
+						</g>
+					)}
+				</svg>
+			)}
+		</motion.div>
+	);
+}
+
+// ─── Editorial metadata row — icon + label + value (Anthropic-style) ─────────
+
+interface MetaRowProps {
+	icon: Parameters<typeof Icon>[0]['icon'];
+	label: string;
+	children: React.ReactNode;
+}
+
+function MetaRow({ icon, label, children }: MetaRowProps) {
+	return (
+		<div className="flex items-start gap-2.5">
+			<Icon
+				icon={icon}
+				size={14}
+				strokeWidth={1.6}
+				style={{ color: '#5f6368', marginTop: 4, flexShrink: 0 }}
+			/>
+			<div className="flex flex-col gap-0.5 min-w-0">
+				<span
+					style={{
+						fontSize: 11,
+						color: '#5f6368',
+						fontWeight: 500,
+						letterSpacing: '0.01em',
+						lineHeight: 1.3,
+					}}
+				>
+					{label}
+				</span>
+				<div
+					style={{
+						fontSize: 13.5,
+						color: '#202124',
+						fontWeight: 450,
+						lineHeight: 1.45,
+						letterSpacing: '-0.005em',
+					}}
+				>
+					{children}
+				</div>
+			</div>
+		</div>
+	);
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -210,7 +375,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 							icon={ArrowRight01Icon}
 							size={12}
 							strokeWidth={1.5}
-							style={{ color: '#7a7779' }}
+							style={{ color: '#5f6368' }}
 						/>
 					)}
 					<motion.button
@@ -220,18 +385,18 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 						className="group inline-flex items-center gap-1 rounded-md px-1.5 py-0.5"
 						style={{
 							fontSize: 12,
-							color: '#48464a',
+							color: '#3c4043',
 							fontWeight: 500,
 							transition: `background-color 140ms ${EASE_OUT}`,
 						}}
-						onMouseEnter={(e) => (e.currentTarget.style.background = '#ebeae8')}
+						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 					>
 						<Icon
 							icon={Folder01Icon}
 							size={12}
 							strokeWidth={1.5}
-							style={{ color: '#7a7779' }}
+							style={{ color: '#5f6368' }}
 						/>
 						<span className="max-w-[72px] md:max-w-[120px] truncate">{folder.name}</span>
 					</motion.button>
@@ -248,14 +413,14 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					icon={ArrowRight01Icon}
 					size={12}
 					strokeWidth={1.5}
-					style={{ color: '#7a7779' }}
+					style={{ color: '#5f6368' }}
 				/>
 			</motion.span>
 
 			{/* Current note name */}
 			<motion.span
 				className="inline-flex items-center gap-1"
-				style={{ fontSize: 12, color: '#1c1b1a', fontWeight: 500 }}
+				style={{ fontSize: 12, color: '#202124', fontWeight: 500 }}
 				initial={{ opacity: 0, x: -4 }}
 				animate={{ opacity: 1, x: 0 }}
 				transition={{ duration: 0.18, delay: (folderPath.length + 1) * 0.04, ease: [0.23, 1, 0.32, 1] }}
@@ -264,7 +429,7 @@ function Breadcrumbs({ note, notes, tree, onSelectNote }: BreadcrumbsProps) {
 					icon={File01Icon}
 					size={12}
 					strokeWidth={1.5}
-					style={{ color: '#7a7779' }}
+					style={{ color: '#5f6368' }}
 				/>
 				<span className="max-w-[120px] md:max-w-[200px] truncate">{noteName}</span>
 			</motion.span>
@@ -504,7 +669,7 @@ export default function NoteEditor({
 							color: MUTED,
 							transition: btnTransition,
 						}}
-						onMouseEnter={(e) => (e.currentTarget.style.background = '#ebeae8')}
+						onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 						onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 						title="Back to Home"
 					>
@@ -522,7 +687,7 @@ export default function NoteEditor({
 								color: MUTED,
 								transition: btnTransition,
 							}}
-							onMouseEnter={(e) => (e.currentTarget.style.background = '#ebeae8')}
+							onMouseEnter={(e) => (e.currentTarget.style.background = '#f1f3f4')}
 							onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
 							title="Open sidebar (Cmd+B)"
 						>
@@ -562,9 +727,9 @@ export default function NoteEditor({
 							transition: btnTransition,
 							color:
 								shareStatus === 'copied'
-									? '#386a20'
+									? '#1e8e3e'
 									: shareStatus === 'error'
-										? '#b3261e'
+										? '#d93025'
 										: undefined,
 						}}
 						title={shareTitle}
@@ -654,41 +819,148 @@ export default function NoteEditor({
 			{/* Scrollable content */}
 			<div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden relative z-10">
 
-				<div className={wideMode ? 'w-full px-3 pb-28 pt-3 sm:px-6 md:px-10 md:pb-40 md:pt-12' : 'mx-auto max-w-4xl px-3 pb-28 pt-3 sm:px-6 md:px-10 md:pb-40 md:pt-12'}>
-					<div className="editor-stagger-1">
-						<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
-					</div>
+				<div className={wideMode ? 'w-full px-4 pb-28 pt-6 sm:px-8 md:px-16 md:pb-40 md:pt-20' : 'mx-auto max-w-[1180px] px-4 pb-28 pt-6 sm:px-8 md:px-16 md:pb-40 md:pt-20'}>
+					{/* ── Editorial two-column header: main content + right metadata column ── */}
+					<div className="md:grid md:grid-cols-[minmax(0,1fr)_220px] md:gap-x-16">
+						{/* ── Main column: breadcrumbs + title + tags ── */}
+						<div className="min-w-0">
+							<div className="editor-stagger-1">
+								<Breadcrumbs note={note} notes={notes} tree={tree} onSelectNote={onSelectNote} />
+							</div>
 
-					{note.tags?.includes('daily') ? (
-						<DailyHeader note={note} />
-					) : (
-						<>
-							<div className="editor-stagger-2">
-								<div className="note-title-block">
-									<NoteBanner
-										noteId={note.id}
-										title={note.title}
-										icon={note.icon}
-										onTitleChange={(title) => onUpdateNote(note.id, { title })}
-										onTitleKeyDown={handleTitleKeyDown}
-									/>
-									<div className="flex flex-nowrap items-center gap-2 mt-1 md:gap-3 md:mt-2 min-w-0 overflow-x-auto">
-										<span className="label-mono text-[10px] md:text-xs whitespace-nowrap shrink-0">{createdAtLabel}</span>
-										<StatDivider />
-										<div className="min-w-0 flex-1">
-											<TagInput
-												tags={note.tags || []}
-												onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
-											/>
-										</div>
+							{note.tags?.includes('daily') ? (
+								<DailyHeader note={note} />
+							) : (
+								<div className="editor-stagger-2">
+									{/* Flat editorial title — no card, no rail. Just the serif headline. */}
+									<div style={{ marginTop: 4, marginBottom: 0 }}>
+										<NoteBanner
+											noteId={note.id}
+											title={note.title}
+											icon={note.icon}
+											onTitleChange={(title) => onUpdateNote(note.id, { title })}
+											onTitleKeyDown={handleTitleKeyDown}
+										/>
+									</div>
+									{/* Hero art — fills the negative space below the title (desktop only,
+									       since on mobile the metadata sits directly under the title) */}
+									<div className="hidden md:block">
+										<HeroArt noteId={note.id} icon={note.icon} />
 									</div>
 								</div>
+							)}
+						</div>
+
+						{/* ── Right metadata column (desktop only) ── */}
+						<aside className="hidden md:block editor-stagger-2">
+							<div className="flex flex-col gap-5" style={{ paddingTop: 6 }}>
+								{!note.tags?.includes('daily') && (
+									<MetaRow icon={Calendar03Icon} label="Created">
+										{createdAtLabel}
+									</MetaRow>
+								)}
+								<MetaRow icon={Clock01Icon} label="Reading time">
+									{readTime || '—'}
+								</MetaRow>
+								<MetaRow icon={BookOpen01Icon} label="Word count">
+									<span style={{ fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' }}>
+										<SpringNumber value={wordCount} /> words
+									</span>
+									{sessionDelta > 0 && (
+										<motion.span
+											key="meta-session-delta"
+											initial={{ scale: 0.7, opacity: 0 }}
+											animate={{ scale: 1, opacity: 1 }}
+											transition={{ type: 'spring', stiffness: 500, damping: 22 }}
+											className="ml-2 inline-flex items-center gap-0.5 font-semibold tabular-nums"
+											style={{ color: '#1e8e3e', fontSize: 12 }}
+										>
+											<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
+											+{sessionDelta.toLocaleString()}
+										</motion.span>
+									)}
+								</MetaRow>
+								<MetaRow icon={Tag01Icon} label="Tags">
+									<TagInput
+										tags={note.tags || []}
+										onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+									/>
+								</MetaRow>
+								<MetaRow icon={Share01Icon} label="Share">
+									<button
+										type="button"
+										onClick={handleShareNote}
+										disabled={shareStatus === 'sharing'}
+										className="text-left underline-offset-4 hover:underline transition-colors"
+										style={{
+											color:
+												shareStatus === 'copied'
+													? '#1e8e3e'
+													: shareStatus === 'error'
+														? '#d93025'
+														: '#202124',
+											background: 'transparent',
+											padding: 0,
+											fontSize: 13.5,
+											fontWeight: 450,
+											textDecoration: 'underline',
+											textDecorationColor: '#5f6368',
+										}}
+									>
+										{shareStatus === 'sharing'
+											? 'Creating link…'
+											: shareStatus === 'copied'
+												? 'Link copied'
+												: shareStatus === 'error'
+													? 'Try again'
+													: 'Copy link'}
+									</button>
+								</MetaRow>
 							</div>
-						</>
+						</aside>
+					</div>
+
+					{/* ── Mobile-only inline tags + meta row (compact, since no sidebar) ── */}
+					{!note.tags?.includes('daily') && (
+						<div className="md:hidden editor-stagger-2 mt-3">
+							<div className="flex flex-nowrap items-center gap-2 min-w-0 overflow-x-auto">
+								<span
+									className="whitespace-nowrap shrink-0"
+									style={{
+										fontSize: 11,
+										color: '#5f6368',
+										fontWeight: 500,
+										letterSpacing: '0.01em',
+									}}
+								>
+									{createdAtLabel}
+								</span>
+								<StatDivider />
+								<div className="min-w-0 flex-1">
+									<TagInput
+										tags={note.tags || []}
+										onChange={(tags) => onUpdateNote(note.id, { tags }, { skipTimestamp: true })}
+									/>
+								</div>
+							</div>
+						</div>
 					)}
 
+					{/* ── Hairline divider — separates header from body (Anthropic-style) ── */}
+					<div
+						className="editor-stagger-3"
+						style={{
+							marginTop: '2.5rem',
+							marginBottom: '2.5rem',
+							height: 1,
+							background: DIVIDER,
+							opacity: 0.7,
+						}}
+					/>
+
+					{/* ── Body: editor (constrained to main column width on desktop) ── */}
 					<div className="editor-stagger-3">
-						<div className="mt-6 md:mt-10">
+						<div className={wideMode ? '' : 'md:max-w-[calc(100%-220px-4rem)]'}>
 							<Suspense fallback={<EditorFallback />}>
 								<LiveMarkdownEditor
 									key={note.id}
@@ -707,15 +979,17 @@ export default function NoteEditor({
 				</div>
 			</div>
 
-			{/* ── Stats bar — bottom strip (desktop) ── */}
+			{/* ── Stats bar — bottom strip (desktop): only save status + retry, since
+			       word count / read time / share now live in the right metadata column ── */}
 			<div
-				className="stats-bar-desktop hidden md:flex items-center justify-end gap-3 px-5 py-2.5 select-none"
+				className="stats-bar-desktop hidden md:flex items-center justify-end gap-3 px-6 py-2 select-none"
 				style={{
 					background: 'transparent',
 					fontFamily: FONT,
 					color: MUTED,
-					fontSize: 12,
+					fontSize: 11.5,
 					letterSpacing: '0.005em',
+					borderTop: `1px solid ${M3_OUTLINE_VARIANT}`,
 				}}
 			>
 				{/* Save status — spring entrance on state change (Emil: scale(0.95) not scale(0)) */}
@@ -739,42 +1013,6 @@ export default function NoteEditor({
 					</motion.span>
 				</AnimatePresence>
 
-				<StatDivider />
-
-				{/* Session delta — spring pop-in */}
-				<AnimatePresence mode="popLayout">
-					{sessionDelta > 0 && (
-						<motion.span
-							key="session-delta"
-							initial={{ scale: 0.7, opacity: 0, y: 6 }}
-							animate={{ scale: 1, opacity: 1, y: 0 }}
-							exit={{ scale: 0.7, opacity: 0, y: -6 }}
-							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
-							className="inline-flex items-center gap-0.5 font-semibold tabular-nums"
-							style={{ color: '#386a20' }}
-						>
-							<Icon icon={FireIcon} size={10} strokeWidth={2.2} />
-							+{sessionDelta.toLocaleString()}
-						</motion.span>
-					)}
-				</AnimatePresence>
-				{sessionDelta > 0 && (
-					<StatDivider />
-				)}
-
-				{/* Word count — monospace numerals (design-taste: tabular-nums for data density) */}
-				<span style={{ fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' }}>
-					<SpringNumber value={wordCount} />
-				</span>
-				<span>words</span>
-
-				{readTime && (
-					<>
-						<StatDivider />
-						<span>{readTime}</span>
-					</>
-				)}
-
 				{/* Retry button */}
 				{saveStatus.canRetry && onRetrySync && (
 					<>
@@ -786,12 +1024,12 @@ export default function NoteEditor({
 							className="rounded-full px-3 py-1 text-[11px] font-medium"
 							style={{
 								border: `1px solid ${DIVIDER}`,
-								color: '#6750a4',
-								background: '#eaddff',
+								color: '#1a73e8',
+								background: '#e8f0fe',
 								transition: `background-color 140ms ${EASE_OUT}, transform 120ms ${EASE_OUT}`,
 							}}
-							onMouseEnter={(e) => (e.currentTarget.style.background = '#d0bcff')}
-							onMouseLeave={(e) => (e.currentTarget.style.background = '#eaddff')}
+							onMouseEnter={(e) => (e.currentTarget.style.background = '#d2e3fc')}
+							onMouseLeave={(e) => (e.currentTarget.style.background = '#e8f0fe')}
 						>
 							Retry
 						</motion.button>
@@ -811,14 +1049,14 @@ export default function NoteEditor({
 					fontFamily: FONT,
 					color: MUTED,
 					pointerEvents: keyboardOpen ? 'none' : 'auto',
-					// M3 surface-container with translucency, no border (M3 prefers tonal layers over outlines)
-					background: 'rgba(241, 240, 238, 0.86)',
+					// Translucent white surface — matches HomeScreen palette
+					background: 'rgba(255, 255, 255, 0.92)',
 					backdropFilter: 'saturate(180%) blur(18px)',
 					WebkitBackdropFilter: 'saturate(180%) blur(18px)',
-					// M3 elevation level 2 shadow
+					// Neutral elevation
 					boxShadow: `
-						0 1px 2px 0 rgba(28, 27, 26, 0.30),
-						0 2px 6px 2px rgba(28, 27, 26, 0.15)
+						0 1px 2px 0 rgba(60, 64, 67, 0.20),
+						0 2px 8px 2px rgba(60, 64, 67, 0.12)
 					`,
 				}}
 			>
@@ -857,7 +1095,7 @@ export default function NoteEditor({
 							animate={{ scale: 1, opacity: 1 }}
 							transition={{ type: 'spring', stiffness: 500, damping: 22 }}
 							className="inline-flex items-center gap-0.5 font-semibold tabular-nums"
-							style={{ color: '#386a20' }}
+							style={{ color: '#1e8e3e' }}
 						>
 							<Icon icon={FireIcon} size={8} strokeWidth={2.2} />
 							+{sessionDelta.toLocaleString()}
