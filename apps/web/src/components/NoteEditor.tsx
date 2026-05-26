@@ -145,7 +145,7 @@ const HERO_PALETTES = [
 	{ bg: '#7a6b8a', ink: '#221b2c', soft: '#e6dff0' }, // mauve
 	{ bg: '#3d5a6c', ink: '#0e1a25', soft: '#d8e2ea' }, // slate-blue
 	{ bg: '#a85a47', ink: '#2a1208', soft: '#f0d4cb' }, // rust
-];
+] as const;
 
 function hashString(s: string): number {
 	let h = 5381;
@@ -160,7 +160,7 @@ interface HeroArtProps {
 
 function HeroArt({ noteId, icon }: HeroArtProps) {
 	const seed = hashString(noteId);
-	const palette = HERO_PALETTES[seed % HERO_PALETTES.length];
+	const palette = HERO_PALETTES[seed % HERO_PALETTES.length] ?? HERO_PALETTES[0];
 	const variant = seed % 4;
 
 	return (
