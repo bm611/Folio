@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   Brutalist Primitives — load-bearing utility classes
+   Minimal compatibility primitives
    ═══════════════════════════════════════════════ */
 
 /* ── Stamp button ── */
@@ -9,37 +9,34 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1.5px solid var(--ink);
-  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
   color: var(--ink);
   padding: 8px 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0;
   line-height: 1;
-  border-radius: 0;
+  border-radius: 6px;
   cursor: pointer;
   user-select: none;
   box-shadow: var(--stamp-shadow);
-  transition: transform 80ms var(--ease-out-quart),
-              box-shadow 80ms var(--ease-out-quart),
-              background-color 80ms,
-              color 80ms;
+  transition: transform 120ms var(--ease-out-quart),
+              background-color 150ms,
+              border-color 150ms,
+              color 150ms;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-stamp:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: var(--stamp-shadow-hover);
     background: var(--bg-hover);
   }
 }
 
 .btn-stamp:active {
-  transform: translate(2px, 2px);
-  box-shadow: var(--stamp-shadow-active);
+  transform: scale(0.97);
 }
 
 .btn-stamp:disabled {
@@ -52,7 +49,7 @@
 /* ── Accent variant ── */
 
 .btn-stamp-accent {
-  background: var(--accent);
+  background: var(--ink);
   color: var(--accent-text);
   border-color: var(--ink);
 }
@@ -148,17 +145,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #e8eaed;
-  background: #ffffff;
-  color: #5f6368;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
   padding: 0 12px;
   height: 36px;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   font-size: 12.5px;
   font-weight: 500;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
   line-height: 1;
-  border-radius: 999px;
+  border-radius: 6px;
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
@@ -168,7 +165,8 @@
 
 @media (hover: hover) and (pointer: fine) {
   .btn-pill:hover {
-    background: #f1f3f4;
+    background: var(--bg-hover);
+    color: var(--ink);
   }
 }
 
@@ -177,14 +175,14 @@
 }
 
 .btn-pill-accent {
-  background: #1a73e8;
-  color: #ffffff;
-  border-color: transparent;
+  background: var(--ink);
+  color: var(--text-inverse);
+  border-color: var(--ink);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn-pill-accent:hover {
-    background: #1765cc;
+    background: var(--accent-hover);
   }
 }
 
@@ -297,9 +295,7 @@
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  /* Neutral light-grey gutter that the main surface "floats" on. Matches
-     the sidebar's Google-store palette so the two surfaces feel related. */
-  background: #e8eaed;
+  background: var(--bg-primary);
   min-height: 0;
   height: 100dvh;
   overflow: hidden;
@@ -322,17 +318,17 @@
   min-width: 0;
   min-height: 0;
   width: 100%;
-  background: #ffffff;
+  background: var(--bg-primary);
 }
 
 @media (min-width: 1024px) {
   .app-main {
-    padding: 8px 8px 8px 8px;
+    padding: 0;
   }
 
   .app-main-surface {
-    border: 1px solid #e0e2e6;
-    border-radius: 10px;
+    border: none;
+    border-radius: 0;
     overflow: hidden;
   }
 }

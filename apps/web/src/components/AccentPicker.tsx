@@ -40,7 +40,6 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
   const currentSwatch = current.light.accent
   void theme
 
-  // Close on outside click — check both the trigger container and the portaled dropdown
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
@@ -54,7 +53,6 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
@@ -62,17 +60,14 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
     return () => document.removeEventListener('keydown', handler)
   }, [open])
 
-  // showLabel = compact sidebar-style row (inside settings menu)
-  // default  = standalone top-bar icon button
-  // mobile   = 40×40 circle for mobile action bar
   const desktopClasses = showLabel
     ? 'settings-item'
     : 'hidden md:relative md:flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-[var(--text-muted)] transition-[transform,background-color,color,border-color] duration-150 ease-out hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:border-[var(--border-subtle)] after:absolute after:-inset-2 active:scale-[0.96]'
 
   const triggerClassName = mobile
-    ? 'relative flex h-10 w-10 items-center justify-center rounded-full border border-[#e8eaed] bg-[var(--bg-surface)] p-0 cursor-pointer transition-transform duration-150 active:scale-[0.96]'
+    ? 'relative flex h-10 w-10 items-center justify-center rounded-md border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-0 cursor-pointer transition-transform duration-150 active:scale-[0.96]'
     : desktopClasses
-  const dropdownBaseClassName = 'fixed z-[9999] rounded-[12px] bg-white p-3'
+  const dropdownBaseClassName = 'fixed z-[9999] rounded-lg bg-[var(--bg-elevated)] p-3'
 
   const handleOpen = () => {
     if (!open && buttonRef.current) {
@@ -106,13 +101,13 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
         aria-label="Change accent color"
         aria-expanded={open}
         aria-haspopup="listbox"
-        style={showLabel && !mobile ? { fontFamily: '"Outfit", sans-serif' } : undefined}
+        style={showLabel && !mobile ? { fontFamily: 'var(--body-font)' } : undefined}
       >
         {showLabel && !mobile ? (
           <>
             <span className="settings-icon-wrap">
               <span
-                className="h-[14px] w-[14px] rounded-full transition-[background-color] duration-150"
+                className="h-[14px] w-[14px] rounded-sm transition-[background-color] duration-150"
                 style={{ backgroundColor: currentSwatch }}
               />
             </span>
@@ -120,13 +115,12 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
           </>
         ) : (
           <span
-            className="h-[14px] w-[14px] rounded-full shrink-0"
+            className="h-[14px] w-[14px] rounded-sm shrink-0"
             style={{ backgroundColor: currentSwatch }}
           />
         )}
       </button>
 
-      {/* Dropdown panel — portaled to body to escape overflow:hidden ancestors */}
       {createPortal(
         <AnimatePresence initial={false}>
           {open && (
@@ -142,8 +136,8 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
               variants={POPOVER_VARIANTS}
               transition={POPOVER_TRANSITION}
               style={{
-                boxShadow: '0 8px 24px -8px rgba(32,33,36,0.16), 0 2px 8px -2px rgba(32,33,36,0.08)',
-                border: '1px solid #e8eaed',
+                boxShadow: '0 18px 48px rgba(38,35,31,0.10)',
+                border: '1px solid var(--border-subtle)',
                 minWidth: '208px',
                 transformOrigin: mobile
                   ? 'bottom center'
@@ -157,7 +151,7 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
                     : { top: dropdownPos.top, right: dropdownPos.right }),
               }}
             >
-              <p className="mb-2 px-0.5 text-[10.5px] font-semibold uppercase tracking-[0.07em]" style={{ color: '#5f6368', fontFamily: '"Poppins", system-ui, sans-serif' }}>Accent</p>
+              <p className="mb-2 px-0.5 text-[10.5px] font-medium" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Accent</p>
 
               <div className="grid grid-cols-4 gap-2">
                 {ACCENT_COLORS.map((color: AccentColor) => {
@@ -174,22 +168,22 @@ export default function AccentPicker({ accentId, onAccentChange, theme, mobile =
                         onAccentChange(color.id)
                         setOpen(false)
                       }}
-                      className="group flex flex-col items-center gap-1 px-1 py-1 rounded-[6px] hover:bg-[#f1f3f4] active:scale-[0.94] transition-transform duration-100"
+                      className="group flex flex-col items-center gap-1 px-1 py-1 rounded-md hover:bg-[var(--bg-hover)] active:scale-[0.94] transition-transform duration-100"
                       title={color.label}
                     >
                       <span
-                        className="h-7 w-7 rounded-full"
+                        className="h-7 w-7 rounded-md"
                         style={{
                           backgroundColor: swatch,
                           outline: isActive ? `2.5px solid ${swatch}` : 'none',
                           outlineOffset: '2px',
-                          boxShadow: isActive ? `0 0 0 3px rgba(0,0,0,0.08)` : 'none',
+                          boxShadow: 'none',
                         }}
                       />
                       {!hideName && (
                         <span
-                          className="text-[9px] leading-none uppercase tracking-wider"
-                          style={{ color: isActive ? '#202124' : '#9aa0a6', fontFamily: '"Poppins", system-ui, sans-serif' }}
+                          className="text-[9px] leading-none"
+                          style={{ color: isActive ? 'var(--ink)' : 'var(--text-muted)', fontFamily: 'var(--body-font)' }}
                         >
                           {color.label}
                         </span>

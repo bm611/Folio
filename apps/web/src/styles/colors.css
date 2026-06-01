@@ -1,122 +1,103 @@
-/* ═══════════════════════════════════════════════
-   Brutalist Color System — single light theme
-   ═══════════════════════════════════════════════ */
-
 :root {
-  /* ── Paper surfaces ── */
-  --bg-deep:      #ebe6da;
-  --bg-primary:   #f5f1e6;
-  --bg-surface:   #faf7ee;
-  --bg-elevated:  #ffffff;
-  --bg-hover:     #e8e2d2;
-  --bg-inverse:   #0a0a0a;
-  --grain-opacity: 0.03;
+  --bg-deep: #e8e2d8;
+  --bg-primary: #fbfaf7;
+  --bg-surface: #f3f0eb;
+  --bg-elevated: #fffefa;
+  --bg-hover: #efebe4;
+  --bg-inverse: #26231f;
 
-  /* ── Ink ── */
-  --ink:        #0a0a0a;
-  --ink-soft:   #2a2a2a;
+  --ink: #26231f;
+  --ink-soft: #514d46;
 
-  /* ── Text ── */
-  --text-primary:   #0a0a0a;
-  --text-secondary: #4a4a4a;
-  --text-muted:     #8a857a;
-  --text-inverse:   #f5f1e6;
+  --text-primary: #26231f;
+  --text-secondary: #514d46;
+  --text-muted: #8a8377;
+  --text-inverse: #fbfaf7;
 
-  /* ── Borders ── */
-  --border-subtle:  #c8c2b4;
-  --border-default: #0a0a0a;
+  --border-subtle: #e8e2d8;
+  --border-default: #d8d0c3;
 
-  /* ── Accent — user-pickable, default violet ── */
-  --accent:        #5d3fd3;
-  --accent-hover:  #4a2fb8;
-  --accent-muted:  color-mix(in srgb, var(--accent) 14%, transparent);
-  --accent-soft:   #ece6fa;
-  --accent-text:   #ffffff;
+  --accent: #5f574d;
+  --accent-hover: #3d3933;
+  --accent-muted: color-mix(in srgb, var(--accent) 12%, transparent);
+  --accent-soft: #ece7df;
+  --accent-text: #fbfaf7;
   --banner-accent-mix: 100%;
 
-  /* ── Semantic ── */
-  --danger:        #c43d3d;
-  --danger-muted:  rgba(196, 61, 61, 0.10);
-  --success:       #3a7a52;
-  --success-muted: rgba(58, 122, 82, 0.10);
-  --warning:       #b8821a;
+  --danger: #9c5a50;
+  --danger-muted: rgba(156, 90, 80, 0.1);
+  --success: #5f7157;
+  --success-muted: rgba(95, 113, 87, 0.1);
+  --warning: #9b7b45;
 
-  /* ── Headings — all ink, hierarchy via size ── */
-  --color-h1: #0a0a0a;
-  --color-h2: #0a0a0a;
-  --color-h3: #0a0a0a;
-  --color-title: #0a0a0a;
+  --color-h1: #26231f;
+  --color-h2: #26231f;
+  --color-h3: #514d46;
+  --color-title: #26231f;
   --h1-color: var(--color-h1);
   --h2-color: var(--color-h2);
   --title-color: var(--color-title);
 
-  /* ── No soft shadows — borders carry structure ── */
-  --neu-shadow:        none;
-  --neu-shadow-hover:  none;
+  --neu-shadow: none;
+  --neu-shadow-hover: none;
   --neu-shadow-active: none;
-  --neu-shadow-inset:  none;
-  --neu-btn-shadow:        none;
-  --neu-btn-shadow-hover:  none;
+  --neu-shadow-inset: none;
+  --neu-btn-shadow: none;
+  --neu-btn-shadow-hover: none;
   --neu-btn-shadow-active: none;
 
-  /* ── Hard offset stamp shadow (no blur) ── */
-  --stamp-ink:          #0f0e0c;
-  --stamp-shadow:       2px 2px 0 var(--stamp-ink, var(--ink));
-  --stamp-shadow-hover: 3px 3px 0 var(--stamp-ink, var(--ink));
-  --stamp-shadow-active: 0 0 0 var(--stamp-ink, var(--ink));
-  --stamp-shadow-lg:    6px 6px 0 var(--stamp-ink, var(--ink));
+  --stamp-ink: transparent;
+  --stamp-shadow: none;
+  --stamp-shadow-hover: none;
+  --stamp-shadow-active: none;
+  --stamp-shadow-lg: none;
 
-  /* ── Glass tokens kept as no-op aliases for legacy class users ── */
-  --glass-bg:        var(--bg-surface);
-  --glass-bg-hover:  var(--bg-hover);
-  --glass-bg-active: var(--bg-deep);
-  --glass-border:        var(--ink);
-  --glass-border-hover:  var(--ink);
-  --glass-blur:      0px;
-  --glass-glow:        0 0 0 transparent;
-  --glass-glow-hover:  0 0 0 transparent;
-  --glass-glow-active: 0 0 0 transparent;
+  --glass-bg: var(--bg-elevated);
+  --glass-bg-hover: var(--bg-hover);
+  --glass-bg-active: var(--bg-surface);
+  --glass-border: var(--border-subtle);
+  --glass-border-hover: var(--border-default);
+  --glass-blur: 0px;
+  --glass-glow: none;
+  --glass-glow-hover: none;
+  --glass-glow-active: none;
 
-  /* ── Dialog / modal — hard stamp ── */
-  --dialog-shadow: 8px 8px 0 var(--ink);
+  --dialog-shadow: 0 18px 50px rgba(38, 35, 31, 0.08);
+  --body-font: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
 
-  /* ── Typography aliases (legacy) ── */
-  --body-font: "IBM Plex Mono", monospace;
+  --tag-rose-bg: #f3e4df;
+  --tag-rose-border: #e3d3ce;
+  --tag-rose-text: #76564d;
+  --tag-rose-x: #76564d;
+  --tag-rose-x-hover: #4e3933;
 
-  /* ── Tag palette — paper-friendly bordered chips ── */
-  --tag-rose-bg:        #fbe8eb;
-  --tag-rose-border:    #0a0a0a;
-  --tag-rose-text:      #8a2840;
-  --tag-rose-x:         #8a2840;
-  --tag-rose-x-hover:   #5e1a2c;
+  --tag-lavender-bg: #e9e5ed;
+  --tag-lavender-border: #d9d3df;
+  --tag-lavender-text: #5f586b;
+  --tag-lavender-x: #5f586b;
+  --tag-lavender-x-hover: #423d4d;
 
-  --tag-lavender-bg:    #ece6fa;
-  --tag-lavender-border:#0a0a0a;
-  --tag-lavender-text:  #4a2fb8;
-  --tag-lavender-x:     #4a2fb8;
-  --tag-lavender-x-hover:#2f1b80;
+  --tag-teal-bg: #e2ebe6;
+  --tag-teal-border: #d0ded7;
+  --tag-teal-text: #516960;
+  --tag-teal-x: #516960;
+  --tag-teal-x-hover: #384a43;
 
-  --tag-teal-bg:        #def1f1;
-  --tag-teal-border:    #0a0a0a;
-  --tag-teal-text:      #1f5f5f;
-  --tag-teal-x:         #1f5f5f;
-  --tag-teal-x-hover:   #103e3e;
+  --tag-mauve-bg: #ece5e8;
+  --tag-mauve-border: #ddd2d8;
+  --tag-mauve-text: #655661;
+  --tag-mauve-x: #655661;
+  --tag-mauve-x-hover: #473b43;
 
-  --tag-mauve-bg:       #f0e6f0;
-  --tag-mauve-border:   #0a0a0a;
-  --tag-mauve-text:     #5a2d5a;
-  --tag-mauve-x:        #5a2d5a;
-  --tag-mauve-x-hover:  #3a173a;
+  --tag-sky-bg: #e3e8ec;
+  --tag-sky-border: #d2dbe2;
+  --tag-sky-text: #56636d;
+  --tag-sky-x: #56636d;
+  --tag-sky-x-hover: #3b454c;
 
-  --tag-sky-bg:         #e0eef5;
-  --tag-sky-border:     #0a0a0a;
-  --tag-sky-text:       #1e567a;
-  --tag-sky-x:          #1e567a;
-  --tag-sky-x-hover:    #0e3a55;
-
-  --tag-peach-bg:       #fbe5d6;
-  --tag-peach-border:   #0a0a0a;
-  --tag-peach-text:     #8a4a18;
-  --tag-peach-x:        #8a4a18;
-  --tag-peach-x-hover:  #5e310f;
+  --tag-peach-bg: #f0e4dc;
+  --tag-peach-border: #e1d2c8;
+  --tag-peach-text: #715848;
+  --tag-peach-x: #715848;
+  --tag-peach-x-hover: #4d3b31;
 }

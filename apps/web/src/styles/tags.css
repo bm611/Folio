@@ -46,14 +46,14 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 3px 8px 3px 10px;
-  border-radius: 999px;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
+  padding: 3px 7px 3px 8px;
+  border-radius: 5px;
+  font-family: var(--body-font);
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: -0.005em;
+  letter-spacing: 0;
   text-transform: lowercase;
-  border: 1px solid #dadce0;
+  border: 1px solid var(--border-subtle);
   cursor: default;
   user-select: none;
   transition: opacity 120ms ease;
@@ -78,7 +78,7 @@
   justify-content: center;
   width: 14px;
   height: 14px;
-  border-radius: 50%;
+  border-radius: 4px;
   border: none;
   background: transparent;
   padding: 0;
@@ -172,7 +172,7 @@
   background: transparent;
   border-color: color-mix(in srgb, var(--text-muted) 30%, transparent);
   border-style: solid;
-  border-radius: 999px;
+  border-radius: 5px;
   color: var(--text-muted);
   opacity: 0.6;
   cursor: pointer;

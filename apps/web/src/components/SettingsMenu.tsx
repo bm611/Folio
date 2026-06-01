@@ -113,12 +113,9 @@ export default function SettingsMenu({
       <button
         type="button"
         onClick={() => (open ? closeMenu() : setOpen(true))}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-medium tracking-[-0.005em] hover:bg-[#f1f3f4] active:scale-[0.96]"
+        className="quiet-icon-btn"
         style={{
-          borderColor: '#e8eaed',
-          background: '#ffffff',
-          color: '#5f6368',
-          fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+          fontFamily: 'var(--body-font)',
           transition: 'transform 160ms cubic-bezier(0.23,1,0.32,1), background-color 150ms ease',
         }}
         title="Settings"
@@ -127,24 +124,23 @@ export default function SettingsMenu({
         aria-haspopup="menu"
       >
         <Icon icon={Settings02Icon} size={13} strokeWidth={1.8} />
-        <span>Settings</span>
       </button>
 
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
             ref={panelRef}
-            className="absolute right-0 top-11 z-50 w-60 overflow-hidden rounded-[14px]"
+            className="absolute right-0 top-11 z-50 w-60 overflow-hidden rounded-lg"
             initial="hidden"
             animate="visible"
             exit="exit"
             variants={POPOVER_VARIANTS}
             transition={POPOVER_TRANSITION}
             style={{
-              background: '#ffffff',
-              border: '1px solid #e8eaed',
-              boxShadow: '0 8px 24px -8px rgba(0,0,0,0.12), 0 2px 8px -2px rgba(0,0,0,0.06)',
-              fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 18px 48px rgba(38,35,31,0.10)',
+              fontFamily: 'var(--body-font)',
               transformOrigin: 'top right',
             }}
           >
@@ -172,7 +168,7 @@ export default function SettingsMenu({
                     <span className="settings-item-label">Wide Mode</span>
                     <span
                       className="ml-auto flex h-[18px] w-[32px] items-center rounded-full p-0.5 transition-colors duration-200"
-                      style={{ backgroundColor: wideMode ? '#1a73e8' : '#e8eaed' }}
+                      style={{ backgroundColor: wideMode ? 'var(--ink)' : 'var(--border-subtle)' }}
                     >
                       <motion.span
                         className="h-[14px] w-[14px] rounded-full bg-white"

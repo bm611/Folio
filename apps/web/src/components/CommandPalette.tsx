@@ -118,8 +118,8 @@ export default function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-start justify-center bg-[rgba(32,33,36,0.4)] px-0 md:px-4 pt-0 md:pt-[12vh]"
-      style={{ backdropFilter: 'blur(2px)' }}
+      className="fixed inset-0 z-50 flex items-end md:items-start justify-center px-0 md:px-4 pt-0 md:pt-[12vh]"
+      style={{ background: 'rgba(38, 35, 31, 0.22)', backdropFilter: 'blur(2px)' }}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           onClose()
@@ -127,19 +127,18 @@ export default function CommandPalette({
       }}
     >
       <div
-        className="w-full max-w-lg overflow-hidden rounded-[16px] max-md:rounded-b-none max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.18s_ease-out] md:animate-ctx-fade-in"
+        className="w-full max-w-lg overflow-hidden rounded-lg max-md:rounded-b-none max-md:max-h-[70vh] max-md:animate-[slideUpSheet_0.18s_ease-out] md:animate-ctx-fade-in"
         style={{
-          background: '#ffffff',
-          border: '1px solid #e8eaed',
-          boxShadow: '0 16px 40px -12px rgba(32,33,36,0.2), 0 4px 12px -4px rgba(32,33,36,0.08)',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: '0 18px 48px rgba(38,35,31,0.10)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           transformOrigin: 'top center',
-          fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+          fontFamily: 'var(--body-font)',
         }}
       >
-        {/* Search input */}
-        <div className="flex items-center gap-2.5 border-b px-4 py-3.5" style={{ borderColor: '#e8eaed' }}>
-          <Icon icon={Search01Icon} size={15} stroke={1.5} className="shrink-0" style={{ color: '#9aa0a6' }} />
+        <div className="flex items-center gap-2.5 border-b px-4 py-3.5" style={{ borderColor: 'var(--border-subtle)' }}>
+          <Icon icon={Search01Icon} size={15} stroke={1.5} className="shrink-0" style={{ color: 'var(--text-muted)' }} />
           <input
             ref={inputRef}
             type="text"
@@ -148,29 +147,28 @@ export default function CommandPalette({
             placeholder="Search commands…"
             className="w-full bg-transparent text-[13.5px] font-medium outline-none"
             style={{
-              color: '#202124',
-              fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+              color: 'var(--ink)',
+              fontFamily: 'var(--body-font)',
             }}
           />
           <kbd
             className="shrink-0 rounded-md px-2 py-0.5 text-[10px] font-medium tracking-wide"
             style={{
-              background: '#f8f9fa',
-              border: '1px solid #e8eaed',
-              color: '#5f6368',
-              fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-mono)',
             }}
           >
             esc
           </kbd>
         </div>
 
-        {/* Results */}
         <div className="max-h-[50vh] overflow-y-auto py-1.5">
           {items.length === 0 ? (
             <div
               className="px-4 py-8 text-center text-[13px]"
-              style={{ color: '#9aa0a6', fontFamily: '"Poppins", system-ui, -apple-system, sans-serif' }}
+              style={{ color: 'var(--text-muted)', fontFamily: 'var(--body-font)' }}
             >
               Nothing matched — try a different search.
             </div>
@@ -181,8 +179,8 @@ export default function CommandPalette({
                   return (
                     <div
                       key={entry.id}
-                      className="px-4 pt-3 pb-1 text-[10.5px] font-semibold uppercase tracking-[0.08em]"
-                      style={{ color: '#9aa0a6', fontFamily: '"Poppins", system-ui, -apple-system, sans-serif' }}
+                      className="px-4 pt-3 pb-1 text-[10.5px] font-medium"
+                      style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
                     >
                       {entry.label}
                     </div>
@@ -198,18 +196,18 @@ export default function CommandPalette({
                     type="button"
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => onSelectItem(item)}
-                    className="flex w-full items-center justify-between gap-3 px-3 mx-1.5 py-2 text-left rounded-[8px]"
+                    className="flex w-full items-center justify-between gap-3 px-3 mx-1.5 py-2 text-left rounded-md"
                     style={{
                       width: 'calc(100% - 12px)',
-                      background: isActive ? '#f1f3f4' : 'transparent',
-                      color: '#202124',
-                      fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+                      background: isActive ? 'var(--bg-hover)' : 'transparent',
+                      color: 'var(--ink)',
+                      fontFamily: 'var(--body-font)',
                       transition: 'background-color 100ms ease',
                     }}
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
                       {item.icon ? <span className="shrink-0 opacity-60">{item.icon}</span> : null}
-                      <span className="truncate text-[13px] font-medium tracking-[-0.003em]">
+                      <span className="truncate text-[13px] font-medium">
                         {item.title}
                       </span>
                     </div>
@@ -217,10 +215,10 @@ export default function CommandPalette({
                       <span
                         className="shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium tracking-[0.03em]"
                         style={{
-                          background: '#f8f9fa',
-                          border: '1px solid #e8eaed',
-                          color: '#5f6368',
-                          fontFamily: '"Poppins", system-ui, -apple-system, sans-serif',
+                          background: 'var(--bg-surface)',
+                          border: '1px solid var(--border-subtle)',
+                          color: 'var(--text-muted)',
+                          fontFamily: 'var(--font-mono)',
                         }}
                       >
                         {item.hint}

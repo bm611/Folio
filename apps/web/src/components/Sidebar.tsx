@@ -629,7 +629,8 @@ export default function Sidebar({
     return countUserNotes(tree)
   }, [tree])
 
-  const secondaryNavVisible = userNoteCount > 0 || showSecondaryNav || activeView === 'chat'
+  void userNoteCount
+  const secondaryNavVisible = showSecondaryNav || activeView === 'chat'
 
   
   const searchExpanded = searchFocused || searchQuery.length > 0
@@ -694,7 +695,7 @@ export default function Sidebar({
           {/* Header — app name + collapse icon */}
           <div className="sb-header-wrapper">
             <span className="flex items-center gap-1.5">
-              <span className="sb-app-name">Folio</span>
+              <span className="sb-app-name">Aura</span>
             </span>
             <button
               type="button"
@@ -807,7 +808,7 @@ export default function Sidebar({
                 <span className="sb-nav-icon">
                   <Icon icon={MoreHorizontalIcon} size={19} stroke={1.5} />
                 </span>
-                <span className="sb-nav-label">More tools</span>
+                <span className="sb-nav-label">More</span>
               </button>
             )}
           </div>
@@ -815,7 +816,7 @@ export default function Sidebar({
           {/* Tree list */}
           <div className="sb-tree">
             <div className="sb-tree-actions">
-              <span className="text-[11px] font-semibold text-(--text-secondary) select-none tracking-[0.06em] uppercase" style={{ paddingLeft: 4, fontFamily: '"Poppins", system-ui, sans-serif', letterSpacing: '0.08em', color: '#9aa0a6' }}>Notes</span>
+              <span className="text-[11px] font-medium text-(--text-secondary) select-none" style={{ paddingLeft: 4, fontFamily: '"Jost", "Avenir Next", sans-serif', letterSpacing: 0, color: 'var(--text-muted)' }}>Notes</span>
               {!searchQuery.trim() && (
                 <div className="flex items-center gap-0">
                   <button

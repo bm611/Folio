@@ -1,6 +1,90 @@
 /* ═══════════════════════════════════════════════
-   Folio Editor — TipTap / ProseMirror
+   Quiet editor
    ═══════════════════════════════════════════════ */
+
+.quiet-editor-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.quiet-editor-page {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: clamp(48px, 8vw, 92px) 24px 120px;
+}
+
+.quiet-editor-page--wide {
+  width: min(100%, 1120px);
+}
+
+.quiet-note-details {
+  margin: 10px 0 42px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.quiet-note-details summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text-muted);
+  font-family: "Liga SFMono Nerd Font", "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.quiet-note-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.quiet-note-details summary::after {
+  content: "+";
+  margin-left: 7px;
+  color: color-mix(in srgb, var(--text-muted) 70%, transparent);
+}
+
+.quiet-note-details[open] summary::after {
+  content: "-";
+}
+
+.quiet-note-details-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.quiet-editor-loading {
+  display: flex;
+  width: 100%;
+  min-height: 40vh;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 12px;
+}
+
+.quiet-mobile-status {
+  position: fixed;
+  right: 12px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 64px);
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg-elevated) 94%, transparent);
+  padding: 7px 9px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  box-shadow: 0 8px 28px rgba(38, 35, 31, 0.06);
+}
 
 /* ── Note title input ── */
 
@@ -103,12 +187,12 @@
   outline: none;
   resize: none;
   overflow: hidden;
-  font-family: "Canela", "Canela Deck", "Cormorant Garamond", "Fraunces", Georgia, ui-serif, serif;
+  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
   font-optical-sizing: auto;
-  font-size: clamp(2.4rem, 5.6vw, 4rem);
-  font-weight: 500;
-  line-height: 1.02;
-  letter-spacing: -0.025em;
+  font-size: clamp(2.25rem, 5vw, 4.5rem);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: 0;
   color: var(--text-primary);
   padding: 0;
   text-wrap: balance;
@@ -124,7 +208,7 @@
 
 .banner-title-input::placeholder {
   color: var(--text-muted);
-  opacity: 0.35;
+  opacity: 0.45;
 }
 
 .banner-title-input:focus {
@@ -222,7 +306,7 @@
 .folio-editor {
   position: relative;
   width: 100%;
-  max-width: 60rem;
+  max-width: 100%;
 }
 
 .folio-editor.folio-editor--wide {
@@ -233,11 +317,11 @@
   min-height: 45vh;
   outline: none;
   color: var(--text-primary);
-  font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-feature-settings: "kern" 1, "liga" 0, "calt" 1;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  letter-spacing: -0.01em;
+  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  font-feature-settings: "kern" 1;
+  font-size: 1.06rem;
+  line-height: 1.78;
+  letter-spacing: 0;
 }
 
 @media (max-width: 767px) {
@@ -257,39 +341,39 @@
 .folio-editor .ProseMirror h1,
 .folio-editor .ProseMirror h2,
 .folio-editor .ProseMirror h3 {
-  font-family: "Canela", "Canela Deck", "Cormorant Garamond", "Fraunces", Georgia, ui-serif, serif;
+  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
   font-optical-sizing: auto;
   font-weight: 500;
-  letter-spacing: -0.018em;
+  letter-spacing: 0;
   color: var(--text-primary);
   text-wrap: balance;
 }
 
 .folio-editor .ProseMirror h1 {
   margin: 2.6rem 0 0.5rem;
-  font-size: clamp(2rem, 1.7rem + 1.2vw, 2.65rem);
+  font-size: clamp(1.9rem, 1.6rem + 1vw, 2.45rem);
   font-weight: 500;
   line-height: 1.05;
-  letter-spacing: -0.024em;
+  letter-spacing: 0;
   color: var(--color-h1);
 }
 
 .folio-editor .ProseMirror h2 {
   margin: 2.1rem 0 0.35rem;
-  font-size: clamp(1.5rem, 1.3rem + 0.6vw, 1.95rem);
+  font-size: clamp(1.42rem, 1.24rem + 0.55vw, 1.75rem);
   font-weight: 500;
   line-height: 1.15;
-  letter-spacing: -0.018em;
+  letter-spacing: 0;
   color: var(--color-h2);
 }
 
 .folio-editor .ProseMirror h3 {
   margin: 1.7rem 0 0.25rem;
   font-size: 1.28rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25;
-  letter-spacing: -0.012em;
-  font-style: italic;
+  letter-spacing: 0;
+  font-style: normal;
   color: var(--color-h3);
 }
 
@@ -604,7 +688,7 @@
 }
 
 .folio-editor .ProseMirror blockquote {
-  border-left: 3px solid color-mix(in srgb, var(--accent) 45%, var(--border-default));
+  border-left: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border-default));
   padding-left: 1rem;
   color: var(--text-secondary);
   font-style: italic;

@@ -377,6 +377,20 @@ function buildNodeMap(tree: TreeNode[]): Map<string, TreeNode> {
   return map
 }
 
+function getNodeFromMap(nodeMap: Map<string, TreeNode>, id: string): TreeNode | null {
+  return nodeMap.get(id) ?? null
+}
+
+function getParentIdFromMap(nodeMap: Map<string, TreeNode>, nodeId: string): string | null {
+  for (const [id, node] of nodeMap) {
+    if (node.type === 'folder' && node.children?.some((child) => child.id === nodeId)) {
+      return id
+    }
+  }
+
+  return null
+}
+
 // ─── Root component ───────────────────────────────────────────────────────────
 
 export default function App() {
@@ -472,10 +486,10 @@ function AppInner() {
   const [sidebarSearch, setSidebarSearch] = useState('')
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [commandPaletteQuery, setCommandPaletteQuery] = useState('')
-  const [theme, setTheme] = useState('brutal')
-  const [fontId, setFontId] = useState('plex-mono')
+  const [theme, setTheme] = useState('minimal')
+  const [fontId, setFontId] = useState('quiet-sans')
   const [wideMode, setWideMode] = useState(() => localStorage.getItem('canvas-wide-mode') === 'true')
-  const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'violet')
+  const [accentId, setAccentId] = useState(() => localStorage.getItem('canvas-accent') || 'graphite')
   const [editorReady, setEditorReady] = useState(false)
   const [deletedNote, setDeletedNote] = useState<DeletedNoteState | null>(null)
   const [showAuthPage, setShowAuthPage] = useState(false)
@@ -605,7 +619,7 @@ function AppInner() {
     }
 
     try {
-      const parentId = getPersistedParentId(note, fastGetParentId(note.id))
+      const parentId = getPersistedParentId(note, getParentIdFromMap(nodeMapRef.current, note.id))
       await upsertNote({ ...note, parentId } as unknown as Parameters<typeof upsertNote>[0], user.id)
       const syncedAt = new Date().toISOString()
       setSyncError(null)
@@ -675,19 +689,6 @@ function AppInner() {
       window.removeEventListener('online', handleConnectivityChange)
       window.removeEventListener('offline', handleConnectivityChange)
     }
-  }, [])
-
-  const fastFindNode = useCallback((id: string): TreeNode | null => {
-    return nodeMapRef.current.get(id) ?? null
-  }, [])
-
-  const fastGetParentId = useCallback((nodeId: string): string | null => {
-    for (const [id, node] of nodeMapRef.current) {
-      if (node.type === 'folder' && node.children?.some((c) => c.id === nodeId)) {
-        return id
-      }
-    }
-    return null
   }, [])
 
   const flushPendingDeletes = useCallback(async (idsOverride?: string[]): Promise<boolean> => {
@@ -955,13 +956,12 @@ function AppInner() {
   }, [tree, user])
 
   useEffect(() => {
-    // Brutalist single-theme look — strip any legacy data-theme attribute.
+    // Single minimal light theme — strip any legacy data-theme attribute.
     document.documentElement.removeAttribute('data-theme')
   }, [theme])
 
   useEffect(() => {
-    // Body font is locked to IBM Plex Mono in the brutalist look.
-    document.documentElement.style.removeProperty('--body-font')
+    document.documentElement.style.setProperty('--body-font', '"Jost", "Avenir Next", "Helvetica Neue", sans-serif')
   }, [fontId])
 
   useEffect(() => {
@@ -1057,16 +1057,16 @@ function AppInner() {
     setCommandPaletteQuery('')
   }, [])
 
-  const handleWelcomeModalClose = useCallback(() => {
+  const handleWelcomeModalClose = () => {
     setShowWelcomeModal(false)
     if (user) {
       markOnboardingSeen(user.id)
     }
-  }, [user])
+  }
 
-  const handleGetStarted = useCallback(() => {
+  const handleGetStarted = () => {
     handleWelcomeModalClose()
-  }, [handleWelcomeModalClose])
+  }
 
   const createFolder = useCallback((name: string, parentId: string | null = null) => {
     const now = new Date().toISOString()
@@ -1095,7 +1095,7 @@ function AppInner() {
 
   const handleRenameNode = useCallback((id: string, name: string) => {
     const now = new Date().toISOString()
-    const existingNode = fastFindNode(id)
+    const existingNode = getNodeFromMap(nodeMapRef.current, id)
 
     if (!existingNode) {
       return
@@ -1107,7 +1107,7 @@ function AppInner() {
       updatedAt: now,
       localCheckpointAt: now,
     }
-    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: fastGetParentId(id) } as TreeNode & { parentId: string | null })
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: getParentIdFromMap(nodeMapRef.current, id) } as TreeNode & { parentId: string | null })
 
     setTree((previousTree) => renameNode(previousTree, id, name))
 
@@ -1140,7 +1140,7 @@ function AppInner() {
 
   const handleMoveNode = useCallback(
     (id: string, newParentId: string | null) => {
-      const existingNode = fastFindNode(id)
+      const existingNode = getNodeFromMap(nodeMapRef.current, id)
       if (!existingNode) return
 
       setTree((previousTree) => moveNode(previousTree, id, newParentId))
@@ -1467,12 +1467,12 @@ function AppInner() {
     if (!isOnline) {
       const message = 'Offline — changes are saved and will retry when online.'
       setSyncError(message)
-      const currentNode = fastFindNode(id)
+      const currentNode = getNodeFromMap(nodeMapRef.current, id)
       if (currentNode) {
         queuePendingUpsert({
           ...currentNode,
           ...updatedValues,
-          parentId: fastGetParentId(id),
+          parentId: getParentIdFromMap(nodeMapRef.current, id),
         } as TreeNode & { parentId: string | null })
       }
       setFailedSyncNoteIds((currentIds) => (
@@ -1483,12 +1483,12 @@ function AppInner() {
     }
 
     // Debounced cloud save (1.5s after last keystroke)
-    const currentNode = fastFindNode(id)
+    const currentNode = getNodeFromMap(nodeMapRef.current, id)
     if (currentNode) {
       queuePendingUpsert({
         ...currentNode,
         ...updatedValues,
-        parentId: fastGetParentId(id),
+        parentId: getParentIdFromMap(nodeMapRef.current, id),
       } as TreeNode & { parentId: string | null })
     }
     setSyncing(true)
@@ -1503,11 +1503,11 @@ function AppInner() {
 
   const handleChangeIcon = useCallback((id: string, icon: string | null) => {
     const now = new Date().toISOString()
-    const existingNode = fastFindNode(id)
+    const existingNode = getNodeFromMap(nodeMapRef.current, id)
     if (!existingNode) return
 
     const updates = { icon, updatedAt: now, localCheckpointAt: now }
-    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: fastGetParentId(id) } as TreeNode & { parentId: string | null })
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: getParentIdFromMap(nodeMapRef.current, id) } as TreeNode & { parentId: string | null })
 
     setTree((previousTree) => updateFileNode(previousTree, id, updates))
 
@@ -1531,7 +1531,7 @@ function AppInner() {
 
   const handleTogglePin = useCallback((id: string) => {
     const now = new Date().toISOString()
-    const existingNode = fastFindNode(id)
+    const existingNode = getNodeFromMap(nodeMapRef.current, id)
     if (!existingNode || existingNode.type !== 'file') return
 
     const fileNode = existingNode as NoteFile
@@ -1540,7 +1540,7 @@ function AppInner() {
     const tags = wasPinned ? currentTags.filter((t: string) => t !== 'pinned') : [...currentTags, 'pinned']
 
     const updates = { tags, updatedAt: now, localCheckpointAt: now }
-    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: fastGetParentId(id) } as TreeNode & { parentId: string | null })
+    const updatedNode = normalizeNote({ ...existingNode, ...updates, parentId: getParentIdFromMap(nodeMapRef.current, id) } as TreeNode & { parentId: string | null })
 
     setTree((previousTree) => updateFileNode(previousTree, id, updates))
 
@@ -1816,14 +1816,14 @@ function AppInner() {
 
   const allPaletteItems: PaletteItem[] = [...actionItems, ...exportItems, ...fontItems, ...noteItems, ...editorItems]
 
-  const handleStart = useCallback(() => {
+  const handleStart = () => {
     // Enter demo mode with the sample note — nothing is persisted
     setTree(makeSampleTree())
     setDemoMode(true)
     demoModeRef.current = true
     // Show welcome modal for demo mode testing
     setShowWelcomeModal(true)
-  }, [])
+  }
 
   if (sharedNotePage.token) {
     if (sharedNotePage.note) {

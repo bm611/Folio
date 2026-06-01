@@ -27,42 +27,33 @@
   font-display: swap;
 }
 
-/* ═══════════════════════════════════════════════
-   Tailwind v4 Theme — Brutalist tokens
-   ═══════════════════════════════════════════════ */
-
 @theme {
-  /* ── Typography ── */
-  --font-script:  "Indie Flower", cursive;
-  --font-display: "Kalam", cursive;
-  --font-logo:    "Indie Flower", cursive;
-  --font-body:    "IBM Plex Mono", monospace;
-  --font-mono:    "IBM Plex Mono", monospace;
-  --font-prose:   "IBM Plex Sans", sans-serif;
+  --font-display: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  --font-logo: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  --font-body: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  --font-mono: "Liga SFMono Nerd Font", "IBM Plex Mono", ui-monospace, monospace;
+  --font-prose: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  --font-script: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
 
-  /* ── Radius — sharp corners, no rounding ── */
-  --radius-xs: 0;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-2xl: 0;
+  --radius-xs: 3px;
+  --radius-sm: 5px;
+  --radius-md: 7px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
+  --radius-2xl: 8px;
 
-  /* ── Easing ── */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* ── Durations — snappy ── */
-  --duration-fast: 80ms;
-  --duration-normal: 120ms;
-  --duration-slow: 200ms;
+  --duration-fast: 100ms;
+  --duration-normal: 160ms;
+  --duration-slow: 240ms;
 
-  /* ── Animations (kept slim) ── */
-  --animate-fade-in-up: fade-in-up 0.4s var(--ease-out-quart) forwards;
-  --animate-fade-in-up-d1: fade-in-up 0.4s var(--ease-out-quart) 80ms forwards;
-  --animate-fade-in-up-d2: fade-in-up 0.4s var(--ease-out-quart) 160ms forwards;
-  --animate-slide-down: slide-down 0.12s var(--ease-out-quart);
-  --animate-slide-up-menu: slide-up-menu 0.15s var(--ease-out-quart);
+  --animate-fade-in-up: fade-in-up 0.32s var(--ease-out-quart) forwards;
+  --animate-fade-in-up-d1: fade-in-up 0.32s var(--ease-out-quart) 80ms forwards;
+  --animate-fade-in-up-d2: fade-in-up 0.32s var(--ease-out-quart) 160ms forwards;
+  --animate-slide-down: slide-down 0.14s var(--ease-out-quart);
+  --animate-slide-up-menu: slide-up-menu 0.16s var(--ease-out-quart);
   --animate-slide-up-sheet: slide-up-sheet 0.18s ease-out;
   --animate-tag-pop: tag-pop-in 0.12s var(--ease-out-quart) both;
   --animate-action-bar-in: action-bar-in 0.18s var(--ease-out-quart);
@@ -71,53 +62,53 @@
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
 
   @keyframes shimmer {
-    0%   { background-position: 200% 0; }
+    0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
 
   @keyframes skeleton-in {
     from { opacity: 0; }
-    to   { opacity: 1; }
+    to { opacity: 1; }
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slide-down {
     from { opacity: 0; transform: translateY(-2px); }
-    to   { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slide-up-menu {
     from { transform: translateY(100%); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(0); opacity: 1; }
   }
 
   @keyframes slide-up-sheet {
     from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
+    to { transform: translateY(0); }
   }
 
   @keyframes tag-pop-in {
     from { opacity: 0; }
-    to   { opacity: 1; }
+    to { opacity: 1; }
   }
 
   @keyframes action-bar-in {
     from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
   }
 
   @keyframes ctx-fade-in {
     from { opacity: 0; transform: translateY(-2px); }
-    to   { opacity: 1; transform: translateY(0); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes spin {
     from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    to { transform: rotate(360deg); }
   }
 
   @keyframes blink {

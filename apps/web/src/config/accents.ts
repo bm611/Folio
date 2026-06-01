@@ -1,8 +1,3 @@
-// ─── Brutalist Accent Palette ────────────────────────────────────────────────
-// Single light-mode brutalist look. Each swatch overrides --accent on the
-// document root. Both dark/light fields kept for API compatibility but
-// resolve to the same value.
-
 interface AccentThemeValues {
   accent: string
   accentHover: string
@@ -19,56 +14,50 @@ export interface AccentColor {
 const swatch = (accent: string, accentHover: string): AccentColor['light'] => ({
   accent,
   accentHover,
-  colorH1: '#0a0a0a',
+  colorH1: '#26231f',
 })
 
 export const ACCENT_COLORS: AccentColor[] = [
   {
-    id: 'violet',
-    label: 'Violet',
-    dark:  swatch('#5d3fd3', '#4a2fb8'),
-    light: swatch('#5d3fd3', '#4a2fb8'),
+    id: 'graphite',
+    label: 'Graphite',
+    dark: swatch('#5f574d', '#3d3933'),
+    light: swatch('#5f574d', '#3d3933'),
   },
   {
     id: 'ink',
     label: 'Ink',
-    dark:  swatch('#0a0a0a', '#2a2a2a'),
-    light: swatch('#0a0a0a', '#2a2a2a'),
-  },
-  {
-    id: 'vermilion',
-    label: 'Vermilion',
-    dark:  swatch('#c43d3d', '#a02a2a'),
-    light: swatch('#c43d3d', '#a02a2a'),
-  },
-  {
-    id: 'ochre',
-    label: 'Ochre',
-    dark:  swatch('#b8821a', '#8e6510'),
-    light: swatch('#b8821a', '#8e6510'),
+    dark: swatch('#26231f', '#171512'),
+    light: swatch('#26231f', '#171512'),
   },
   {
     id: 'sage',
     label: 'Sage',
-    dark:  swatch('#3a7a52', '#285a3c'),
-    light: swatch('#3a7a52', '#285a3c'),
+    dark: swatch('#66745f', '#485142'),
+    light: swatch('#66745f', '#485142'),
   },
   {
-    id: 'rose',
-    label: 'Rose',
-    dark:  swatch('#c4566a', '#a03e52'),
-    light: swatch('#c4566a', '#a03e52'),
+    id: 'clay',
+    label: 'Clay',
+    dark: swatch('#87685b', '#604940'),
+    light: swatch('#87685b', '#604940'),
   },
   {
-    id: 'teal',
-    label: 'Teal',
-    dark:  swatch('#1f5f5f', '#0e4040'),
-    light: swatch('#1f5f5f', '#0e4040'),
+    id: 'slate',
+    label: 'Slate',
+    dark: swatch('#65707a', '#434b52'),
+    light: swatch('#65707a', '#434b52'),
   },
   {
-    id: 'electric',
-    label: 'Electric',
-    dark:  swatch('#1e6dff', '#0050d8'),
-    light: swatch('#1e6dff', '#0050d8'),
+    id: 'ochre',
+    label: 'Ochre',
+    dark: swatch('#8c744d', '#5f4f35'),
+    light: swatch('#8c744d', '#5f4f35'),
+  },
+  {
+    id: 'violet',
+    label: 'Violet',
+    dark: swatch('#70677f', '#50495e'),
+    light: swatch('#70677f', '#50495e'),
   },
 ]
