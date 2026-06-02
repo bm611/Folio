@@ -39,6 +39,8 @@
   --font-google-sans: "Google Sans", "Google Sans Text", "Product Sans", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-note-title: "Merriweather", Georgia, "Times New Roman", serif;
   --font-note-body: var(--font-google-sans);
+  /* Editorial display face for Home + Landing (Slate & Clay theme) */
+  --font-folio-display: "Fraunces", "Merriweather", Georgia, "Times New Roman", serif;
 
   --radius-xs: 3px;
   --radius-sm: 5px;

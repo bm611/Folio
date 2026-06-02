@@ -1,3 +1,8 @@
+/* Hallmark · macrostructure: Marquee + three-beat (landing), refined index (home)
+ * theme: custom "Slate & Clay" · paper oklch(~96% .004 95) cool-oat · accent clay ~oklch(56% .12 35)
+ * display: Fraunces (var(--font-folio-display)) · body: Google Sans · tone: editorial-calm
+ * pre-emit critique: P5 H5 E4 S4 R5 V4
+ */
 .quiet-home,
 .quiet-editor {
   background: var(--bg-primary);
@@ -195,11 +200,11 @@
 .quiet-home-title-row h1 {
   margin: 0;
   color: var(--ink);
-  font-family: var(--font-note-title);
-  font-size: clamp(2.4rem, 4.6vw, 4.2rem);
-  font-weight: 400;
-  letter-spacing: -0.022em;
-  line-height: 0.98;
+  font-family: var(--font-folio-display);
+  font-size: clamp(2.6rem, 5vw, 4.4rem);
+  font-weight: 380;
+  letter-spacing: -0.018em;
+  line-height: 0.96;
 }
 
 .quiet-note-section {
@@ -390,9 +395,10 @@
 .quiet-empty h2 {
   margin: 0;
   color: var(--ink);
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0;
+  font-family: var(--font-folio-display);
+  font-size: 30px;
+  font-weight: 380;
+  letter-spacing: -0.01em;
 }
 
 .quiet-empty p {
@@ -400,110 +406,171 @@
   font-size: 14px;
 }
 
-.quiet-entry {
-  display: grid;
+/* ── Landing page · editorial "explain then start" ───────────────── */
+.folio-landing {
   min-height: 100dvh;
-  place-items: center;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--body-font);
-  padding: 24px;
+  font-family: var(--font-google-sans);
+  overflow-x: clip;
 }
 
-.quiet-entry-shell {
-  display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(0, 560px);
-  width: min(100%, 780px);
-  min-height: min(620px, calc(100dvh - 48px));
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: var(--bg-elevated);
-  overflow: hidden;
-}
-
-.quiet-entry-sidebar {
+.folio-landing-shell {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  border-right: 1px solid var(--border-subtle);
-  background: var(--bg-surface);
-  padding: 18px 10px;
+  width: min(100%, 1080px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 56px) clamp(22px, 6vw, 80px) clamp(28px, 4vw, 48px);
 }
 
-.quiet-entry-brand {
-  margin: 0 8px 24px;
-  color: var(--ink);
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.quiet-entry-side-row {
+.folio-landing-masthead {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  border-radius: 6px;
-  color: var(--text-muted);
-  font-size: 13px;
-  padding: 0 8px;
+  align-items: baseline;
+  gap: 14px;
 }
 
-.quiet-entry-side-row span {
-  width: 13px;
-  height: 13px;
-  border: 1px solid var(--border-default);
-  border-radius: 4px;
-  opacity: 0.45;
-}
-
-.quiet-entry-side-row.is-active {
-  background: var(--accent-soft);
+.folio-landing-wordmark {
   color: var(--ink);
+  font-family: var(--font-folio-display);
+  font-size: 21px;
+  font-weight: 420;
+  letter-spacing: -0.01em;
 }
 
-.quiet-entry-page {
-  display: flex;
-  flex-direction: column;
-  padding: clamp(28px, 7vw, 64px);
-}
-
-.quiet-entry-top {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.folio-landing-tag {
   color: var(--text-muted);
   font-family: var(--font-mono);
   font-size: 10.5px;
   font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.quiet-entry-copy {
+/* Hero ─ the headline sits in optical centre of the page */
+.folio-landing-hero {
   margin-top: auto;
-  margin-bottom: auto;
+  padding: clamp(40px, 8vw, 88px) 0 clamp(36px, 6vw, 64px);
+  animation: fade-in-up 0.5s var(--ease-out-quart) both;
 }
 
-.quiet-entry-copy h1 {
-  max-width: 9ch;
+.folio-landing-eyebrow {
+  margin: 0 0 18px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.folio-landing-headline {
+  max-width: 16ch;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(3rem, 9vw, 6rem);
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 0.92;
+  font-family: var(--font-folio-display);
+  font-size: clamp(2.9rem, 8.5vw, 6.2rem);
+  font-weight: 360;
+  letter-spacing: -0.025em;
+  line-height: 0.96;
+  overflow-wrap: anywhere;
 }
 
-.quiet-entry-copy p:not(.quiet-label) {
-  max-width: 26rem;
-  margin: 22px 0 0;
+.folio-landing-headline em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.folio-landing-lede {
+  max-width: 40ch;
+  margin: clamp(22px, 3vw, 30px) 0 0;
   color: var(--text-secondary);
-  font-size: 15px;
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.6;
+}
+
+.folio-landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: clamp(28px, 4vw, 38px);
+}
+
+.folio-landing-cta {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+.folio-landing-note {
+  margin: 16px 0 0;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+/* Three honest beats ─ asymmetric: first column wider */
+.folio-landing-beats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(20px, 3vw, 40px);
+  margin-top: auto;
+  padding-top: clamp(36px, 5vw, 56px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.folio-landing-beat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.folio-landing-beat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  background: var(--bg-elevated);
+  color: var(--accent);
+}
+
+.folio-landing-beat-title {
+  margin: 4px 0 0;
+  color: var(--ink);
+  font-family: var(--font-folio-display);
+  font-size: 19px;
+  font-weight: 440;
+  letter-spacing: -0.01em;
+}
+
+.folio-landing-beat-body {
+  margin: 0;
+  max-width: 32ch;
+  color: var(--text-secondary);
+  font-size: 13.5px;
   line-height: 1.55;
 }
 
-.quiet-entry-actions {
+.folio-landing-footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 9px;
+  margin-top: clamp(32px, 5vw, 52px);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+}
+
+.folio-landing-footer-dot {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folio-landing-hero {
+    animation-duration: 0.001ms;
+  }
 }
 
 @media (max-width: 767px) {
@@ -513,45 +580,81 @@
     padding: 7px 10px;
   }
 
+  /* De-crowd the bars at 320px — tighter gaps, nothing overflows */
+  .quiet-topbar-right,
+  .quiet-editor-actions {
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .quiet-editor-nav {
+    gap: 2px;
+  }
+
   .quiet-profile-name,
   .quiet-sync {
     display: none;
   }
 
   .quiet-home-main {
-    padding: 40px 18px 96px;
+    padding: 30px 18px calc(104px + env(safe-area-inset-bottom, 0px));
   }
 
+  .quiet-home-intro {
+    margin-bottom: 26px;
+  }
+
+  /* Editorial masthead — eyebrow, big title, then a full-width action row */
   .quiet-home-title-row {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
+    gap: 16px;
   }
 
+  .quiet-home-title-row h1 {
+    font-size: clamp(2.7rem, 13vw, 3.4rem);
+    letter-spacing: -0.028em;
+  }
+
+  /* Actions fill the width instead of scrolling off-screen */
   .quiet-home-actions {
     width: 100%;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
+    margin-bottom: 0;
+    gap: 8px;
   }
 
-  .quiet-home-actions::-webkit-scrollbar {
-    display: none;
+  .quiet-home-actions > .quiet-action {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 0 12px;
   }
 
-  .quiet-home-actions > * {
-    flex-shrink: 0;
+  /* Primary "New" leads — give it visual weight at the row's end */
+  .quiet-home-actions > .quiet-action--primary {
+    flex: 1.3 1 0;
+  }
+
+  .quiet-home-actions > .quiet-icon-btn {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
   }
 
   .quiet-note-link {
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: 6px 12px;
-    min-height: 64px;
-    padding: 10px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 4px 12px;
+    min-height: 60px;
+    padding: 11px 10px;
   }
 
   .quiet-note-icon {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .quiet-note-title {
+    font-size: 15.5px;
   }
 
   .quiet-note-meta {
@@ -559,27 +662,29 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
+    font-size: 10px;
+    opacity: 0.85;
   }
 
-  .quiet-entry {
-    padding: 12px;
+  .folio-landing-shell {
+    padding: 22px 20px 28px;
   }
 
-  .quiet-entry-shell {
-    display: flex;
-    min-height: calc(100dvh - 24px);
+  .folio-landing-hero {
+    padding: 36px 0 32px;
   }
 
-  .quiet-entry-sidebar {
-    display: none;
+  .folio-landing-beats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
   }
 
-  .quiet-entry-page {
-    width: 100%;
-    padding: 24px;
+  .folio-landing-beat-body {
+    max-width: none;
   }
 
-  .quiet-entry-copy h1 {
-    max-width: 8ch;
+  .folio-landing-cta {
+    flex: 1 1 auto;
+    justify-content: center;
   }
 }

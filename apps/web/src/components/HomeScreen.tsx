@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { AnimatePresence } from 'framer-motion'
 import {
@@ -13,6 +13,7 @@ import {
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
+import { FOLIO_SCOPE } from './folioScope'
 import SettingsMenu from './SettingsMenu'
 import ProfilePanel from './ProfilePanel'
 import { useAuth } from '../contexts/AuthContext'
@@ -42,33 +43,6 @@ interface HomeScreenProps {
   onSync: () => void
   fontId: string
   onFontChange: (id: string) => void
-}
-
-const MINIMAL_SCOPE: CSSProperties = {
-  ['--bg-primary' as string]: '#fbfaf7',
-  ['--bg-surface' as string]: '#f3f0eb',
-  ['--bg-elevated' as string]: '#fffefa',
-  ['--bg-hover' as string]: '#efebe4',
-  ['--bg-deep' as string]: '#e8e2d8',
-  ['--ink' as string]: '#26231f',
-  ['--ink-soft' as string]: '#514d46',
-  ['--text-primary' as string]: '#26231f',
-  ['--text-secondary' as string]: '#514d46',
-  ['--text-muted' as string]: '#8a8377',
-  ['--text-inverse' as string]: '#fbfaf7',
-  ['--border-subtle' as string]: '#e8e2d8',
-  ['--border-default' as string]: '#d8d0c3',
-  ['--accent' as string]: '#5f574d',
-  ['--accent-hover' as string]: '#3d3933',
-  ['--accent-text' as string]: '#fbfaf7',
-  ['--accent-soft' as string]: '#ece7df',
-  ['--success' as string]: '#5f7157',
-  ['--warning' as string]: '#9b7b45',
-  ['--danger' as string]: '#9c5a50',
-  background: '#fbfaf7',
-  color: '#26231f',
-  fontFamily:
-    '"Google Sans", "Google Sans Text", "Product Sans", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif',
 }
 
 const MONO_FONT = '"Liga SFMono Nerd Font", "IBM Plex Mono", ui-monospace, monospace'
@@ -223,7 +197,7 @@ export default function HomeScreen({
   const syncLabel = getSyncLabel(syncing, syncStatus)
 
   return (
-    <div className="quiet-home flex flex-1 min-w-0 flex-col overflow-hidden" style={MINIMAL_SCOPE}>
+    <div className="quiet-home flex flex-1 min-w-0 flex-col overflow-hidden" style={FOLIO_SCOPE}>
       <header className="quiet-topbar">
         {sidebarCollapsed ? (
           <button

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Editor } from '@tiptap/react'
@@ -12,6 +12,7 @@ import {
 } from '@hugeicons/core-free-icons'
 
 import Icon from './Icon'
+import { FOLIO_SCOPE } from './folioScope'
 import SettingsMenu from './SettingsMenu'
 import ProfilePanel from './ProfilePanel'
 import TagInput from './TagInput'
@@ -33,32 +34,6 @@ const LiveMarkdownEditor = lazy(() =>
     return import('./LiveMarkdownEditor')
   }),
 )
-
-const EDITOR_SCOPE: CSSProperties = {
-  ['--bg-primary' as string]: '#fbfaf7',
-  ['--bg-surface' as string]: '#f3f0eb',
-  ['--bg-elevated' as string]: '#fffefa',
-  ['--bg-hover' as string]: '#efebe4',
-  ['--bg-deep' as string]: '#e8e2d8',
-  ['--ink' as string]: '#26231f',
-  ['--ink-soft' as string]: '#514d46',
-  ['--text-primary' as string]: '#26231f',
-  ['--text-secondary' as string]: '#514d46',
-  ['--text-muted' as string]: '#8a8377',
-  ['--text-inverse' as string]: '#fbfaf7',
-  ['--border-subtle' as string]: '#e8e2d8',
-  ['--border-default' as string]: '#d8d0c3',
-  ['--accent' as string]: '#5f574d',
-  ['--accent-hover' as string]: '#3d3933',
-  ['--accent-text' as string]: '#fbfaf7',
-  ['--accent-soft' as string]: '#ece7df',
-  ['--success' as string]: '#5f7157',
-  ['--warning' as string]: '#9b7b45',
-  ['--danger' as string]: '#9c5a50',
-  background: '#fbfaf7',
-  color: '#26231f',
-  fontFamily: '"Jost", "Avenir Next", "Helvetica Neue", sans-serif',
-}
 
 const MONO_FONT = '"Liga SFMono Nerd Font", "IBM Plex Mono", ui-monospace, monospace'
 
@@ -292,7 +267,7 @@ export default function NoteEditor({
       exit={{ opacity: 0 }}
       transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
       className="quiet-editor relative flex flex-1 min-h-0 min-w-0 w-full flex-col overflow-hidden"
-      style={EDITOR_SCOPE}
+      style={FOLIO_SCOPE}
     >
       <header className="quiet-editor-topbar">
         <div className="quiet-editor-nav">

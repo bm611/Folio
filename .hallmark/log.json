@@ -1,0 +1,20 @@
+[
+  {
+    "date": "2026-06-02",
+    "macrostructure": "Workbench / document surface",
+    "theme": "custom",
+    "theme_axes": "light-cool-oat / roman-serif (Fraunces) / warm-clay",
+    "vibe": "calm local-first editorial",
+    "enrichment": "none",
+    "brief": "Folio · redesign NoteEditor — unify to Slate & Clay, Fraunces title"
+  },
+  {
+    "date": "2026-06-02",
+    "macrostructure": "Marquee + three-beat / refined index",
+    "theme": "custom",
+    "theme_axes": "light-cool-oat / roman-serif (Fraunces) / warm-clay",
+    "vibe": "calm local-first editorial",
+    "enrichment": "none",
+    "brief": "Folio · redesign HomeScreen + new LandingPage (Slate & Clay)"
+  }
+]

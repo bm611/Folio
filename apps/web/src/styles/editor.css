@@ -1,4 +1,8 @@
-/* ═══════════════════════════════════════════════
+/* Hallmark · redesign · note-editor surface
+ * theme: custom "Slate & Clay" (shared FOLIO_SCOPE) · display: Fraunces · genre: editorial-calm
+ * tone: restraint — a writing surface, decoration cut to keep the page out of the way
+ * pre-emit critique: P5 H4 E4 S4 R5 V4
+ * ═══════════════════════════════════════════════
    Quiet editor
    ═══════════════════════════════════════════════ */
 
@@ -83,7 +87,7 @@
   padding: 7px 9px;
   color: var(--text-muted);
   font-size: 10.5px;
-  box-shadow: 0 8px 28px rgba(38, 35, 31, 0.06);
+  box-shadow: 0 8px 28px rgba(32, 36, 43, 0.08);
 }
 
 /* ── Note title input ── */
@@ -187,22 +191,33 @@
   outline: none;
   resize: none;
   overflow: hidden;
-  font-family: var(--font-note-title);
+  font-family: var(--font-folio-display);
   font-optical-sizing: auto;
-  font-size: clamp(2rem, 4.4vw, 3.75rem);
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: 0;
-  color: var(--text-primary);
+  font-variation-settings: "opsz" 120;
+  font-size: clamp(2.1rem, 4.6vw, 3.9rem);
+  font-weight: 420;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--ink);
   padding: 0;
   text-wrap: balance;
 }
 
 @media (max-width: 767px) {
+  /* Lift the writing surface toward the top — more note visible above the fold */
+  .quiet-editor-page {
+    padding: 22px 18px calc(132px + env(safe-area-inset-bottom, 0px));
+  }
+
   .banner-title-input {
-    font-size: 2rem;
-    line-height: 1.1;
-    font-variation-settings: "opsz" 96, "SOFT" 50;
+    font-size: 2.05rem;
+    line-height: 1.05;
+    font-variation-settings: "opsz" 96;
+  }
+
+  /* Quieter, tighter meta toggle on mobile */
+  .quiet-note-details {
+    margin: 8px 0 30px;
   }
 }
 
