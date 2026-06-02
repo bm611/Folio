@@ -531,17 +531,34 @@
     width: 100%;
     overflow-x: auto;
     padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .quiet-home-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .quiet-home-actions > * {
+    flex-shrink: 0;
   }
 
   .quiet-note-link {
-    grid-template-columns: 20px minmax(0, 1fr);
-    min-height: 72px;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 6px 12px;
+    min-height: 64px;
+    padding: 10px;
+  }
+
+  .quiet-note-icon {
+    width: 28px;
+    height: 28px;
   }
 
   .quiet-note-meta {
     grid-column: 2;
-    align-items: flex-start;
     flex-direction: row;
+    align-items: center;
+    gap: 8px;
   }
 
   .quiet-entry {
