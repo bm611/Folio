@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback, Fragment } from 'react'
 import { createPortal } from 'react-dom'
 
 import {
@@ -229,15 +229,15 @@ function TreeNodeComponent({
         }}
       >
         <span className={`tn-arrow relative after:absolute after:-inset-2 ${isOpen ? 'open' : ''}`} style={{ opacity: isFolder ? 1 : 0 }}>
-          <SidebarIcon n="chevR" s={14} />
+          <SidebarIcon n="chevR" s={18} />
         </span>
         <span className="tn-icon">
           {node.icon && CATEGORY_ICON_MAP[node.icon] ? (
-            <Icon icon={CATEGORY_ICON_MAP[node.icon]!} size={16} strokeWidth={1.5} style={{ display: 'block' }} />
+            <Icon icon={CATEGORY_ICON_MAP[node.icon]!} size={21} strokeWidth={1.5} style={{ display: 'block' }} />
           ) : isPinnedNote ? (
-            <Icon icon={PinIcon} size={15} strokeWidth={2} style={{ display: 'block', color: 'var(--accent)' }} />
+            <Icon icon={PinIcon} size={20} strokeWidth={2} style={{ display: 'block', color: 'var(--accent)' }} />
           ) : (
-            <SidebarIcon n={isFolder ? 'folder' : 'file'} s={16} />
+            <SidebarIcon n={isFolder ? 'folder' : 'file'} s={21} />
           )}
         </span>
         {renaming ? (
@@ -266,7 +266,7 @@ function TreeNodeComponent({
                   toggleExpand(node.id, true)
                 }}
               >
-                <SidebarIcon n="newFile" s={14} />
+                <SidebarIcon n="newFile" s={17} />
               </button>
             )}
             <button
@@ -276,7 +276,7 @@ function TreeNodeComponent({
                 setContextMenu({ x: rect.left, y: rect.bottom + 4 })
               }}
             >
-              <SidebarIcon n="more" s={14} />
+              <SidebarIcon n="more" s={17} />
             </button>
           </span>
         )}
@@ -540,6 +540,7 @@ export default function Sidebar({
   onViewChange,
 }: SidebarProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set(['1']))
+  const [showAllRoot, setShowAllRoot] = useState(false)
   const [creatingIn, setCreatingIn] = useState<CreatingState | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
   const [showSecondaryNav, setShowSecondaryNav] = useState(activeView === 'chat')
@@ -573,16 +574,11 @@ export default function Sidebar({
   const handleRootCreate = useCallback((type: 'file' | 'folder') => setCreatingIn({ parentId: null, type }), [])
 
   const visibleTree = useMemo(() => {
-    const isPinned = (node: TreeNodeType) =>
-      node.type === 'file' && 'tags' in node && (node as { tags?: string[] }).tags?.includes('pinned')
-
+    // Pinned notes are surfaced in the home screen's "Pinned" section, so the
+    // sidebar keeps natural folder-first, alphabetical order without floating them up.
     const sortNodes = (nodes: TreeNodeType[]): TreeNodeType[] => {
       return [...nodes]
         .sort((a, b) => {
-          const aPinned = isPinned(a)
-          const bPinned = isPinned(b)
-          if (aPinned && !bPinned) return -1
-          if (!aPinned && bPinned) return 1
           if (a.type === 'folder' && b.type !== 'folder') return -1
           if (a.type !== 'folder' && b.type === 'folder') return 1
           return a.name.localeCompare(b.name)
@@ -695,7 +691,7 @@ export default function Sidebar({
           {/* Header — app name + collapse icon */}
           <div className="sb-header-wrapper">
             <span className="flex items-center gap-1.5">
-              <span className="sb-app-name">Aura</span>
+              <span className="sb-app-name">Folio</span>
             </span>
             <button
               type="button"
@@ -719,7 +715,7 @@ export default function Sidebar({
               }}
             >
               <span className="sb-nav-icon">
-                <Icon icon={Home01Icon} size={19} stroke={1.5} />
+                <Icon icon={Home01Icon} size={22} stroke={1.5} />
               </span>
               <span className="sb-nav-label">Home</span>
             </button>
@@ -735,7 +731,7 @@ export default function Sidebar({
               }}
             >
               <span className="sb-nav-icon">
-                <Icon icon={Search01Icon} size={19} stroke={1.5} />
+                <Icon icon={Search01Icon} size={22} stroke={1.5} />
               </span>
               {searchExpanded ? (
                 <>
@@ -779,7 +775,7 @@ export default function Sidebar({
                   onClick={onOpenTemplateGallery}
                 >
                   <span className="sb-nav-icon">
-                    <Icon icon={StickyNoteIcon} size={19} stroke={1.5} />
+                    <Icon icon={StickyNoteIcon} size={22} stroke={1.5} />
                   </span>
                   <span className="sb-nav-label">Templates</span>
                 </button>
@@ -793,7 +789,7 @@ export default function Sidebar({
                   }}
                 >
                   <span className="sb-nav-icon">
-                    <Icon icon={SparklesIcon} size={19} stroke={1.5} />
+                    <Icon icon={SparklesIcon} size={22} stroke={1.5} />
                   </span>
                   <span className="sb-nav-label">Chat</span>
                 </button>
@@ -806,7 +802,7 @@ export default function Sidebar({
                 aria-expanded={showSecondaryNav}
               >
                 <span className="sb-nav-icon">
-                  <Icon icon={MoreHorizontalIcon} size={19} stroke={1.5} />
+                  <Icon icon={MoreHorizontalIcon} size={22} stroke={1.5} />
                 </span>
                 <span className="sb-nav-label">More</span>
               </button>
@@ -816,7 +812,7 @@ export default function Sidebar({
           {/* Tree list */}
           <div className="sb-tree">
             <div className="sb-tree-actions">
-              <span className="text-[11px] font-medium text-(--text-secondary) select-none" style={{ paddingLeft: 4, fontFamily: '"Jost", "Avenir Next", sans-serif', letterSpacing: 0, color: 'var(--text-muted)' }}>Notes</span>
+              <span className="font-medium text-(--text-secondary) select-none" style={{ paddingLeft: 4, fontFamily: 'var(--font-google-sans)', letterSpacing: 0, color: 'var(--text-muted)' }}>Notes</span>
               {!searchQuery.trim() && (
                 <div className="flex items-center gap-0">
                   <button
@@ -843,28 +839,58 @@ export default function Sidebar({
                 </div>
               )}
             </div>
-            {visibleTree.map((node) => (
-              <TreeNodeComponent
-                key={node.id}
-                node={node}
-                depth={0}
-                activeId={activeNoteId}
-                onSelect={(id) => {
-                  onSelectNote(id)
-                  if (isCompactSidebarViewport()) onToggleCollapse()
-                }}
-                onDelete={(id) => onDeleteNote(id)}
-                onRename={handleRename}
-                onMove={(id) => setMoveToNode(id)}
-                onChangeIcon={onChangeIcon}
-                onTogglePin={onTogglePin}
-                expanded={expanded}
-                toggleExpand={toggleExpand}
-                creatingIn={creatingIn}
-                setCreatingIn={setCreatingIn}
-                onCreateConfirm={handleCreateConfirm}
-              />
-            ))}
+            {(() => {
+              const ROOT_LIMIT = 10
+              const showToggle = !searchQuery.trim() && visibleTree.length > ROOT_LIMIT
+              const rootNodes = showToggle && !showAllRoot ? visibleTree.slice(0, ROOT_LIMIT) : visibleTree
+              const hiddenRoot = visibleTree.length - ROOT_LIMIT
+              return (
+                <>
+                  {rootNodes.map((node, i) => {
+                    // Subtle divider between the folder group and loose root notes
+                    const showDivider =
+                      !searchQuery.trim() &&
+                      node.type === 'file' &&
+                      i > 0 &&
+                      rootNodes[i - 1]?.type === 'folder'
+                    return (
+                    <Fragment key={node.id}>
+                    {showDivider && <div className="sb-tree-divider" role="separator" />}
+                    <TreeNodeComponent
+                      node={node}
+                      depth={0}
+                      activeId={activeNoteId}
+                      onSelect={(id) => {
+                        onSelectNote(id)
+                        if (isCompactSidebarViewport()) onToggleCollapse()
+                      }}
+                      onDelete={(id) => onDeleteNote(id)}
+                      onRename={handleRename}
+                      onMove={(id) => setMoveToNode(id)}
+                      onChangeIcon={onChangeIcon}
+                      onTogglePin={onTogglePin}
+                      expanded={expanded}
+                      toggleExpand={toggleExpand}
+                      creatingIn={creatingIn}
+                      setCreatingIn={setCreatingIn}
+                      onCreateConfirm={handleCreateConfirm}
+                    />
+                    </Fragment>
+                    )
+                  })}
+                  {showToggle && (
+                    <button
+                      type="button"
+                      className="tn-show-more"
+                      style={{ paddingLeft: 12 }}
+                      onClick={() => setShowAllRoot((value) => !value)}
+                    >
+                      {showAllRoot ? 'Show less' : `${hiddenRoot} more...`}
+                    </button>
+                  )}
+                </>
+              )
+            })()}
             {creatingIn?.parentId === null && (
               <InlineCreator
                 depth={0}

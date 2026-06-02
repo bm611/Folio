@@ -6,6 +6,7 @@ import {
   Calendar01Icon,
   CloudUploadIcon,
   File01Icon,
+  Folder01Icon,
   PinIcon,
   Search01Icon,
   SidebarLeftIcon,
@@ -15,13 +16,14 @@ import Icon from './Icon'
 import SettingsMenu from './SettingsMenu'
 import ProfilePanel from './ProfilePanel'
 import { useAuth } from '../contexts/AuthContext'
-import { countBodyWords, getNoteDisplayTitle } from '../utils/noteMeta'
+import { getNoteDisplayTitle } from '../utils/noteMeta'
 import { compareRecentNotes, formatRelativeTime } from './noteEditorUtils'
 import type { NoteFile, TreeNode } from '../types'
 import type { SyncStatus } from './noteEditorUtils'
 
 interface HomeScreenProps {
   notes: TreeNode[]
+  tree?: TreeNode[]
   onNewNote: () => void
   onCreateDailyNote: () => void
   onUpdateNote: (id: string, updates: Record<string, unknown>, options?: Record<string, unknown>) => void
@@ -65,7 +67,8 @@ const MINIMAL_SCOPE: CSSProperties = {
   ['--danger' as string]: '#9c5a50',
   background: '#fbfaf7',
   color: '#26231f',
-  fontFamily: '"Jost", "Avenir Next", "Helvetica Neue", sans-serif',
+  fontFamily:
+    '"Google Sans", "Google Sans Text", "Product Sans", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif',
 }
 
 const MONO_FONT = '"Liga SFMono Nerd Font", "IBM Plex Mono", ui-monospace, monospace'
@@ -101,40 +104,63 @@ function NoteAction({
   )
 }
 
+const HOME_RECENT_LIMIT = 5
+
+function isPinned(note: NoteFile): boolean {
+  return Boolean(note.tags?.includes('pinned') || note.tags?.includes('favorite'))
+}
+
+// Map each file id to its folder path (ancestor folder names joined by " / ").
+// Files at the root are omitted.
+function buildFolderPaths(
+  nodes: TreeNode[],
+  ancestors: string[] = [],
+  map: Map<string, string> = new Map(),
+): Map<string, string> {
+  for (const node of nodes) {
+    if (node.type === 'folder') {
+      buildFolderPaths(node.children, [...ancestors, node.name], map)
+    } else if (ancestors.length > 0) {
+      map.set(node.id, ancestors.join(' / '))
+    }
+  }
+  return map
+}
+
 function NoteRow({
   note,
+  folderPath,
   onSelect,
 }: {
   note: NoteFile
+  folderPath?: string
   onSelect: (id: string) => void
 }) {
   const title = getNoteDisplayTitle(note)
-  const wordCount = countBodyWords(note.content)
   const updatedAt = new Date(note.updatedAt || note.createdAt)
-  const pinned = note.tags?.includes('pinned') || note.tags?.includes('favorite')
-  const preview = (note.content ?? '')
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/[#*_>`~]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
+  const pinned = isPinned(note)
 
   return (
     <li className="quiet-note-row">
       <button type="button" onClick={() => onSelect(note.id)} className="quiet-note-link">
-        <span className="quiet-note-icon" aria-hidden>
+        <span className={pinned ? 'quiet-note-icon is-pinned' : 'quiet-note-icon'} aria-hidden>
           {pinned ? (
-            <Icon icon={PinIcon} size={13} strokeWidth={1.8} />
+            <Icon icon={PinIcon} size={14} strokeWidth={1.8} />
           ) : (
-            <Icon icon={File01Icon} size={13} strokeWidth={1.7} />
+            <Icon icon={File01Icon} size={14} strokeWidth={1.7} />
           )}
         </span>
         <span className="quiet-note-copy">
           <span className="quiet-note-title">{title}</span>
-          {preview && <span className="quiet-note-preview">{preview}</span>}
+          {folderPath && (
+            <span className="quiet-note-folder">
+              <Icon icon={Folder01Icon} size={11} strokeWidth={1.7} />
+              <span>{folderPath}</span>
+            </span>
+          )}
         </span>
         <span className="quiet-note-meta">
           <span>{formatRelativeTime(updatedAt)}</span>
-          <span>{wordCount.toLocaleString()} w</span>
         </span>
       </button>
     </li>
@@ -159,6 +185,7 @@ function EmptyState({ onNewNote }: { onNewNote: () => void }) {
 
 export default function HomeScreen({
   notes,
+  tree,
   onNewNote,
   onCreateDailyNote,
   onSelectNote,
@@ -184,7 +211,15 @@ export default function HomeScreen({
     () => notes.filter((note): note is NoteFile => note.type === 'file' && !note.deletedAt),
     [notes],
   )
-  const sortedNotes = useMemo(() => [...fileNotes].sort(compareRecentNotes), [fileNotes])
+  const pinnedNotes = useMemo(
+    () => fileNotes.filter(isPinned).sort(compareRecentNotes),
+    [fileNotes],
+  )
+  const recentNotes = useMemo(
+    () => fileNotes.filter((note) => !isPinned(note)).sort(compareRecentNotes).slice(0, HOME_RECENT_LIMIT),
+    [fileNotes],
+  )
+  const folderPaths = useMemo(() => buildFolderPaths(tree ?? []), [tree])
   const syncLabel = getSyncLabel(syncing, syncStatus)
 
   return (
@@ -287,14 +322,46 @@ export default function HomeScreen({
           </div>
         </section>
 
-        {sortedNotes.length === 0 ? (
+        {fileNotes.length === 0 ? (
           <EmptyState onNewNote={onNewNote} />
         ) : (
-          <ul className="quiet-note-list">
-            {sortedNotes.map((note) => (
-              <NoteRow key={note.id} note={note} onSelect={onSelectNote} />
-            ))}
-          </ul>
+          <>
+            {pinnedNotes.length > 0 && (
+              <section className="quiet-note-section">
+                <h2 className="quiet-section-head" style={{ fontFamily: MONO_FONT }}>
+                  Pinned
+                </h2>
+                <ul className="quiet-note-list">
+                  {pinnedNotes.map((note) => (
+                    <NoteRow
+                      key={note.id}
+                      note={note}
+                      folderPath={folderPaths.get(note.id)}
+                      onSelect={onSelectNote}
+                    />
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {recentNotes.length > 0 && (
+              <section className="quiet-note-section">
+                <h2 className="quiet-section-head" style={{ fontFamily: MONO_FONT }}>
+                  Recent
+                </h2>
+                <ul className="quiet-note-list">
+                  {recentNotes.map((note) => (
+                    <NoteRow
+                      key={note.id}
+                      note={note}
+                      folderPath={folderPaths.get(note.id)}
+                      onSelect={onSelectNote}
+                    />
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
         )}
       </main>
     </div>

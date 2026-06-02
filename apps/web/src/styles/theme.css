@@ -35,6 +35,11 @@
   --font-prose: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
   --font-script: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
 
+  /* Google Sans UI/reading stack + Merriweather note titles */
+  --font-google-sans: "Google Sans", "Google Sans Text", "Product Sans", "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-note-title: "Merriweather", Georgia, "Times New Roman", serif;
+  --font-note-body: var(--font-google-sans);
+
   --radius-xs: 3px;
   --radius-sm: 5px;
   --radius-md: 7px;

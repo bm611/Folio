@@ -29,7 +29,7 @@
   border-right: 1px solid var(--border-subtle);
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  font-family: var(--font-google-sans);
   user-select: none;
   transition: width 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -61,8 +61,8 @@
 
 .sb-app-name {
   color: var(--ink);
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
 }
@@ -76,20 +76,21 @@
 }
 
 .sb-nav-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 36px;
+  height: 42px;
   padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-google-sans);
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: 0;
   text-align: left;
@@ -117,12 +118,26 @@
   color: var(--ink);
 }
 
+/* Sharp high-contrast edge indicator on the active item */
+.sb-nav-item.is-active::before,
+.tree-node.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  border-radius: 0 3px 3px 0;
+  background: var(--ink);
+  transform: translateY(-50%);
+}
+
 .sb-nav-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex-shrink: 0;
   color: var(--text-muted);
 }
@@ -134,7 +149,7 @@
 .sb-nav-label {
   flex: 1;
   overflow: hidden;
-  font-size: 13px;
+  font-size: 16px;
   letter-spacing: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -152,8 +167,8 @@
   outline: none;
   background: transparent;
   color: var(--ink);
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-google-sans);
+  font-size: 16px;
   font-weight: 400;
   letter-spacing: 0;
   padding: 0;
@@ -161,7 +176,7 @@
 
 .sb-nav-search input::placeholder {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 16px;
   opacity: 0.8;
 }
 
@@ -216,8 +231,8 @@
 
 .sb-tree-actions > span {
   color: var(--text-muted) !important;
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif !important;
-  font-size: 12px !important;
+  font-family: var(--font-google-sans) !important;
+  font-size: 15px !important;
   font-weight: 500 !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
@@ -247,22 +262,33 @@
   }
 }
 
+/* Separates top-level folders from loose, un-foldered notes */
+.sb-tree-divider {
+  height: 1px;
+  margin: 9px 10px 10px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--border-default) 62%, transparent),
+    transparent
+  );
+}
+
 .tree-node {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  height: 34px;
-  margin: 1px 0;
-  padding: 0 8px;
+  height: 44px;
+  margin: 2px 0;
+  padding: 0 10px;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-google-sans);
+  font-size: 18px;
   font-weight: 400;
   letter-spacing: 0;
   text-align: left;
@@ -291,8 +317,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   color: var(--text-muted);
   transition: transform 170ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -306,8 +332,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 17px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   color: var(--text-muted);
 }
@@ -317,11 +343,16 @@
   color: var(--accent);
 }
 
+/* Folder icons get a distinct warm-gold tint to set them apart from files */
+.tree-node.is-folder:not(.active) .tn-icon {
+  color: var(--warning);
+}
+
 .tn-name {
   flex: 1;
   overflow: hidden;
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-google-sans);
+  font-size: 18px;
   font-weight: inherit;
   letter-spacing: 0;
   text-overflow: ellipsis;
@@ -347,10 +378,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -383,11 +414,11 @@
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
-  font-size: 12px;
+  font-family: var(--font-google-sans);
+  font-size: 15px;
   font-weight: 500;
   letter-spacing: 0;
-  padding: 6px 16px;
+  padding: 8px 16px;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -414,8 +445,8 @@
   outline: none;
   background: var(--bg-elevated);
   color: var(--ink);
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
-  font-size: 13px;
+  font-family: var(--font-google-sans);
+  font-size: 17px;
   font-weight: 400;
   letter-spacing: 0;
   padding: 5px 8px;
@@ -442,7 +473,7 @@
   border-radius: 8px;
   background: var(--bg-elevated);
   box-shadow: 0 18px 48px rgba(38, 35, 31, 0.1);
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  font-family: var(--font-google-sans);
   padding: 5px;
 }
 
@@ -456,7 +487,7 @@
   background: transparent;
   color: var(--ink);
   cursor: pointer;
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  font-family: var(--font-google-sans);
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0;
@@ -520,7 +551,7 @@
   border-radius: 6px;
   background: var(--ink);
   color: var(--text-inverse);
-  font-family: "Jost", "Avenir Next", "Helvetica Neue", sans-serif;
+  font-family: var(--font-google-sans);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0;

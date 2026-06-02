@@ -19,7 +19,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
     <main className="quiet-entry">
       <section className="quiet-entry-shell">
         <div className="quiet-entry-sidebar" aria-hidden>
-          <div className="quiet-entry-brand">Aura</div>
+          <div className="quiet-entry-brand">Folio</div>
           <div className="quiet-entry-side-row is-active">
             <Icon icon={File01Icon} size={13} strokeWidth={1.7} />
             Notes
@@ -39,7 +39,7 @@ export default function LandingPage({ onStart, onSignIn }: LandingPageProps) {
           </div>
 
           <div className="quiet-entry-copy">
-            <p className="quiet-label">Aura</p>
+            <p className="quiet-label">Folio</p>
             <h1>Start with a blank page.</h1>
             <p>
               A calm local-first space for notes, drafts, and daily writing.

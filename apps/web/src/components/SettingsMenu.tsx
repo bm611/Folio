@@ -157,6 +157,7 @@ export default function SettingsMenu({
 
               {wideMode !== undefined && onWideModeChange && (
                 <>
+                  <div className="settings-divider" />
                   <button
                     type="button"
                     onClick={() => onWideModeChange(!wideMode)}
@@ -178,7 +179,6 @@ export default function SettingsMenu({
                       />
                     </span>
                   </button>
-                  <div className="settings-divider" />
                 </>
               )}
 

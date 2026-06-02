@@ -138,6 +138,7 @@ function SaveBadge({
 export default function NoteEditor({
   note,
   notes,
+  tree,
   onNewNote,
   onCreateDailyNote,
   onUpdateNote,
@@ -246,6 +247,7 @@ export default function NoteEditor({
     return (
       <HomeScreen
         notes={notes}
+        tree={tree}
         onNewNote={onNewNote}
         onCreateDailyNote={onCreateDailyNote}
         onUpdateNote={onUpdateNote}

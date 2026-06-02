@@ -61,7 +61,7 @@ export default function WelcomeModal({ open, onClose, onGetStarted }: WelcomeMod
             <div className="p-6">
               <div className="flex items-start justify-between gap-6">
                 <div>
-                  <p className="quiet-label">Aura</p>
+                  <p className="quiet-label">Folio</p>
                   <h2 className="m-0 text-[28px] font-normal leading-[1.05]" style={{ color: 'var(--ink)' }}>
                     Ready to write.
                   </h2>
